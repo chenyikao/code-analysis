@@ -1,0 +1,50 @@
+M "smt2parser_example"
+R
+C 0
+= 0033BF9C
+R
+P 0033BF9C
+S "MODEL"
+S "true"
+C 2
+R
+P 0033BF9C
+C 3
+= 0060E3A4
+R
+P 0033BF9C
+C 1
+R
+P 0060E3A4
+C 16
+= 00614FE4
+R
+P 0060E3A4
+P 00614FE4
+C 192
+R
+P 0060E3A4
+S "a"
+C 13
+R
+P 0060E3A4
+$ |a|
+U 0
+p 0
+P 00614FE4
+C 33
+= 00617094
+R
+P 0060E3A4
+S "\040declare-fun a \040\041 Bool\041 \040assert \040or a \040not a\041\041\041"
+U 1
+$ |Bool|
+s 1
+P 00614FE4
+p 1
+U 1
+$ |a|
+s 1
+P 00617094
+p 1
+C 310

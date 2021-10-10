@@ -1,0 +1,14 @@
+model:
+sat
+jx -> 2
+size -> 5
+chunk -> 1
+k -> 1
+ix -> 2
+iy -> 3
+tM -> 2
+tx -> 0
+gy -> 1
+ty -> 1
+gx -> 1
+

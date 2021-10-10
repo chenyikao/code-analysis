@@ -1,0 +1,76 @@
+
+Starting: 07:52:13 16.09.2012
+---------------------------------
+
+Log file : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\tetra_log.txt
+Project name : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\THREADS_MAX_gen.ttp
+Source directory : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release
+Single target : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\model
+1 files to transform
+no backup
+loading project C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\THREADS_MAX_gen.ttp
+compiling project "C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\THREADS_MAX_gen.ttp" (this can take some time)
+
+
+transforming:
+  C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\model.  to
+  C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\model
+  successfully transformed
+
+
+Starting: 08:00:03 16.09.2012
+---------------------------------
+
+Log file : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\tetra_log.txt
+Project name : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\THREADS_MAX_gen.ttp
+Source directory : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release
+Target directory : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\THREADS_MAX
+1 files to transform
+no backup
+loading project C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\THREADS_MAX_gen.ttp
+compiling project "C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\THREADS_MAX_gen.ttp" (this can take some time)
+
+
+transforming:
+  C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\model.  to
+  C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\THREADS_MAX\model.
+  successfully transformed
+
+
+Starting: 08:07:11 16.09.2012
+---------------------------------
+
+Log file : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\tetra_log.txt
+Project name : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\THREADS_MAX_gen.ttp
+Source directory : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release
+Single target : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\THREADS_MAX.value
+1 files to transform
+no backup
+loading project C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\THREADS_MAX_gen.ttp
+compiling project "C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\THREADS_MAX_gen.ttp" (this can take some time)
+
+
+transforming:
+  C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\model.  to
+  C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\THREADS_MAX.value
+  successfully transformed
+
+
+Starting: 08:27:05 16.09.2012
+---------------------------------
+
+Log file : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\tetra_log.txt
+Project name : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\SMT_model_to_RED.ttp
+Source directory : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release
+Single target : C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\THREADS_MAX.value
+1 files to transform
+no backup
+loading project C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\SMT_model_to_RED.ttp
+compiling project "C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\SMT_model_to_RED.ttp" (this can take some time)
+
+
+transforming:
+  C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\model.  to
+  C:\Documents and Settings\The Saxon\My Documents\Academia Sinica\NTU\Race condition\大黑\OmpCA\SMTsolver\Release\THREADS_MAX.value
+  successfully transformed
+
