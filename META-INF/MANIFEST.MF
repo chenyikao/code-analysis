@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: VOP_Condition_Generator
+Bundle-SymbolicName: fozu.ca;singleton:=true
+Export-Package: fozu.ca.vodcg,
+ fozu.ca.vodcg.condition,
+ fozu.ca.vodcg.condition.data,
+ fozu.ca.vodcg.condition.version,
+ fozu.ca.vodcg.parallel,
+ fozu.ca.vodcg.popup.actions,
+ fozu.ca.vodcg.ui
+Bundle-Name: Fozu Code Analysis
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: org.eclipse.ui;bundle-version="3.201.0",
+ org.eclipse.core.runtime;bundle-version="3.24.100",
+ org.eclipse.core.resources;bundle-version="3.16.100",
+ org.eclipse.jdt.core;bundle-version="3.33.0",
+ org.eclipse.jface.text;bundle-version="3.20.0",
+ org.eclipse.ui.ide;bundle-version="3.18.500"
+Bundle-ManifestVersion: 2
+Bundle-Activator: fozu.ca.vodcg.Activator
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-14
