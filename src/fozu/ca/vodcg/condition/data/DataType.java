@@ -6,21 +6,20 @@ package fozu.ca.vodcg.condition.data;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.cdt.core.dom.IName;
-import org.eclipse.cdt.core.dom.ast.IASTInitializerClause;
-import org.eclipse.cdt.core.dom.ast.IASTSimpleDeclSpecifier;
-import org.eclipse.cdt.core.dom.ast.IArrayType;
-import org.eclipse.cdt.core.dom.ast.IBasicType;
-import org.eclipse.cdt.core.dom.ast.IBinding;
-import org.eclipse.cdt.core.dom.ast.ICompositeType;
-import org.eclipse.cdt.core.dom.ast.IEnumeration;
-import org.eclipse.cdt.core.dom.ast.IFunction;
-import org.eclipse.cdt.core.dom.ast.IPointerType;
-import org.eclipse.cdt.core.dom.ast.IQualifierType;
-import org.eclipse.cdt.core.dom.ast.IType;
-import org.eclipse.cdt.core.dom.ast.ITypedef;
-import org.eclipse.cdt.core.dom.ast.IValue;
-import org.eclipse.cdt.core.dom.ast.IVariable;
+import org.eclipse.jdt.core.dom.IName;
+import org.eclipse.jdt.core.dom.IASTInitializerClause;
+import org.eclipse.jdt.core.dom.IASTSimpleDeclSpecifier;
+import org.eclipse.jdt.core.dom.IArrayType;
+import org.eclipse.jdt.core.dom.IBasicType;
+import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.ICompositeType;
+import org.eclipse.jdt.core.dom.IEnumeration;
+import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.IPointerType;
+import org.eclipse.jdt.core.dom.IQualifierType;
+import org.eclipse.jdt.core.dom.IType;
+import org.eclipse.jdt.core.dom.IValue;
+import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 
 import fozu.ca.DebugElement;
@@ -106,50 +105,50 @@ public enum DataType implements PlatformType {
 	public static PlatformType from(IBinding bind) {
 		if (bind == null) DebugElement.throwNullArgumentException("binding");
 		
-		if (bind instanceof IVariable) 
-			return from(((IVariable) bind).getType());
-		else if (bind instanceof ITypedef) 
-			return from(((ITypedef) bind).getType());
-		else if (bind instanceof IFunction) 
-			return from(((IFunction) bind).getType().getReturnType());
+		if (bind instanceof IVariableBinding) 
+			return from(((IVariableBinding) bind).getType());
+		else if (bind instanceof ITypeBinding) 
+			return from((ITypeBinding) bind);
+		else if (bind instanceof IMethodBinding) 
+			return from(((IMethodBinding) bind).getReturnType());
 		
 		DebugElement.throwTodoException("bind instanceof OtherClass");
 		return null;
 	}
 	
-	public static PlatformType from(final IASTSimpleDeclSpecifier decl) 
-			throws ASTException {
-		if (decl == null) SystemElement.throwNullArgumentException("declaration specifier");
-		
-		final int dt = decl.getType();
-		switch (dt) {
-		case IASTSimpleDeclSpecifier.t_bool:			return Bool;
-		case IASTSimpleDeclSpecifier.t_char:
-		case IASTSimpleDeclSpecifier.t_char16_t:
-		case IASTSimpleDeclSpecifier.t_char32_t:
-		case IASTSimpleDeclSpecifier.t_wchar_t:			return Char;
-		case IASTSimpleDeclSpecifier.t_int:
-		case IASTSimpleDeclSpecifier.t_int128:			return Int;
-		case IASTSimpleDeclSpecifier.t_double:
-		case IASTSimpleDeclSpecifier.t_float:
-		case IASTSimpleDeclSpecifier.t_float128:
-		case IASTSimpleDeclSpecifier.t_decimal32:
-		case IASTSimpleDeclSpecifier.t_decimal64:
-		case IASTSimpleDeclSpecifier.t_decimal128:		return Real;
-		case IASTSimpleDeclSpecifier.t_void:			return Void;
-		case IASTSimpleDeclSpecifier.t_unspecified:
-			ASTUtil.throwASTException(decl);
-			
-		case IASTSimpleDeclSpecifier.t_auto:
-		case IASTSimpleDeclSpecifier.t_decltype:
-		case IASTSimpleDeclSpecifier.t_decltype_auto:
-		case IASTSimpleDeclSpecifier.t_typeof:
-		default:
-			SystemElement.throwTodoException("Unsupported type: " + dt);
-		}
-
-		return null;
-	}
+//	public static PlatformType from(final IASTSimpleDeclSpecifier decl) 
+//			throws ASTException {
+//		if (decl == null) SystemElement.throwNullArgumentException("declaration specifier");
+//		
+//		final int dt = decl.getType();
+//		switch (dt) {
+//		case IASTSimpleDeclSpecifier.t_bool:			return Bool;
+//		case IASTSimpleDeclSpecifier.t_char:
+//		case IASTSimpleDeclSpecifier.t_char16_t:
+//		case IASTSimpleDeclSpecifier.t_char32_t:
+//		case IASTSimpleDeclSpecifier.t_wchar_t:			return Char;
+//		case IASTSimpleDeclSpecifier.t_int:
+//		case IASTSimpleDeclSpecifier.t_int128:			return Int;
+//		case IASTSimpleDeclSpecifier.t_double:
+//		case IASTSimpleDeclSpecifier.t_float:
+//		case IASTSimpleDeclSpecifier.t_float128:
+//		case IASTSimpleDeclSpecifier.t_decimal32:
+//		case IASTSimpleDeclSpecifier.t_decimal64:
+//		case IASTSimpleDeclSpecifier.t_decimal128:		return Real;
+//		case IASTSimpleDeclSpecifier.t_void:			return Void;
+//		case IASTSimpleDeclSpecifier.t_unspecified:
+//			ASTUtil.throwASTException(decl);
+//			
+//		case IASTSimpleDeclSpecifier.t_auto:
+//		case IASTSimpleDeclSpecifier.t_decltype:
+//		case IASTSimpleDeclSpecifier.t_decltype_auto:
+//		case IASTSimpleDeclSpecifier.t_typeof:
+//		default:
+//			SystemElement.throwTodoException("Unsupported type: " + dt);
+//		}
+//
+//		return null;
+//	}
 	
 //	public DataType fromJavaType(javaType) throws NonSupportedTypeException {	// TODO: NonSupportedType
 //		return;
