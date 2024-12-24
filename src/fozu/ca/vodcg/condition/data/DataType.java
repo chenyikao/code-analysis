@@ -117,39 +117,39 @@ public enum DataType implements PlatformType {
 		return null;
 	}
 	
-	public static PlatformType from(final IASTSimpleDeclSpecifier decl) 
-			throws ASTException {
-		if (decl == null) SystemElement.throwNullArgumentException("declaration specifier");
-		
-		final int dt = decl.getType();
-		switch (dt) {
-		case IASTSimpleDeclSpecifier.t_bool:			return Bool;
-		case IASTSimpleDeclSpecifier.t_char:
-		case IASTSimpleDeclSpecifier.t_char16_t:
-		case IASTSimpleDeclSpecifier.t_char32_t:
-		case IASTSimpleDeclSpecifier.t_wchar_t:			return Char;
-		case IASTSimpleDeclSpecifier.t_int:
-		case IASTSimpleDeclSpecifier.t_int128:			return Int;
-		case IASTSimpleDeclSpecifier.t_double:
-		case IASTSimpleDeclSpecifier.t_float:
-		case IASTSimpleDeclSpecifier.t_float128:
-		case IASTSimpleDeclSpecifier.t_decimal32:
-		case IASTSimpleDeclSpecifier.t_decimal64:
-		case IASTSimpleDeclSpecifier.t_decimal128:		return Real;
-		case IASTSimpleDeclSpecifier.t_void:			return Void;
-		case IASTSimpleDeclSpecifier.t_unspecified:
-			ASTUtil.throwASTException(decl);
-			
-		case IASTSimpleDeclSpecifier.t_auto:
-		case IASTSimpleDeclSpecifier.t_decltype:
-		case IASTSimpleDeclSpecifier.t_decltype_auto:
-		case IASTSimpleDeclSpecifier.t_typeof:
-		default:
-			SystemElement.throwTodoException("Unsupported type: " + dt);
-		}
-
-		return null;
-	}
+//	public static PlatformType from(final IASTSimpleDeclSpecifier decl) 
+//			throws ASTException {
+//		if (decl == null) SystemElement.throwNullArgumentException("declaration specifier");
+//		
+//		final int dt = decl.getType();
+//		switch (dt) {
+//		case IASTSimpleDeclSpecifier.t_bool:			return Bool;
+//		case IASTSimpleDeclSpecifier.t_char:
+//		case IASTSimpleDeclSpecifier.t_char16_t:
+//		case IASTSimpleDeclSpecifier.t_char32_t:
+//		case IASTSimpleDeclSpecifier.t_wchar_t:			return Char;
+//		case IASTSimpleDeclSpecifier.t_int:
+//		case IASTSimpleDeclSpecifier.t_int128:			return Int;
+//		case IASTSimpleDeclSpecifier.t_double:
+//		case IASTSimpleDeclSpecifier.t_float:
+//		case IASTSimpleDeclSpecifier.t_float128:
+//		case IASTSimpleDeclSpecifier.t_decimal32:
+//		case IASTSimpleDeclSpecifier.t_decimal64:
+//		case IASTSimpleDeclSpecifier.t_decimal128:		return Real;
+//		case IASTSimpleDeclSpecifier.t_void:			return Void;
+//		case IASTSimpleDeclSpecifier.t_unspecified:
+//			ASTUtil.throwASTException(decl);
+//			
+//		case IASTSimpleDeclSpecifier.t_auto:
+//		case IASTSimpleDeclSpecifier.t_decltype:
+//		case IASTSimpleDeclSpecifier.t_decltype_auto:
+//		case IASTSimpleDeclSpecifier.t_typeof:
+//		default:
+//			SystemElement.throwTodoException("Unsupported type: " + dt);
+//		}
+//
+//		return null;
+//	}
 	
 //	public DataType fromJavaType(javaType) throws NonSupportedTypeException {	// TODO: NonSupportedType
 //		return;
