@@ -18,6 +18,8 @@ import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.ASTException;
+import fozu.ca.vodcg.ASTLoopUtil;
+import fozu.ca.vodcg.ASTUtil;
 import fozu.ca.vodcg.ReenterException;
 import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.condition.data.Number;
@@ -161,7 +163,8 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	 * @return
 	 * @throws Exception 
 	 */
-	static ArithmeticExpression fromBoundOf(ForStatement loop, 
+	@SuppressWarnings("removal")
+    static ArithmeticExpression fromBoundOf(ForStatement loop, 
 			boolean wantsLowerBound, final ASTAddressable rtAddr, VODCondGen condGen) 
 			throws ASTException, UncertainException {
 		if (loop == null) DebugElement.throwNullArgumentException("loop");

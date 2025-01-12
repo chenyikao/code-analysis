@@ -621,7 +621,7 @@ public class Or extends Proposition {
 	}
 	
 
-fozu.ca*
+	/*
 	 * @see fozu.ca.condition.Proposition#notByReduce()
 	 */
 	protected Proposition notByReduce() {

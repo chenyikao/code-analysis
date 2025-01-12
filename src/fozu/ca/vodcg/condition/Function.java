@@ -1308,7 +1308,8 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	}
 	
 	
-	fozu.ca(non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see fozu.ca.condition.Expression#toProposition()
 	 */
 	@Override
@@ -1419,8 +1420,10 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 			hasParams = true;
 		}
 		
-		return func + ")"; 
-	fozu.ca* (non-Javadoc)
+		return func + ")";
+	}
+	
+	/* (non-Javadoc)
 	 * @see fozu.ca.condition.ConditionElement#toNonEmptyString(boolean)
 	 */
 	protected String toNonEmptyString(boolean usesParenthesesAlready) {

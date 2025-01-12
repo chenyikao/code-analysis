@@ -8,6 +8,7 @@ import java.util.NavigableSet;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import fozu.ca.Addressable;
+import fozu.ca.DebugElement;
 
 /**
  * @author Kao, Chen-yi
@@ -59,7 +60,8 @@ public interface ASTAddressable extends Addressable {
 	 * @return (TODO? non-null) set of previous candidate addressable's,
 	 * 	which are navigable by their addresses, at run-time
 	 */
-	default <T extends Addressable> NavigableSet<T> previousRuntimes() {
+	@SuppressWarnings("removal")
+    default <T extends Addressable> NavigableSet<T> previousRuntimes() {
 		return DebugElement.throwTodoException("unsupported runtime previous");
 	}
 

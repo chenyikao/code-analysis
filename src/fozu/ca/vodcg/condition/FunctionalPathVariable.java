@@ -3,10 +3,10 @@
  */
 package fozu.ca.vodcg.condition;
 
-import org.eclipse.cdt.core.dom.ast.IASTArrayDeclarator;
-import org.eclipse.cdt.core.dom.ast.IASTArrayModifier;
-import org.eclipse.cdt.core.dom.ast.IASTArraySubscriptExpression;
-import org.eclipse.cdt.core.dom.ast.IASTInitializerClause;
+import org.eclipse.jdt.core.dom.ast.IASTArrayDeclarator;
+import org.eclipse.jdt.core.dom.ast.IASTArrayModifier;
+import org.eclipse.jdt.core.dom.ast.IASTArraySubscriptExpression;
+import org.eclipse.jdt.core.dom.ast.IASTInitializerClause;
 
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.VODCondGen;

@@ -21,45 +21,45 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IName;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
-import org.eclipse.jdt.core.dom.ast.ASTGenericVisitor;
-import org.eclipse.jdt.core.dom.ast.ASTNameCollector;
-import org.eclipse.jdt.core.dom.ast.ASTSignatureUtil;
-import org.eclipse.jdt.core.dom.ast.DOMException;
-import org.eclipse.jdt.core.dom.ast.EScopeKind;
+import org.eclipse.jdt.core.dom.ASTGenericVisitor;
+import org.eclipse.jdt.core.dom.ASTNameCollector;
+import org.eclipse.jdt.core.dom.ASTSignatureUtil;
+import org.eclipse.jdt.core.dom.DOMException;
+import org.eclipse.jdt.core.dom.EScopeKind;
 import org.eclipse.jdt.core.dom.ArrayAccess;
 import org.eclipse.jdt.core.dom.ChildListPropertyDescriptor;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.SwitchCase;
 import org.eclipse.jdt.core.dom.Comment;
 import org.eclipse.jdt.core.dom.DoStatement;
-import org.eclipse.jdt.core.dom.ast.IASTEqualsInitializer;
+import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
 import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.ast.IASTFileLocation;
+import org.eclipse.jdt.core.dom.IASTFileLocation;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.IfStatement;
-import org.eclipse.jdt.core.dom.ast.IASTInitializerClause;
-import org.eclipse.jdt.core.dom.ast.IASTLiteralExpression;
+import org.eclipse.jdt.core.dom.IASTInitializerClause;
+import org.eclipse.jdt.core.dom.IASTLiteralExpression;
 import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.ast.IASTNameOwner;
+import org.eclipse.jdt.core.dom.IASTNameOwner;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ast.IASTNodeLocation;
-import org.eclipse.jdt.core.dom.ast.IASTPreprocessorPragmaStatement;
-import org.eclipse.jdt.core.dom.ast.IASTPreprocessorStatement;
+import org.eclipse.jdt.core.dom.IASTNodeLocation;
+import org.eclipse.jdt.core.dom.IASTPreprocessorPragmaStatement;
+import org.eclipse.jdt.core.dom.IASTPreprocessorStatement;
 import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
-import org.eclipse.jdt.core.dom.ast.IASTSwitchStatement;
-import org.eclipse.jdt.core.dom.ast.IASTTranslationUnit;
-import org.eclipse.jdt.core.dom.ast.IASTUnaryExpression;
+import org.eclipse.jdt.core.dom.IASTSwitchStatement;
+import org.eclipse.jdt.core.dom.IASTTranslationUnit;
+import org.eclipse.jdt.core.dom.IASTUnaryExpression;
 import org.eclipse.jdt.core.dom.WhileStatement;
-import org.eclipse.jdt.core.dom.ast.IBinding;
-import org.eclipse.jdt.core.dom.ast.IEnumeration;
-import org.eclipse.jdt.core.dom.ast.IFunction;
-import org.eclipse.jdt.core.dom.ast.IParameter;
-import org.eclipse.jdt.core.dom.ast.IProblemBinding;
-import org.eclipse.jdt.core.dom.ast.IType;
+import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.IEnumeration;
+import org.eclipse.jdt.core.dom.IFunction;
+import org.eclipse.jdt.core.dom.IParameter;
+import org.eclipse.jdt.core.dom.IProblemBinding;
+import org.eclipse.jdt.core.dom.IType;
 import org.eclipse.jdt.core.index.IIndex;
 import org.eclipse.jdt.core.index.IIndexBinding;
 import org.eclipse.jdt.core.index.IIndexManager;
@@ -886,37 +886,22 @@ public final class ASTUtil extends DebugElement {
 //		return getWritingFunctionDefinitionOf(getNameOf(f, IASTNameOwner.r_definition));
 	}
 	
-	public static IBinding getBindingOf(IName name) {
+	public static IBinding getBindingOf(Name name) {
 		if (name == null) throwNullArgumentException("name");
 		
-		IBinding bind = null;
-		if (name instanceof Name) {
-			final Name astName = (Name) name;
-			bind = astName.resolveBinding();
-			if (bind == null || bind instanceof IProblemBinding) {
-				if (astName.isFrozen()) throwTodoException(bind.toString());
-//					ASTUtil.throwASTException(idBind, null);
-				else {
-//					idExp = (Name) idExp.getOriginalNode();
-//					if (idExp == null) throwNullArgumentException("frozen id expression");
-//					name = idExp.getName();
-					bind = ((Name) astName.getOriginalNode()).resolveBinding();
-				}
-			}
-			return bind;	// this won't throw CoreException! 
-		}
+		return name.resolveBinding();
 
-		IIndex index = getIndex(false);
-		// read-lock pattern on the IIndex
-		try {
-			index.acquireReadLock();
-			bind = index.findBinding(name);
-		} catch (CoreException | InterruptedException e) {
-			throwTodoException(e);
-		} finally {
-			index.releaseReadLock();
-		}
-		return bind;
+//		IIndex index = getIndex(false);
+//		// read-lock pattern on the IIndex
+//		try {
+//			index.acquireReadLock();
+//			bind = index.findBinding(name);
+//		} catch (CoreException | InterruptedException e) {
+//			throwTodoException(e);
+//		} finally {
+//			index.releaseReadLock();
+//		}
+//		return bind;
 	}
 	
 //	@SuppressWarnings("unchecked")
@@ -1261,8 +1246,8 @@ public final class ASTUtil extends DebugElement {
 			index.acquireReadLock();
 			
 			// IIndex doesn't find names for IParameter's
-			IName[] bindNames = index.findNames(bind, iRole);
-			if (bindNames != null) for (IName name : bindNames) {
+			Name[] bindNames = index.findNames(bind, iRole);
+			if (bindNames != null) for (Name name : bindNames) {
 				astName = toASTName(name);
 				if (astName != null) {
 					assert astName.resolveBinding().equals(bind); break;
@@ -1305,9 +1290,9 @@ public final class ASTUtil extends DebugElement {
 		if (func == null) DebugElement.throwNullArgumentException("function");
 		
 		final Set<Name> names = new HashSet<>();
-		final Collection<Entry<IName,IFunction>> funcs = FUNCTION_CACHE.entrySet();
-		for (Entry<IName,IFunction> f : funcs) if (f.getValue().equals(func)) {
-			final IName fn = f.getKey();
+		final Collection<Entry<Name,IFunction>> funcs = FUNCTION_CACHE.entrySet();
+		for (Entry<Name,IFunction> f : funcs) if (f.getValue().equals(func)) {
+			final Name fn = f.getKey();
 			if (fn instanceof Name) names.add((Name) fn);  
 		}
 		names.addAll(getNameOf((IBinding) func));
@@ -1320,7 +1305,7 @@ public final class ASTUtil extends DebugElement {
 	 * 				IFunction.getFunctionScope().getScopeName() returns null!
 	 * @return
 	 */
-	public static Name getNameOfFrom(IBinding bind, IName scope) {
+	public static Name getNameOfFrom(IBinding bind, Name scope) {
 		if (bind == null) DebugElement.throwNullArgumentException("binding");
 		
 		MethodDeclaration scopeAST = 
@@ -1337,18 +1322,18 @@ public final class ASTUtil extends DebugElement {
 	    return ((CompilationUnit) node.getRoot()).getLineNumber(node.getStartPosition());
 	}
 	
-	public static Name toASTName(IName iName) {
-		if (iName == null) return null;
-		
-		if (iName instanceof Name) return (Name) iName;
-		else {
-//			return getNameFrom(iName.getFileLocation(), false);
-			Name aName = AST_NAME_CACHE.get(iName);
-			if (aName == null) AST_NAME_CACHE.put(
-					iName, aName = getNameFrom(iName.getFileLocation(), false));
-			return aName;
-		}
-	}
+//	public static Name toASTName(IName iName) {
+//		if (iName == null) return null;
+//		
+//		if (iName instanceof Name) return (Name) iName;
+//		else {
+////			return getNameFrom(iName.getFileLocation(), false);
+//			Name aName = AST_NAME_CACHE.get(iName);
+//			if (aName == null) AST_NAME_CACHE.put(
+//					iName, aName = getNameFrom(iName.getFileLocation(), false));
+//			return aName;
+//		}
+//	}
 	
 	/**
 	 * @param name

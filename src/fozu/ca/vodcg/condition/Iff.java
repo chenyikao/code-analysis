@@ -45,7 +45,7 @@ abstract public class Iff extends And {
 	 * @return
 	 */
 	final public static Proposition from(Proposition p1, Supplier<Proposition> p2) {
-		return from(fozu.ca.vodcg.condition.Iff, p1, p2, () -> {
+		return from(fozu.ca.vodcg.condition.Proposition.Operator.Iff, p1, p2, () -> {
 			return p1.imply(p2).and(()-> p2.get().imply(()-> p1));
 		});
 	}

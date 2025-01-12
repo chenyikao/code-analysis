@@ -470,7 +470,7 @@ extends Reference<F> implements ArithmeticExpression {
 //	final static private Method METHOD_EXPRESSION_TRAVERSAL = 
 //			getMethod(FunctionCall.class, "initiatesExpressionTraversal");
 //	/* (non-Javadoc)
-/fozu.ca@see fozu.ca.vodcg.condition.ArithmeticExpression#initiatesExpressionTraversal()
+//   * @see fozu.ca.vodcg.condition.ArithmeticExpression#initiatesExpressionTraversal()
 //	 */
 //	@Override
 //	public boolean initiatesExpressionComputation() {
@@ -678,7 +678,7 @@ extends Reference<F> implements ArithmeticExpression {
 	public boolean callsByReference(Expression arg) {
 		return arg != null && args != null && args.contains(arg) 
 				&& arg instanceof Pointer 
-				&& ((Pointer) arg).getOp() == Pointer.Operator.Depoint;
+				&& ((Pointer) arg).getOp() == Pointer.Operator.DEPOINT;
 	}
 	
 	

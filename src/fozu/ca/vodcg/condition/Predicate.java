@@ -43,10 +43,10 @@ public class Predicate extends Proposition {
 		}
 
 		/* (non-Javadoc)
-		 *fozu.ca fozu.ca.condition.Relation.Operator#negate()
+		 * fozu.ca.condition.Relation.Operator#negate()
 		 */
 		@Override
-	fozu.caic fozu.ca.fozu.ca.vodcg.condition.Operator negate() {
+		public fozu.ca.vodcg.condition.Relation.Operator negate() {
 			switch (this) {
 			case Exists:			return Forall;
 			case Forall:			return Exists;

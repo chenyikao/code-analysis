@@ -30,7 +30,6 @@ import fozu.ca.DebugElement;
  * @author Kao, Chen-yi
  *
  */
-@SuppressWarnings("deprecation")
 public class CarryInRangeDegrader extends DegraderChecker<CarryInRangeDegrader.CheckRange> {
 
 	private static final String RANGE_DEGRADE_TYPE_CANT_BE_NULL = "Range degrade type can't be null!";
@@ -705,7 +704,8 @@ public class CarryInRangeDegrader extends DegraderChecker<CarryInRangeDegrader.C
 	
 
 	
-	@Override
+	@SuppressWarnings("removal")
+    @Override
 	public CheckRange getCurrentDegrading() {
 		return DebugElement.throwTodoException("current degrading");
 	}
@@ -955,7 +955,8 @@ public class CarryInRangeDegrader extends DegraderChecker<CarryInRangeDegrader.C
 		checkFormulae = formulae;
 	}
 	
-	static public String toZ3SmtDeclaration(Parameter... params) {
+	@SuppressWarnings("removal")
+    static public String toZ3SmtDeclaration(Parameter... params) {
 		if (params.length <= 1) {
 			final Parameter p = params == null || params.length == 0 
 					? (defaultParam == null ? DebugElement.throwInvalidityException("no parameters") : defaultParam)

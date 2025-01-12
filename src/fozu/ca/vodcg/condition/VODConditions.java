@@ -10,9 +10,16 @@ import java.util.function.Supplier;
 
 import fozu.ca.Elemental;
 import fozu.ca.condition.SerialFormat;
-import fozu.caca.solver.CarryInRangeDegrader;
+import fozu.ca.solver.CarryInRangeDegrader;
+import fozu.ca.solver.CarryInRangeDegrader.Parameter;
+import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.SystemElement;
+import fozu.ca.vodcg.UncertainException;
+import fozu.ca.vodcg.UncertainPlaceholderException;
 import fozu.ca.vodcg.VODCondGen;
+import fozu.ca.vodcg.condition.data.ArithmeticGuard;
+import fozu.ca.vodcg.condition.data.DataType;
+import fozu.ca.vodcg.condition.data.FiniteNumberGuard;
 import fozu.ca.vodcg.condition.data.Pointer;
 
 /**
@@ -24,7 +31,6 @@ import fozu.ca.vodcg.condition.data.Pointer;
  * @author Kao, Chen-yi
  * 
  */
-@SuppressWarnings("deprecation")
 public class VODConditions 
 extends ConditionElement implements SideEffectElement {
 
@@ -107,18 +113,19 @@ extends ConditionElement implements SideEffectElement {
 		}
 		
 		// collecting all side-effect race conditions
-		if (getRaceCondition() != null) {
-			PathCondition seRace = raceCond.collectSideEffect().raceCond;
-			if (raceCond == null) raceCond = seRace;
-			else if (seRace != null) raceCond.add(seRace);
-		}
+//		if (getRaceCondition() != null) {
+//			PathCondition seRace = raceCond.collectSideEffect().raceCond;
+//			if (raceCond == null) raceCond = seRace;
+//			else if (seRace != null) raceCond.add(seRace);
+//		}
 		
 		return se;
 	}
 
 	
 
-	@Override
+	@SuppressWarnings("removal")
+    @Override
 	public String getIDSuffix(SerialFormat format) {
 		return get(()-> getParallelCondition().getIDSuffix(format),
 				()-> throwTodoException("not identifiable"));
@@ -135,33 +142,33 @@ extends ConditionElement implements SideEffectElement {
 		return pathCond;
 	}
 	
-	public PathCondition getRaceCondition() {
-		if (raceCond == null) raceCond = applySkipNull(
-				race-> PathCondition.from(race), ()-> generateRaceConditions());
-		return raceCond;
-	}
+//	public PathCondition getRaceCondition() {
+//		if (raceCond == null) raceCond = applySkipNull(
+//				race-> PathCondition.from(race), ()-> generateRaceConditions());
+//		return raceCond;
+//	}
 	
-	/**
-	 * @return non-null all side-effect parallel conditions.
-	 */
-	public Set<ParallelCondition> getAllParallelConditions() 
-			throws UncertainException {
-		try {
-			final Set<ParallelCondition> pcs = new HashSet<>();
-			addSkipNull(pcs, ()-> getParallelCondition());
-			
-			for (PathVariablePlaceholder pvp : getDirectPathVariablePlaceholders())
-				for (OmpDirective dir : pvp.getAssignable().getEnclosingDirectives())
-					addSkipNull(pcs, ()-> dir.getCondition());
-
-			return pcs;
-			
-		} catch (UncertainException e) {
-			throw e;
-		} catch (Exception e) {
-			return throwUnhandledException(e);
-		}
-	}
+//	/**
+//	 * @return non-null all side-effect parallel conditions.
+//	 */
+//	public Set<ParallelCondition> getAllParallelConditions() 
+//			throws UncertainException {
+//		try {
+//			final Set<ParallelCondition> pcs = new HashSet<>();
+//			addSkipNull(pcs, ()-> getParallelCondition());
+//			
+//			for (PathVariablePlaceholder pvp : getDirectPathVariablePlaceholders())
+//				for (OmpDirective dir : pvp.getAssignable().getEnclosingDirectives())
+//					addSkipNull(pcs, ()-> dir.getCondition());
+//
+//			return pcs;
+//			
+//		} catch (UncertainException e) {
+//			throw e;
+//		} catch (Exception e) {
+//			return throwUnhandledException(e);
+//		}
+//	}
 	
 	/**
 	 * @return direct assertions from both parallel and path conditions.
@@ -177,10 +184,10 @@ extends ConditionElement implements SideEffectElement {
 	@Override
 	protected Set<ArithmeticGuard> cacheArithmeticGuards() {
 		Set<ArithmeticGuard> guards = new HashSet<>(); 
-		for(ParallelCondition prc : getAllParallelConditions()) 
-			guards.addAll(prc.getArithmeticGuards());
+//		for(ParallelCondition prc : getAllParallelConditions()) 
+//			guards.addAll(prc.getArithmeticGuards());
 		addAllSkipNull(guards, ()-> getPathCondition().getArithmeticGuards());
-		addAllSkipNull(guards, ()-> getRaceCondition().getArithmeticGuards());
+//		addAllSkipNull(guards, ()-> getRaceCondition().getArithmeticGuards());
 		return guards;
 	}
 	
@@ -196,13 +203,13 @@ extends ConditionElement implements SideEffectElement {
 	
 	
 	@Override
-	protected <T> Set<? extends T> cacheDirectVariableReferences(Class<T> refType) {
+	protected <T> Set<T> cacheDirectVariableReferences(Class<T> refType) {
 		final Set<T> vrs = new HashSet<>();
 //		for(ParallelCondition prc : getAllParallelConditions()) 
 //			vrs.addAll(prc.cacheDirectVariableReferences(refType));
 		addAllSkipNull(vrs, ()-> getParallelCondition().cacheDirectVariableReferences(refType));
 		addAllSkipNull(vrs, ()-> getPathCondition().cacheDirectVariableReferences(refType));
-		addAllSkipNull(vrs, ()-> getRaceCondition().cacheDirectVariableReferences(refType));
+//		addAllSkipNull(vrs, ()-> getRaceCondition().cacheDirectVariableReferences(refType));
 		return vrs;
 	}
 	
@@ -211,17 +218,17 @@ extends ConditionElement implements SideEffectElement {
 		final Set<Function> refs = new HashSet<>();
 		addAllSkipNull(refs, ()-> getParallelCondition().getDirectFunctionReferences());
 		addAllSkipNull(refs, ()-> getPathCondition().getDirectFunctionReferences());
-		addAllSkipNull(refs, ()-> getRaceCondition().getDirectFunctionReferences());
+//		addAllSkipNull(refs, ()-> getRaceCondition().getDirectFunctionReferences());
 		return refs;
 	}
 	
 	@Override
 	public Set<Pointer> getPointers() {
 		Set<Pointer> ps = new HashSet<>();
-		for(ParallelCondition prc : getAllParallelConditions()) 
-			ps.addAll(prc.getPointers());
+//		for(ParallelCondition prc : getAllParallelConditions()) 
+//			ps.addAll(prc.getPointers());
 		addAllSkipNull(ps, ()-> getPathCondition().getPointers());
-		addAllSkipNull(ps, ()-> getRaceCondition().getPointers());
+//		addAllSkipNull(ps, ()-> getRaceCondition().getPointers());
 		return ps;
 	}
 	
@@ -238,9 +245,9 @@ extends ConditionElement implements SideEffectElement {
 		if (pathCond == null) pathCond = path2;
 		else if (path2 != null) pathCond.add(path2);
 		
-		final PathCondition race2 = conds2.getRaceCondition();
-		if (raceCond == null) raceCond = race2;
-		else if (race2 != null) raceCond.add(race2);
+//		final PathCondition race2 = conds2.getRaceCondition();
+//		if (raceCond == null) raceCond = race2;
+//		else if (race2 != null) raceCond.add(race2);
 	}
 	
 	public void add(Function f) {
@@ -250,7 +257,8 @@ extends ConditionElement implements SideEffectElement {
 	
 	
 	
-	public <T extends SideEffectElement> VODConditions and(T newSe) {
+	@SuppressWarnings("removal")
+    public <T extends SideEffectElement> VODConditions and(T newSe) {
 		if (newSe instanceof VODConditions) 			return and((VODConditions) newSe);
 		else if (newSe instanceof ParallelCondition) 	return and((ParallelCondition) newSe);
 		else if (newSe instanceof PathCondition) 		return and((PathCondition) newSe);
@@ -336,7 +344,8 @@ extends ConditionElement implements SideEffectElement {
 	 * 
 	 * @return
 	 */
-	public VODConditions addFrom(Supplier<VODConditions> seSup, SideEffectElement seContainer) 
+	@SuppressWarnings("removal")
+    public VODConditions addFrom(Supplier<VODConditions> seSup, SideEffectElement seContainer) 
 	throws UncertainException, UncertainPlaceholderException {
 		if (seContainer != null && seContainer.suitsSideEffect()) {
 			if (seSup == null) throwNullArgumentException("side-effect supplier");
@@ -370,7 +379,8 @@ extends ConditionElement implements SideEffectElement {
 	
 
 	
-	public <T extends SideEffectElement> void or(T newSe) {
+	@SuppressWarnings("removal")
+    public <T extends SideEffectElement> void or(T newSe) {
 		if (newSe instanceof VODConditions) or((VODConditions) newSe);
 		else throwTodoException("unsupported side-effect");
 	}
@@ -414,7 +424,8 @@ extends ConditionElement implements SideEffectElement {
 	
 
 	
-	public VODConditions not() {
+	@SuppressWarnings("removal")
+    public VODConditions not() {
 		try {
 			final ParallelCondition para2 = Elemental.getSkipNull(()-> (ParallelCondition) paraCond.clone());
 			final PathCondition path2 = Elemental.getSkipNull(()-> (PathCondition) pathCond.clone());
@@ -429,25 +440,26 @@ extends ConditionElement implements SideEffectElement {
 	
 
 	
-	/**
-	 * @return Disjunction of sub-parallel race conditions.
-	 */
-	public Proposition generateRaceConditions() {
-		Proposition result = null;
-		for (ParallelCondition prc : getAllParallelConditions()) {
-			final Proposition subResult = prc.generateRaceAssertion();
-			result = result == null ? subResult : result.or(()-> subResult);
-		}
-		
-		if (result == null && OmpDirective.hasAny()) 
-			log("truly no race?");
-//			throwTodoException("truly no race");
-		return result;
-	}
+//	/**
+//	 * @return Disjunction of sub-parallel race conditions.
+//	 */
+//	public Proposition generateRaceConditions() {
+//		Proposition result = null;
+//		for (ParallelCondition prc : getAllParallelConditions()) {
+//			final Proposition subResult = prc.generateRaceAssertion();
+//			result = result == null ? subResult : result.or(()-> subResult);
+//		}
+//		
+//		if (result == null && OmpDirective.hasAny()) 
+//			log("truly no race?");
+////			throwTodoException("truly no race");
+//		return result;
+//	}
 	
 	
 	
-	@Override
+	@SuppressWarnings("removal")
+    @Override
 	protected Boolean cacheConstant() {
 		try {
 			return testsSkipNull(()->

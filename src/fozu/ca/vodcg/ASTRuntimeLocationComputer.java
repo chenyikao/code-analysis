@@ -375,7 +375,7 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 		if (result != null) return result;
 		
 //		final int[] start = {me.getFileLocation().getNodeOffset() - 1}, length = {1};
-		final boolean includesPragma = ASTUtil.superclasses(asTypes, ASTUtil.AST_PRAGMA);
+		final boolean includesPragma = false;//ASTUtil.superclasses(asTypes, ASTUtil.AST_PRAGMA);
 //		final IASTTranslationUnit tu = me.getTranslationUnit();
 //		final IASTNodeSelector ns = tu.getNodeSelector(null);
 //		ASTNode pre = previousOfContained(me, start, length, includesPragma, tu, ns);

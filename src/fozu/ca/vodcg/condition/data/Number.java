@@ -24,7 +24,6 @@ import fozu.ca.vodcg.condition.VariablePlaceholder;
  * @author Kao, Chen-yi
  *
  */
-@SuppressWarnings("deprecation")
 abstract public class Number<Value extends java.lang.Number & Comparable<Value>> 
 extends Expression implements ArithmeticExpression, Addressable {
 	
@@ -98,7 +97,7 @@ extends Expression implements ArithmeticExpression, Addressable {
 	}
 	
 	@Override
-	protected <T> Set<? extends T> cacheDirectVariableReferences(Class<T> refType) {
+	protected <T> Set<T> cacheDirectVariableReferences(Class<T> refType) {
 		return null;
 	}
 
@@ -200,7 +199,8 @@ extends Expression implements ArithmeticExpression, Addressable {
 		return value.equals(n2.value);
 	}
 	
-	@Override
+	@SuppressWarnings("removal")
+    @Override
 	protected List<Integer> hashCodeVars() {
 		Integer hcv = null;
 		if (isPositiveInfinity()) hcv = Integer.MAX_VALUE;
@@ -230,7 +230,8 @@ extends Expression implements ArithmeticExpression, Addressable {
 	
 	abstract protected ArithmeticExpression add(Number<?> n2);
 
-	@Override
+	@SuppressWarnings("removal")
+    @Override
 	public ArithmeticExpression subtract(ArithmeticExpression ae2) 
 	throws ReenterException {
 		try {

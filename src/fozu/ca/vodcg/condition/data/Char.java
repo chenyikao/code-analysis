@@ -117,7 +117,7 @@ public class Char extends Expression {
 	}
 	
 	@Override
-	protected <T> Set<? extends T> cacheDirectVariableReferences(Class<T> refType) {
+	protected <T> Set<T> cacheDirectVariableReferences(Class<T> refType) {
 		return null;
 	}
 	
