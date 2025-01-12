@@ -81,7 +81,8 @@ implements PlatformType {		// for pointing/de-pointing types
 				: from((Pointer) type);	// type instanceof PointerType
 	}
 	
-	public static PointerType from(Pointer pt) {
+	@SuppressWarnings("removal")
+    public static PointerType from(Pointer pt) {
 		if (pt == null) throwNullArgumentException("pointer");
 		
 		// TODO: cache pointer types, including NULL_POINTER_TYPE
@@ -148,7 +149,8 @@ implements PlatformType {		// for pointing/de-pointing types
 //		return dft == null ? primitive : dft;
 //	}
 	
-	@Override
+	@SuppressWarnings("removal")
+    @Override
 	public ArithmeticExpression getDepointFrom() {
 		switch ((Operator) getOp()) {
 		case POINT:		return throwTodoException("Supplying a pointing chain cache?");
@@ -166,7 +168,7 @@ implements PlatformType {		// for pointing/de-pointing types
 				: PointerType.from((Pointer) npt);
 	}
 	
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({ "removal" })
 	@Override
 	public ArithmeticExpression getPointTo() {
 		return get(()-> (ArithmeticExpression) nextPointingType(),
@@ -351,7 +353,8 @@ implements PlatformType {		// for pointing/de-pointing types
 	 * 
 	 * @param type
 	 */
-	public void pointTo(PlatformType type) throws UnsupportedOperationException {
+	@SuppressWarnings("removal")
+    public void pointTo(PlatformType type) throws UnsupportedOperationException {
 		if (isFinal()) throwTodoException("Immutable pointer type");
 		
 		if (type instanceof DataType) pointToPrimitive((DataType) type);
@@ -389,7 +392,8 @@ implements PlatformType {		// for pointing/de-pointing types
 	 * 
 	 * @param addressable
 	 */
-	@Override
+	@SuppressWarnings("removal")
+    @Override
 	public void depointFrom(Expression addressable) throws UnsupportedOperationException {
 		if (addressable != null) throwTodoException("De-pointing meta-type!");
 		super.depointFrom(addressable);
@@ -422,7 +426,8 @@ implements PlatformType {		// for pointing/de-pointing types
 	/**
 	 * @return non-null type
 	 */
-	public ArrayType toArrayType() {
+	@SuppressWarnings("removal")
+    public ArrayType toArrayType() {
 		final ArrayType a = ArrayType.from((PlatformType) this, null);
 		final PlatformType npt = nextPointingType();
 		if (npt instanceof DataType) 

@@ -6,27 +6,15 @@ package fozu.ca.vodcg.condition.data;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.IName;
-import org.eclipse.jdt.core.dom.IASTInitializerClause;
-import org.eclipse.jdt.core.dom.IASTSimpleDeclSpecifier;
-import org.eclipse.jdt.core.dom.IArrayType;
-import org.eclipse.jdt.core.dom.IBasicType;
 import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.jdt.core.dom.ICompositeType;
-import org.eclipse.jdt.core.dom.IEnumeration;
 import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.IPointerType;
-import org.eclipse.jdt.core.dom.IQualifierType;
-import org.eclipse.jdt.core.dom.IType;
-import org.eclipse.jdt.core.dom.IValue;
-import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.IVariableBinding;
+import org.eclipse.jdt.core.dom.Name;
 
 import fozu.ca.DebugElement;
 import fozu.ca.condition.SerialFormat;
-import fozu.ca.vodcg.ASTException;
 import fozu.ca.vodcg.ASTUtil;
-import fozu.ca.vodcg.SystemElement;
 import fozu.ca.vodcg.condition.ConditionElement;
 import fozu.ca.vodcg.condition.Expression;
 
@@ -36,7 +24,7 @@ import fozu.ca.vodcg.condition.Expression;
  * @author Kao, Chen-yi
  *
  */
-@SuppressWarnings({ "deprecation", "removal" })
+@SuppressWarnings({ "removal" })
 public enum DataType implements PlatformType {
 	Int {
 		@Override
@@ -64,10 +52,10 @@ public enum DataType implements PlatformType {
         }
         
 		switch (type.getQualifiedName()) {
-		case "bool", "java.lang.Boolean":	return Bool;
+		case "bool", "java.lang.Boolean":         return Bool;
 		
 		case "char", "java.lang.Character",
-		"java.lang.String":					return Char;
+		"java.lang.String":					      return Char;
 		
 		case "int", "java.lang.Integer",
 		"byte", "java.lang.Byte",
@@ -75,29 +63,25 @@ public enum DataType implements PlatformType {
 		"long", "java.lang.Long",
 		"java.math.BigInteger",
 		"java.util.concurrent.atomic.AtomicInteger",
-		"java.util.concurrent.atomic.AtomicLong": 	return Int;
+		"java.util.concurrent.atomic.AtomicLong": return Int;
 		
 		case "float", "java.lang.Float",
 		"double", "java.lang.Double",
-		"java.math.BigDecimal":				return Real;
+		"java.math.BigDecimal":                   return Real;
 		
-		case "void":						return Void;
+		case "null", "void":                      return Void;
 		
 		default:
 		}
+		
+		if (type.isTypeVariable()) return DebugElement.throwTodoException("type variable");
 
 		PointerType dt = new PointerType(false);
-		
-		if (type instanceof IPointerType) {
-			dt.pointTo(from(((IPointerType) type).getType()));
-			return dt;
-		}
-		
-		DebugElement.throwTodoException("type instanceof OtherType");
-		return null;
+//		dt.pointTo(from(((IPointerType) type).getType()));
+		return dt;
 	}
 	
-	public static PlatformType from(IName name) {
+	public static PlatformType from(Name name) {
 		if (name == null) DebugElement.throwNullArgumentException("AST name");
 		return from(ASTUtil.getBindingOf(name));
 	}

@@ -46,7 +46,7 @@ public final class ASTLoopUtil {
 
 	//	private static final Map<ForStatement, IASTDeclarator>	LOOP_INITIAL_DECL_CACHE 		= new HashMap<>();
 
-	private static final Map<ForStatement, IASTInitializerClause> 
+	private static final Map<ForStatement, Expression> 
 	LOOP_INITIAL_BOUND_CACHE 	= new HashMap<>();
 	private static final Map<ForStatement, Expression> 	
 	LOOP_TEST_BOUND_CACHE 		= new HashMap<>();

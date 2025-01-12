@@ -5,20 +5,20 @@ package fozu.ca.vodcg;
 
 import java.util.SortedSet;
 
-import org.eclipse.cdt.core.dom.ast.ASTGenericVisitor;
-import org.eclipse.cdt.core.dom.ast.IASTFunctionDefinition;
-import org.eclipse.cdt.core.dom.ast.IASTName;
+import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Name;
 
 /**
  * @author Kao, Chen-yi
  *
  */
-public class VODWritingHistoryObserver extends ASTGenericVisitor {
+public class VODWritingHistoryObserver extends ASTVisitor {
 
 	/**
 	 * @param wrs_ov - initial cache of writing references of OV
 	 */
-	public VODWritingHistoryObserver(SortedSet<IASTName> wrs_ov) {
+	public VODWritingHistoryObserver(SortedSet<Name> wrs_ov) {
 		super(false);
 		// TODO Auto-generated constructor stub
 	}
@@ -31,7 +31,7 @@ public class VODWritingHistoryObserver extends ASTGenericVisitor {
 	 * @param observeSubcall - observing sub-function calls recursively or not
 	 * @return
 	 */
-	public Iterable<IASTName> observe(IASTName ov, IASTFunctionDefinition f, boolean observeSubcall) {
+	public Iterable<Name> observe(Name ov, MethodDeclaration f, boolean observeSubcall) {
 		f.accept(this);
 		// TODO Auto-generated method stub
 		return null;
@@ -39,7 +39,7 @@ public class VODWritingHistoryObserver extends ASTGenericVisitor {
 
 
 
-	public Iterable<IASTName> observe(IASTName ov, IASTFunctionDefinition f) {
+	public Iterable<Name> observe(Name ov, MethodDeclaration f) {
 		// TODO: if ov is a pointer, return observe(ov, f, true);
 		return observe(ov, f, false);
 	}

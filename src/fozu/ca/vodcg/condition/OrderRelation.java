@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.eclipse.cdt.core.dom.ast.IASTBinaryExpression;
+import org.eclipse.jdt.core.dom.IASTBinaryExpression;
 
 import fozu.ca.DebugElement;
 import fozu.ca.DuoKeyMap;
@@ -91,7 +91,7 @@ public class OrderRelation extends Proposition {
 		 * @see fozu.ca.condition.Relation.Operator#negate()
 		 */
 		@Override
-	fozu.caic ompca.fozu.ca.vodcg.condition.Operator negate() {
+		public fozu.ca.vodcg.condition.Relation.Operator negate() {
 			switch (this) {
 			case Equal:			return NotEqual;
 			case LessThan:		return GreaterEqual;
@@ -359,7 +359,8 @@ public class OrderRelation extends Proposition {
 				operands : (Set<Expression>) checkType(operands, new HashSet<>());
 	}
 	
-	static private List<Expression> checkOperands(List<Expression> operands) {
+	@SuppressWarnings("removal")
+    static private List<Expression> checkOperands(List<Expression> operands) {
 		if (operands == null || operands.isEmpty()) throwNullArgumentException("operands");
 		
 		final int size = operands.size();
@@ -372,7 +373,8 @@ public class OrderRelation extends Proposition {
 				operands : (List<Expression>) checkType(operands, new ArrayList<>());
 	}
 	
-	static private List<Expression> checkOperands(Expression lhs, Expression rhs) {
+	@SuppressWarnings("removal")
+    static private List<Expression> checkOperands(Expression lhs, Expression rhs) {
 		assert lhs != null && rhs != null; 
 		if (lhs instanceof Number && rhs instanceof Number) 
 			throwReductionException();
@@ -380,7 +382,8 @@ public class OrderRelation extends Proposition {
 		return checkOperands(Arrays.asList(lhs, rhs));
 	}
 	
-	static private Collection<Expression> checkType(Collection<Expression> operands, Collection<Expression> checkOperands) {
+	@SuppressWarnings("removal")
+    static private Collection<Expression> checkType(Collection<Expression> operands, Collection<Expression> checkOperands) {
 		assert operands != null && checkOperands.isEmpty() && getType(operands) == null;
 		PlatformType t = null;
 		for (Expression e : operands) {
@@ -493,7 +496,8 @@ public class OrderRelation extends Proposition {
 				: null;
 	}
 	
-	private Proposition andByReduce(OrderRelation or2) {
+	@SuppressWarnings("removal")
+    private Proposition andByReduce(OrderRelation or2) {
 		if (enters(METHOD_AND_BY_REDUCE)) return null;
 		
 		enter(METHOD_AND_BY_REDUCE);
