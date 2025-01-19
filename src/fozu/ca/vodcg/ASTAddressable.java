@@ -9,6 +9,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 
 import fozu.ca.Addressable;
 import fozu.ca.DebugElement;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * @author Kao, Chen-yi

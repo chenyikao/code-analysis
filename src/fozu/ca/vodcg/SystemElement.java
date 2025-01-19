@@ -22,6 +22,7 @@ import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
 import fozu.ca.Pair;
 import fozu.ca.SupplierCluster;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * @author Kao, Chen-yi

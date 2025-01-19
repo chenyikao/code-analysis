@@ -31,7 +31,6 @@ import fozu.ca.Elemental;
 import fozu.ca.condition.SerialFormat;
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.ASTException;
-import fozu.ca.vodcg.ASTUtil;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.IncomparableException;
 import fozu.ca.vodcg.SystemElement;
@@ -50,6 +49,7 @@ import fozu.ca.vodcg.condition.version.ArrayAccessVersion;
 import fozu.ca.vodcg.condition.version.FunctionallableRole;
 import fozu.ca.vodcg.condition.version.NoSuchVersionException;
 import fozu.ca.vodcg.condition.version.ThreadRoleMatchable;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * Function ::= Return? ID '(' (Variable (',' Variable)*)? ')' 

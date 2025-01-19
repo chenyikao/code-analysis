@@ -1,9 +1,10 @@
 /**
  * 
  */
-package fozu.ca.vodcg;
+package fozu.ca.vodcg.util;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,7 +19,7 @@ import java.util.Set;
 
 import org.eclipse.jdt.core.CCorePlugin;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.IName;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.ASTGenericVisitor;
@@ -44,8 +45,9 @@ import org.eclipse.jdt.core.dom.IASTLiteralExpression;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.IASTNameOwner;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.IASTNodeLocation;
-import org.eclipse.jdt.core.dom.IASTPreprocessorPragmaStatement;
+import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IASTPreprocessorStatement;
 import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.Statement;
@@ -56,7 +58,7 @@ import org.eclipse.jdt.core.dom.IASTUnaryExpression;
 import org.eclipse.jdt.core.dom.WhileStatement;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IEnumeration;
-import org.eclipse.jdt.core.dom.IFunction;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.IParameter;
 import org.eclipse.jdt.core.dom.IProblemBinding;
 import org.eclipse.jdt.core.dom.IType;
@@ -78,6 +80,8 @@ import org.eclipse.core.runtime.Path;
 import fozu.ca.DebugElement;
 import fozu.ca.DuoKeyMap;
 import fozu.ca.Elemental;
+import fozu.ca.vodcg.ASTException;
+import fozu.ca.vodcg.SystemElement;
 
 /**
  * @author Kao, Chen-yi
@@ -144,8 +148,8 @@ public final class ASTUtil extends DebugElement {
 	
 	private static ChildListPropertyDescriptor CHILD_LIST_PROPERTY_DESCRIPTOR_CACHE = null;
 
-	private static final Map<IPath, IASTTranslationUnit> 		TU_CACHE = new HashMap<>();
-	private static final Map<IASTTranslationUnit, List<IASTPreprocessorPragmaStatement>>	
+	private static final Map<IPath, CompilationUnit> 		CU_CACHE = new HashMap<>();
+	private static final Map<CompilationUnit, List<Annotation>>	
 	PRAGMA_CACHE = new HashMap<>();
 
 	private static final DuoKeyMap<ASTNode, Class<? extends ASTNode>[], List<? extends ASTNode>> 
@@ -153,12 +157,12 @@ public final class ASTUtil extends DebugElement {
 	private static final DuoKeyMap<ASTNode, Class<? extends ASTNode>, List<? extends ASTNode>> 
 	DESCENDANTS_CACHE = new DuoKeyMap<>();
 
-	private static final Map<IName, Name> 					
+	private static final Map<Name, Name> 					
 	AST_NAME_CACHE 			= new HashMap<>();
 	private static final DuoKeyMap<IBinding, Integer, Name> 					
 	BINDING_NAME_CACHE 			= new DuoKeyMap<>();
 
-	private static final Map<IName, IFunction> 					FUNCTION_CACHE 			= new HashMap<>();
+	private static final Map<Name, IMethodBinding> 					FUNCTION_CACHE 			= new HashMap<>();
 	private static final Map<ASTNode, MethodDeclaration>	WRITING_FUNCTION_CACHE 	= new HashMap<>();
 	private static final Map<MethodDeclaration, Boolean> 	GROUND_FUNCTION_CACHE 	= new HashMap<>();
 	
@@ -185,51 +189,44 @@ public final class ASTUtil extends DebugElement {
 		return index;
 	}
 
-	public static IASTTranslationUnit getAST(IPath tuPath, boolean refreshesIndex) {
-		if (tuPath == null) return null;
+	public static CompilationUnit getAST(IPath cuPath) {
+		if (cuPath == null) return null;
 		
 		// CoreModelUtil.findTranslationUnit(IFile) always return null!
-//		TU_CACHE.clear();
-		IASTTranslationUnit astTu = TU_CACHE.get(tuPath);
-		if (astTu == null) {
-			ITranslationUnit tu;
-			try {
-				tu = CoreModelUtil.findTranslationUnitForLocation(
-						tuPath, selectedProj);
-				if (tu == null) return null;
-				else TU_CACHE.put(tuPath, astTu = tu.getAST());
-//					astTu = tu.getAST(index, ITranslationUnit.AST_SKIP_ALL_HEADERS));
-			} catch (CoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//		CU_CACHE.clear();
+		CompilationUnit astCu = CU_CACHE.get(cuPath);
+		if (astCu == null) {
+		    ASTParser parser = ASTParser.newParser(ASTParser.K_COMPILATION_UNIT);
+		    parser.setSource(new String(Files.readAllBytes(cuPath.toPath())).toCharArray());
+		    astCu = (CompilationUnit) parser.createAST(null);
+		    if (astCu != null) CU_CACHE.put(cuPath, astCu);
 		}
 
 		// TODO: automatic refreshing index on index-rebuilt exceptions
 //			return tu.getAST(getIndex(refreshesIndex), ITranslationUnit.AST_SKIP_INDEXED_HEADERS);
 //		return tu.getAST(
 //				getIndex(false), ITranslationUnit.AST_SKIP_INDEXED_HEADERS);
-		return astTu;
+		return astCu;
 	}
 
-	public static Collection<IASTTranslationUnit> getRegisteredAST() {
-		return TU_CACHE.values();
+	public static Collection<CompilationUnit> getRegisteredAST() {
+		return CU_CACHE.values();
 	}
 	
 
 	
-	public static List<IASTPreprocessorPragmaStatement> getPragmas(IASTTranslationUnit tu) {
-		if (tu == null) return Collections.<IASTPreprocessorPragmaStatement>emptyList();
+	public static List<Annotation> getPragmas(CompilationUnit cu) {
+		if (cu == null) return Collections.<Annotation>emptyList();
 		
 //		PRAGMA_CACHE.clear();
-		List<IASTPreprocessorPragmaStatement> ps = PRAGMA_CACHE.get(tu);
+		List<Annotation> ps = PRAGMA_CACHE.get(cu);
 		if (ps != null) return ps;
 		
 		ps = new ArrayList<>();
-		for (IASTPreprocessorStatement p : tu.getAllPreprocessorStatements())
+		for (IASTPreprocessorStatement p : cu.getAllPreprocessorStatements())
 			// ps.getParent() returns IASTTranslationUnit
-			if (AST_PRAGMA[0].isInstance(p)) ps.add((IASTPreprocessorPragmaStatement) p); 
-		PRAGMA_CACHE.put(tu, ps);
+			if (AST_PRAGMA[0].isInstance(p)) ps.add((Annotation) p); 
+		PRAGMA_CACHE.put(cu, ps);
 		return ps;
 	}
 	
@@ -294,9 +291,9 @@ public final class ASTUtil extends DebugElement {
 
 
 	
-	public static boolean isGlobal(IName name) {
-		return name != null && isGlobal(toASTName(name));
-	}
+//	public static boolean isGlobal(Name name) {
+//		return name != null && isGlobal(toASTName(name));
+//	}
 	
 	public static boolean isGlobal(Name name) {
 		if (name == null) throwNullArgumentException("variable name");
@@ -727,12 +724,12 @@ public final class ASTUtil extends DebugElement {
 	
 	public static ASTNode getParentOf(final ASTNode descend) {
 		if (descend == null) throwNullArgumentException("descendant");
-		return descend instanceof IASTPreprocessorPragmaStatement
-				? getParentOf((IASTPreprocessorPragmaStatement) descend)
+		return descend instanceof Annotation
+				? getParentOf((Annotation) descend)
 				: descend.getParent();
 	}
 	
-	public static ASTNode getParentOf(final IASTPreprocessorPragmaStatement descend) {
+	public static ASTNode getParentOf(final Annotation descend) {
 		if (descend == null) throwNullArgumentException("descendant");
 		
 		final IASTFileLocation l = descend.getFileLocation();
@@ -776,13 +773,19 @@ public final class ASTUtil extends DebugElement {
 		return getDescendantsOfAs(exp, Name.class);
 	}
 
+	/**
+	 * TODO: caching count?
+	 * 
+	 * @param name
+	 * @param root
+	 * @return
+	 */
 	public static int countNamesOfIn(Name name, ASTNode root) {
 		if (name == null || root == null) return 0;
 		
-		final ASTNameCollector nc = new ASTNameCollector(name.getSimpleID());
+		final ASTNameCollector nc = new ASTNameCollector(name.getFullyQualifiedName());
 		root.accept(nc);
-		final Name[] names = nc.getNames();	// TODO: caching count?
-		return names == null ? 0 : names.length;
+		return nc.getNames().size();
 	}
 	
 	public static <Descendant extends ASTNode> int countDirectContinuousDescendantsOf(
@@ -843,11 +846,11 @@ public final class ASTUtil extends DebugElement {
 	
 	
 	
-	public static IName getDefinitionOf(Name name) {
+	public static Name getDefinitionOf(Name name) {
 		if (name == null) return null;
 		
 		// Searching for local definition first
-		IName[] defs = 
+		Name[] defs = 
 				name.getTranslationUnit().getDefinitions(name.resolveBinding());
 		if (defs != null && defs.length > 0) return defs[0];
 		
@@ -871,7 +874,7 @@ public final class ASTUtil extends DebugElement {
 		return null;
 	}
 	
-	public static MethodDeclaration getDefinitionOf(IFunction f) {
+	public static MethodDeclaration getDefinitionOf(IMethodBinding f) {
 		if (f == null) DebugElement.throwNullArgumentException("function");
 
 		for (Name n : getNameOf(f)) {
@@ -928,15 +931,15 @@ public final class ASTUtil extends DebugElement {
 		if (fName == null) return null;
 		
 		IBinding fBind = getBindingOf(fName);
-		if (fBind instanceof IFunction) return (IFunction) fBind;
+		if (fBind instanceof IMethodBinding) return (IMethodBinding) fBind;
 		
-//		f = fbind.getAdapter(IFunction.class);	// IIndexBinding has NO adapters for IFunction!
-		IFunction f = FUNCTION_CACHE.get(fName);
+//		f = fbind.getAdapter(IMethodBinding.class);	// IIndexBinding has NO adapters for IMethodBinding!
+		IMethodBinding f = FUNCTION_CACHE.get(fName);
 		if (f == null) {
 			final Name fASTName = toASTName(fName);
 			if (fASTName != null) {
 				fBind = fASTName.resolveBinding();
-				if (fBind instanceof IFunction) FUNCTION_CACHE.put(fName, f = (IFunction)fBind); 
+				if (fBind instanceof IMethodBinding) FUNCTION_CACHE.put(fName, f = (IMethodBinding)fBind); 
 			}
 		}
 		return f;
@@ -1286,12 +1289,12 @@ public final class ASTUtil extends DebugElement {
 		}
 	}
 	
-	public static Collection<Name> getNameOf(IFunction func) {
+	public static Collection<Name> getNameOf(IMethodBinding func) {
 		if (func == null) DebugElement.throwNullArgumentException("function");
 		
 		final Set<Name> names = new HashSet<>();
-		final Collection<Entry<Name,IFunction>> funcs = FUNCTION_CACHE.entrySet();
-		for (Entry<Name,IFunction> f : funcs) if (f.getValue().equals(func)) {
+		final Collection<Entry<Name,IMethodBinding>> funcs = FUNCTION_CACHE.entrySet();
+		for (Entry<Name,IMethodBinding> f : funcs) if (f.getValue().equals(func)) {
 			final Name fn = f.getKey();
 			if (fn instanceof Name) names.add((Name) fn);  
 		}
@@ -1302,7 +1305,7 @@ public final class ASTUtil extends DebugElement {
 	/**
 	 * @param bind - not for IParameter's since IIndex finds NO them
 	 * @param scope - pre-cached scope name since both IBinding.getScope().getScopeName() and 
-	 * 				IFunction.getFunctionScope().getScopeName() returns null!
+	 * 				IMethodBinding.getFunctionScope().getScopeName() returns null!
 	 * @return
 	 */
 	public static Name getNameOfFrom(IBinding bind, Name scope) {
@@ -1322,15 +1325,15 @@ public final class ASTUtil extends DebugElement {
 	    return ((CompilationUnit) node.getRoot()).getLineNumber(node.getStartPosition());
 	}
 	
-//	public static Name toASTName(IName iName) {
-//		if (iName == null) return null;
+//	public static Name toASTName(Name Name) {
+//		if (Name == null) return null;
 //		
-//		if (iName instanceof Name) return (Name) iName;
+//		if (Name instanceof Name) return (Name) Name;
 //		else {
-////			return getNameFrom(iName.getFileLocation(), false);
-//			Name aName = AST_NAME_CACHE.get(iName);
+////			return getNameFrom(Name.getFileLocation(), false);
+//			Name aName = AST_NAME_CACHE.get(Name);
 //			if (aName == null) AST_NAME_CACHE.put(
-//					iName, aName = getNameFrom(iName.getFileLocation(), false));
+//					Name, aName = getNameFrom(Name.getFileLocation(), false));
 //			return aName;
 //		}
 //	}
@@ -1377,7 +1380,7 @@ public final class ASTUtil extends DebugElement {
 	public static String toStringOf(ASTNode node) {
 	    if (node == null) return SystemElement.throwNullArgumentException("node");
 		
-		if (node instanceof Expression) return ASTSignatureUtil.getExpressionString((Expression)node);
+		if (node instanceof Expression) return ((Expression)node).toString();
 				
 		for (ASTNode child : node.getChildren()) {
 			if (child instanceof Name) return toStringOf((Name) child);

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package fozu.ca.vodcg;
+package fozu.ca.vodcg.util;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -23,6 +23,9 @@ import org.eclipse.core.runtime.CoreException;
 import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
 import fozu.ca.TrioKeyMap;
+import fozu.ca.vodcg.IncomparableException;
+import fozu.ca.vodcg.VODCondGen;
+import fozu.ca.vodcg.VariableOrientedDag;
 
 /**
  * Comparing runtime locations between any AST nodes.
@@ -35,7 +38,7 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 	
 //	private static final RuntimeLocationComparator Default = new RuntimeLocationComparator();
 //	final private static Map<IFunction, IASTName> 	FIRST_CALLEE_CACHE = new HashMap<>();
-	private static final Map<IASTName, IIndexName> 		INDEX_NAME_MAP = new HashMap<>();
+//	private static final Map<IASTName, IIndexName> 		INDEX_NAME_MAP = new HashMap<>();
 
 	private static final TrioKeyMap<ASTNode, Class<? extends ASTNode>[], Class<? extends ASTNode>[], ASTNode> 
 	PREVIOUS_CACHE = new TrioKeyMap<>();

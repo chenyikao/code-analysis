@@ -28,7 +28,6 @@ import org.eclipse.jdt.core.dom.IVariable;
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.ASTException;
-import fozu.ca.vodcg.ASTUtil;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.FunctionalAssignable;
 import fozu.ca.vodcg.IncomparableException;
@@ -51,6 +50,7 @@ import fozu.ca.vodcg.condition.version.UniversalVersion;
 import fozu.ca.vodcg.condition.version.Version;
 import fozu.ca.vodcg.parallel.OmpDirective;
 import fozu.ca.vodcg.parallel.OmpThreadPrivatizable;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * A constant {@link Version} access interface for the {@link Variable} references 

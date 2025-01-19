@@ -14,7 +14,6 @@ import java.util.function.Supplier;
 
 import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
-import fozu.ca.vodcg.JavaUtil;
 import fozu.ca.vodcg.ReenterException;
 import fozu.ca.vodcg.SystemElement;
 import fozu.ca.vodcg.condition.ConditionElement;
@@ -26,6 +25,7 @@ import fozu.ca.vodcg.condition.Proposition;
 import fozu.ca.vodcg.condition.Proposition.False;
 import fozu.ca.vodcg.condition.Proposition.True;
 import fozu.ca.vodcg.condition.version.Version;
+import fozu.ca.vodcg.util.JavaUtil;
 
 /**
  * @author Kao, Chen-yi

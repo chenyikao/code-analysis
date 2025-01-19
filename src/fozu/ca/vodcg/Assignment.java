@@ -28,6 +28,9 @@ import fozu.ca.vodcg.condition.FunctionCall;
 import fozu.ca.vodcg.condition.PathVariablePlaceholder;
 import fozu.ca.vodcg.condition.Proposition;
 import fozu.ca.vodcg.condition.VariablePlaceholder;
+import fozu.ca.vodcg.util.ASTAssignableComputer;
+import fozu.ca.vodcg.util.ASTLoopUtil;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * @author Kao, Chen-yi

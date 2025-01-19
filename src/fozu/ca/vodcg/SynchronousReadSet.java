@@ -7,6 +7,8 @@ import java.util.ConcurrentModificationException;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import fozu.ca.DebugElement;
+
 /**
  * @author Kao, Chen-yi
  *
@@ -16,8 +18,8 @@ public class SynchronousReadSet<T> {
 	private String name;
 	private Set<T> kernel;
 	
-	@SuppressWarnings("deprecation")
-	public SynchronousReadSet(Set<T> kernel, String name) {
+	@SuppressWarnings("removal")
+    public SynchronousReadSet(Set<T> kernel, String name) {
 		if (kernel == null) DebugElement.throwNullArgumentException("kernel set");
 		this.name = name == null ? "" : name;
 		this.kernel = kernel;
@@ -25,8 +27,8 @@ public class SynchronousReadSet<T> {
 	
 
 	
-	@SuppressWarnings("deprecation")
-	public void forEach(final Consumer<T> elementConsumer, final VODCondGen cg,
+	@SuppressWarnings("removal")
+    public void forEach(final Consumer<T> elementConsumer, final VODCondGen cg,
 			@SuppressWarnings("unchecked") final Class<Exception>... skips) {
 		if (elementConsumer == null) DebugElement.throwNullArgumentException("element consumer");
 		

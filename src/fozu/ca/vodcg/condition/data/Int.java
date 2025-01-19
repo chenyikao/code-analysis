@@ -11,11 +11,11 @@ import java.util.Map;
 import org.eclipse.jdt.core.dom.ForStatement;
 
 import fozu.ca.vodcg.ASTAddressable;
-import fozu.ca.vodcg.ASTLoopUtil;
 import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.SystemElement;
 import fozu.ca.vodcg.condition.ArithmeticExpression;
 import fozu.ca.vodcg.condition.Expression;
+import fozu.ca.vodcg.util.ASTLoopUtil;
 
 /**
  * @author Kao, Chen-yi

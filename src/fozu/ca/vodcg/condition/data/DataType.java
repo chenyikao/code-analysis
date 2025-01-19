@@ -14,9 +14,9 @@ import org.eclipse.jdt.core.dom.Name;
 
 import fozu.ca.DebugElement;
 import fozu.ca.condition.SerialFormat;
-import fozu.ca.vodcg.ASTUtil;
 import fozu.ca.vodcg.condition.ConditionElement;
 import fozu.ca.vodcg.condition.Expression;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * For declaring variable and function return type.

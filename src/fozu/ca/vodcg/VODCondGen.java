@@ -36,6 +36,8 @@ import fozu.ca.DuoKeyMap;
 import fozu.ca.Elemental;
 import fozu.ca.TrioKeyMap;
 import fozu.ca.condition.SerialFormat;import fozu.ca.vodcg.condition.ConditionElement;import fozu.ca.vodcg.condition.Function;import fozu.ca.vodcg.condition.Function.Parameter;import fozu.ca.vodcg.condition.PathVariable;import fozu.ca.vodcg.condition.VODConditions;import fozu.ca.vodcg.condition.data.ArrayType;import fozu.ca.vodcg.condition.data.Char;import fozu.ca.vodcg.condition.data.DataType;import fozu.ca.vodcg.condition.data.FiniteNumberGuard;import fozu.ca.vodcg.condition.data.PlatformType;import fozu.ca.vodcg.condition.data.PointerType;
+import fozu.ca.vodcg.util.ASTRuntimeLocationComputer;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * Generating VOD conditions:

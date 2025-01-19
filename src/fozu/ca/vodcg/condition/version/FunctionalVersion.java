@@ -23,9 +23,6 @@ import fozu.ca.Pair;
 import fozu.ca.condition.SerialFormat;
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.ASTException;
-import fozu.ca.vodcg.ASTLoopUtil;
-import fozu.ca.vodcg.ASTRuntimeLocationComputer;
-import fozu.ca.vodcg.ASTUtil;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.FunctionalAssignable;
 import fozu.ca.vodcg.IncomparableException;
@@ -55,6 +52,9 @@ import fozu.ca.vodcg.condition.data.PlatformType;
 import fozu.ca.vodcg.condition.data.PointerType;
 import fozu.ca.vodcg.condition.version.ThreadRole.ExtendedRole;
 import fozu.ca.vodcg.parallel.OmpDirective;
+import fozu.ca.vodcg.util.ASTLoopUtil;
+import fozu.ca.vodcg.util.ASTRuntimeLocationComputer;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**<pre>
  * A functional version represents any value of a functional path variable, which includes

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package fozu.ca.vodcg;
+package fozu.ca.vodcg.util;
 
 import java.util.List;
 
@@ -26,6 +26,10 @@ import org.eclipse.jdt.core.dom.IArrayType;
 
 import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
+import fozu.ca.vodcg.ASTAddressable;
+import fozu.ca.vodcg.ASTException;
+import fozu.ca.vodcg.Assignable;
+import fozu.ca.vodcg.VODCondGen;
 
 /**
  * Comparing runtime locations between L-value's in AST expressions.
