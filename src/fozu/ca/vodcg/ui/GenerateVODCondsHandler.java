@@ -27,9 +27,9 @@ import org.eclipse.ui.dialogs.ResourceListSelectionDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.FileEditorInput;
 
-import fozu.ca.vodcg.ASTUtil;
 import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.VariablePath;
+import fozu.ca.vodcg.util.ASTUtil;
 
 public class GenerateVODCondsHandler extends AbstractHandler {
 

@@ -20,6 +20,7 @@ import fozu.ca.vodcg.condition.FunctionCall;
 import fozu.ca.vodcg.condition.version.FunctionalVersion;
 import fozu.ca.vodcg.condition.FunctionalPathVariable;
 import fozu.ca.vodcg.parallel.OmpDirective;
+import fozu.ca.vodcg.util.ASTLoopUtil;
 import fozu.ca.vodcg.condition.ArithmeticExpression;
 import fozu.ca.vodcg.condition.PathVariable;
 import fozu.ca.vodcg.condition.version.ThreadRole;

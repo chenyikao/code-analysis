@@ -1,4 +1,4 @@
-package fozu.ca.vodcg;
+package fozu.ca.vodcg.util;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -28,6 +28,8 @@ import org.eclipse.jdt.core.dom.IASTUnaryExpression;
 
 import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
+import fozu.ca.vodcg.ASTAddressable;
+import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.condition.ArithmeticExpression;
 import fozu.ca.vodcg.condition.ExpressionRange;
 import fozu.ca.vodcg.condition.data.Int;

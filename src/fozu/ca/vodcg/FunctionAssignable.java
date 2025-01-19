@@ -22,6 +22,7 @@ import fozu.ca.vodcg.condition.FunctionCall;
 import fozu.ca.vodcg.condition.FunctionalPathVariable;
 import fozu.ca.vodcg.condition.PathVariablePlaceholder;
 import fozu.ca.vodcg.condition.data.PlatformType;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * A FunctionAssignable represents <em>only</em> an AST function name.

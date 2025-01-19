@@ -16,7 +16,6 @@ import fozu.ca.DuoKeyMap;
 import fozu.ca.condition.SerialFormat;
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.ASTException;
-import fozu.ca.vodcg.ASTUtil;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.SystemElement;
 import fozu.ca.vodcg.VODCondGen;
@@ -26,6 +25,7 @@ import fozu.ca.vodcg.condition.data.Pointer;
 import fozu.ca.vodcg.condition.version.FunctionalVersion;
 import fozu.ca.vodcg.condition.version.FunctionallableRole;
 import fozu.ca.vodcg.condition.version.ThreadRoleMatchable;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * FunctionCall ::= IDRef '(' (Expression (',' Expression)*)? ')'

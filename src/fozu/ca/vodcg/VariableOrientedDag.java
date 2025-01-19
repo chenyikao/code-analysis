@@ -22,6 +22,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 
 import fozu.ca.vodcg.condition.Proposition;
+import fozu.ca.vodcg.util.ASTRuntimeLocationComputer;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * Variable-oriented directed acyclic graph (VOD) ::= 

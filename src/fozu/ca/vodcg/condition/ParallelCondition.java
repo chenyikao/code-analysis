@@ -13,7 +13,6 @@ import org.eclipse.jdt.core.dom.Statement;
 import fozu.ca.Addressable;
 import fozu.ca.condition.SerialFormat;
 import fozu.ca.vodcg.ASTAddressable;
-import fozu.ca.vodcg.ASTUtil;
 import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.condition.data.DataType;
 import fozu.ca.vodcg.condition.data.FiniteNumberGuard;
@@ -22,6 +21,7 @@ import fozu.ca.vodcg.condition.version.ThreadRole;
 import fozu.ca.vodcg.condition.version.Version;
 import fozu.ca.vodcg.parallel.OmpDirective;
 import fozu.ca.vodcg.parallel.OmpReduceable;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * @author Kao, Chen-yi

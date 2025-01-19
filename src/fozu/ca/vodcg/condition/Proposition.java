@@ -40,8 +40,6 @@ import fozu.ca.Elemental;
 import fozu.ca.Mappable;
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.ASTException;
-import fozu.ca.vodcg.ASTLoopUtil;
-import fozu.ca.vodcg.ASTUtil;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.Assignment;
 import fozu.ca.vodcg.SystemElement;
@@ -54,6 +52,8 @@ import fozu.ca.vodcg.condition.data.DataType;
 import fozu.ca.vodcg.condition.data.FiniteNumberGuard;
 import fozu.ca.vodcg.condition.version.Version;
 import fozu.ca.vodcg.parallel.OmpDirective;
+import fozu.ca.vodcg.util.ASTLoopUtil;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * A Proposition can be regarded as a special Boolean Expression, 
@@ -800,7 +800,7 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 	
 	
 	
-	private static Proposition fromRecursively(org.eclipse.jdt.core.dom.Expression exp, final ASTAddressable rtAddr, VODCondGen condGen) {
+	public static Proposition fromRecursively(org.eclipse.jdt.core.dom.Expression exp, final ASTAddressable rtAddr, VODCondGen condGen) {
 		assert exp != null;
 		
 		// boolean (binary) enum

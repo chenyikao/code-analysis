@@ -89,6 +89,10 @@ import fozu.ca.vodcg.condition.version.Version;
 import fozu.ca.vodcg.condition.version.VersionEnumerable;
 import fozu.ca.vodcg.parallel.OmpDirective;
 import fozu.ca.vodcg.parallel.ThreadPrivatizable;
+import fozu.ca.vodcg.util.ASTAssignableComputer;
+import fozu.ca.vodcg.util.ASTLoopUtil;
+import fozu.ca.vodcg.util.ASTRuntimeLocationComputer;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * {@link org.eclipse.jdt.core.dom.Expression#isLValue} does NOT guarantee 

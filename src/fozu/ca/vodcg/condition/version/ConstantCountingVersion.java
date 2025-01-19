@@ -11,12 +11,12 @@ import org.eclipse.jdt.core.dom.ASTMatcher;
 import org.eclipse.jdt.core.dom.ForStatement;
 
 import fozu.ca.condition.SerialFormat;
-import fozu.ca.vodcg.ASTUtil;
 import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.SystemElement;
 import fozu.ca.vodcg.condition.PathVariable;
 import fozu.ca.vodcg.condition.Referenceable;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * @author Kao, Chen-yi

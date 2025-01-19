@@ -40,7 +40,6 @@ import fozu.ca.Pair;
 import fozu.ca.SupplierCluster;
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.ASTException;
-import fozu.ca.vodcg.ASTUtil;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.SynchronousReadSet;
 import fozu.ca.vodcg.UncertainException;
@@ -58,6 +57,7 @@ import fozu.ca.vodcg.condition.data.Real;
 import fozu.ca.vodcg.condition.version.ThreadRoleMatchable;
 import fozu.ca.vodcg.condition.version.Version;
 import fozu.ca.vodcg.parallel.OmpDirective;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * Expression	::= VariableRef | ArraySelect | FunctionCall | Arithmetic | Predicate

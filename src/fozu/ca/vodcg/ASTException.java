@@ -7,6 +7,8 @@ import org.eclipse.cdt.core.dom.ast.IASTNode;
 import org.eclipse.cdt.core.dom.ast.IBinding;
 import org.eclipse.cdt.core.dom.ast.IProblemBinding;
 
+import fozu.ca.vodcg.util.ASTUtil;
+
 /**
  * @author Kao, Chen-yi
  *

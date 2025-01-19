@@ -1,9 +1,12 @@
 /**
  * 
  */
-package fozu.ca.vodcg;
+package fozu.ca.vodcg.util;
 
 import fozu.ca.vodcg.ASTException;
+import fozu.ca.vodcg.ReenterException;
+import fozu.ca.vodcg.UncertainException;
+import fozu.ca.vodcg.UncertainPlaceholderException;
 
 /**
  * @author Kao, Chen-yi
