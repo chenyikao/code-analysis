@@ -3,7 +3,7 @@
  */
 package fozu.ca.vodcg.condition;
 
-import org.eclipse.jdt.core.dom.ast.IASTArrayDeclarator;
+import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.ast.IASTArrayModifier;
 import org.eclipse.jdt.core.dom.ast.IASTArraySubscriptExpression;
 import org.eclipse.jdt.core.dom.ast.IASTInitializerClause;
@@ -112,7 +112,7 @@ public class FunctionalPathVariable extends PathVariable {
 	 * @param pv - pre-cached path variable if available
 	 * @return
 	 */
-	public static FunctionalPathVariable from(final IASTArrayDeclarator declarator, 
+	public static FunctionalPathVariable from(final ArrayType declarator, 
 			final Assignable<FunctionalPathVariable> asn, final PathVariable pv) {
 		if (asn == null) throwNullArgumentException("assignable");
 //		if (testsNot(asn.isFunctional())) throwTodoException("true array");

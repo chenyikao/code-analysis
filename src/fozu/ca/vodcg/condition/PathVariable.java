@@ -13,7 +13,7 @@ import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.eclipse.jdt.core.dom.IASTArrayDeclarator;
+import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.IASTArraySubscriptExpression;
 import org.eclipse.jdt.core.dom.IASTDeclarator;
 import org.eclipse.jdt.core.dom.Expression;
@@ -137,9 +137,9 @@ public class PathVariable extends Variable {
 	public static PathVariable from(IASTDeclarator declarator, final ASTAddressable rtAddr, VODCondGen condGen) {
 		try {
 		final Assignable<? extends PathVariable> asn = Assignable.from(declarator, rtAddr, condGen);
-		return (declarator instanceof IASTArrayDeclarator) 
+		return (declarator instanceof ArrayType) 
 				? FunctionalPathVariable.from(
-						(IASTArrayDeclarator) declarator, (Assignable<FunctionalPathVariable>) asn, (PathVariable) null)
+						(ArrayType) declarator, (Assignable<FunctionalPathVariable>) asn, (PathVariable) null)
 				: from((Assignable<PathVariable>) asn);
 				
 		} catch (ClassCastException e) {
