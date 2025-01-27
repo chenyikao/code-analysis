@@ -22,7 +22,7 @@ import org.eclipse.jdt.core.dom.IASTNameOwner;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.IASTUnaryExpression;
-import org.eclipse.jdt.core.dom.IArrayType;
+import org.eclipse.jdt.core.dom.ArrayType;
 
 import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
@@ -104,7 +104,7 @@ public final class ASTAssignableComputer {
 			if (lvParent instanceof Expression) {
 				// or an array accessed (indexed) by the loop iterator
 				// through the (subscript) arguments or pointer to the array.
-				if (((Expression) lvParent).getExpressionType() instanceof IArrayType) 
+				if (((Expression) lvParent).getExpressionType() instanceof ArrayType) 
 					return getDependentOnBy(lvParent.getChildren(), li);
 			} else break;
 		}
@@ -609,7 +609,7 @@ public final class ASTAssignableComputer {
 
 		if (clause instanceof Expression) {
 			// the reference has fewer levels of subscripts than the array's declared dimension.
-			if (((Expression) clause).getExpressionType() instanceof IArrayType) {
+			if (((Expression) clause).getExpressionType() instanceof ArrayType) {
 				
 				// the reference expression (var ID) must start from the left-most IASTArraySubscriptExpression 
 				// or pointer expression and never be in the subscript arguments.

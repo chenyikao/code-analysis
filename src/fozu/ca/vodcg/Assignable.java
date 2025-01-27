@@ -28,7 +28,7 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.DoStatement;
 import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.IASTArrayDeclarator;
+import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.ArrayAccess;
 import org.eclipse.jdt.core.dom.IASTDeclSpecifier;
 import org.eclipse.jdt.core.dom.IASTDeclarator;
@@ -2461,7 +2461,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	 * 	an array pointer with arguments
 	 */
 	public boolean isArray() {
-		return nameOwnerView instanceof IASTArrayDeclarator 
+		return nameOwnerView instanceof ArrayType 
 				|| tests(()-> 
 		getEnclosingArraySubscriptExpression()
 		.getArrayExpression().contains(nameView));
