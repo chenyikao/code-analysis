@@ -11,14 +11,13 @@ import org.eclipse.jdt.core.dom.ast.IASTInitializerClause;
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.condition.data.ArrayPointer;
-import fozu.ca.vodcg.condition.data.ArrayType;
 import fozu.ca.vodcg.condition.data.PointerType;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.FunctionalAssignable;
 import fozu.ca.vodcg.condition.data.DataType;
 
 /**
- * For both function path variables and their arguments.
+ * For both functional path variables and their arguments.
  * 
  * @author Kao, Chen-yi
  *
