@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.jdt.core.dom.ArrayType;
-import org.eclipse.jdt.core.dom.IASTArraySubscriptExpression;
+import org.eclipse.jdt.core.dom.ArrayAccess;
 import org.eclipse.jdt.core.dom.IASTDeclarator;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ForStatement;
@@ -378,9 +378,9 @@ public class PathVariable extends Variable {
 		// through the (subscript) arguments or pointer to the array.
 		else {
 			Expression lvExp = asn.toASTExpression();
-			if (lvExp instanceof IASTArraySubscriptExpression) {
+			if (lvExp instanceof ArrayAccess) {
 				FunctionalPathVariable apv = FunctionalPathVariable.fromRecursively(
-						(IASTArraySubscriptExpression) lvExp, rtAddr, condGen);
+						(ArrayAccess) lvExp, rtAddr, condGen);
 				if (apv != null && apv.dependsOn(by)) return by;
 			}
 		}

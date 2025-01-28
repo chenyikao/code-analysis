@@ -6,7 +6,7 @@ package fozu.ca.vodcg.util;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNameCollector;
-import org.eclipse.jdt.core.dom.IASTArraySubscriptExpression;
+import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.IASTBinaryExpression;
 import org.eclipse.jdt.core.dom.IASTDeclarator;
 import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
@@ -199,31 +199,31 @@ public final class ASTAssignableComputer {
 		return (exp != null) ? getVariableNameOwnerOf(exp.getOperand()) : null;
 	}
 	
-	/**
-	 * Currently supporting l-value type expression: {@link IASTIdExpression} and 
-	 * pointer in {@link IASTUnaryExpression}.
-	 * 
-	 * @param clause
-	 * @return
-	 */
-	public static IASTNameOwner getVariableNameOwnerOf(
-			final IASTInitializerClause clause) 
-					throws ASTException {
-		if (clause == null) return null;
-		
-		if (clause instanceof IASTIdExpression) 
-			return getVariableNameOwnerOf((IASTIdExpression) clause);
-		else if (clause instanceof IASTFieldReference) 
-			return (IASTFieldReference) clause;
-		else if (clause instanceof IASTLiteralExpression) 
-			return null;
-		else if (clause instanceof IASTUnaryExpression) 
-			return getVariableNameOwnerOf((IASTUnaryExpression) clause);
-		else if (clause instanceof IASTArraySubscriptExpression) 
-			return getVariableNameOwnerOf(((IASTArraySubscriptExpression) clause).getArrayExpression());
-			
-		return DebugElement.throwTodoException("unsupported clause");
-	}
+//	/**
+//	 * Currently supporting l-value type expression: {@link IASTIdExpression} and 
+//	 * pointer in {@link IASTUnaryExpression}.
+//	 * 
+//	 * @param clause
+//	 * @return
+//	 */
+//	public static IASTNameOwner getVariableNameOwnerOf(
+//			final IASTInitializerClause clause) 
+//					throws ASTException {
+//		if (clause == null) return null;
+//		
+//		if (clause instanceof IASTIdExpression) 
+//			return getVariableNameOwnerOf((IASTIdExpression) clause);
+//		else if (clause instanceof IASTFieldReference) 
+//			return (IASTFieldReference) clause;
+//		else if (clause instanceof IASTLiteralExpression) 
+//			return null;
+//		else if (clause instanceof IASTUnaryExpression) 
+//			return getVariableNameOwnerOf((IASTUnaryExpression) clause);
+//		else if (clause instanceof IASTArraySubscriptExpression) 
+//			return getVariableNameOwnerOf(((IASTArraySubscriptExpression) clause).getArrayExpression());
+//			
+//		return DebugElement.throwTodoException("unsupported clause");
+//	}
 
 
 
@@ -305,8 +305,8 @@ public final class ASTAssignableComputer {
 				|| isBinaryAssigning(name);
 	}
 	
-	public static boolean isAssigning(IASTInitializerClause clause) {
-		return clause instanceof IASTArraySubscriptExpression;
+	public static boolean isAssigning(Expression exp) {
+		return exp instanceof ArrayInitializer;
 	}
 	
 	public static boolean isAssigningIn(Expression assigningExp, IASTInitializerClause clause) {

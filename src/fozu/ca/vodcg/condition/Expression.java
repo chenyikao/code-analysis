@@ -233,8 +233,8 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 		else if (exp instanceof IASTBinaryExpression) 
 			e = fromRecursively((IASTBinaryExpression) exp, rtAddr, condGen);
 		
-		else if (exp instanceof IASTArraySubscriptExpression) 
-			e = ArrayPointer.fromRecursively((IASTArraySubscriptExpression) exp, rtAddr, condGen);
+//		else if (exp instanceof IASTArraySubscriptExpression) 
+//			e = ArrayPointer.fromRecursively((IASTArraySubscriptExpression) exp, rtAddr, condGen);
 			
 		else if (exp instanceof IASTFunctionCallExpression) 
 			e = FunctionCall.fromRecursively((IASTFunctionCallExpression) exp, (Supplier<Proposition>) null, rtAddr, condGen);

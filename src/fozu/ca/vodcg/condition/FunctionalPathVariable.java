@@ -5,20 +5,19 @@ package fozu.ca.vodcg.condition;
 
 import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.ast.IASTArrayModifier;
-import org.eclipse.jdt.core.dom.ast.IASTArraySubscriptExpression;
+import org.eclipse.jdt.core.dom.ArrayAccess;
 import org.eclipse.jdt.core.dom.ast.IASTInitializerClause;
 
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.condition.data.ArrayPointer;
-import fozu.ca.vodcg.condition.data.ArrayType;
 import fozu.ca.vodcg.condition.data.PointerType;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.FunctionalAssignable;
 import fozu.ca.vodcg.condition.data.DataType;
 
 /**
- * For both function path variables and their arguments.
+ * For both functional path variables and their arguments.
  * 
  * @author Kao, Chen-yi
  *
@@ -30,7 +29,7 @@ public class FunctionalPathVariable extends PathVariable {
 	
 	
 //	private FunctionalPathVariable(
-//			PathVariable pv, IASTArraySubscriptExpression subArray, LValue lv, 
+//			PathVariable pv, ArrayAccess subArray, LValue lv, 
 //			UniversalVersion initVersion, Proposition sideEffect) 
 //					throws CoreException, InterruptedException {
 //		super(pv);
@@ -42,7 +41,7 @@ public class FunctionalPathVariable extends PathVariable {
 //	}
 	
 //	private FunctionalPathVariable(
-//			PathVariable pv, IASTArraySubscriptExpression subArray, LValue lv, 
+//			PathVariable pv, ArrayAccess subArray, LValue lv, 
 //			ArrayAccessVersion version, Proposition sideEffect) 
 //			throws CoreException, InterruptedException {
 //		super(pv);
@@ -90,7 +89,7 @@ public class FunctionalPathVariable extends PathVariable {
 	 * @return
 	 */
 	public static FunctionalPathVariable fromRecursively(
-			IASTArraySubscriptExpression subArray, final ASTAddressable dynaAddr, VODCondGen condGen) {
+			ArrayAccess subArray, final ASTAddressable dynaAddr, VODCondGen condGen) {
 		if (subArray == null) throwNullArgumentException("array expression");
 		
 		try {
@@ -159,7 +158,7 @@ public class FunctionalPathVariable extends PathVariable {
 
 
 //	public final static FunctionalPathVariable get(
-//			IASTName ov, IASTArraySubscriptExpression exp) throws CoreException {
+//			IASTName ov, ArrayAccess exp) throws CoreException {
 //		PathVariable pv = PathVariable.allPathVariables.get(ov);
 //		if (pv == null) {
 //			pv = new FunctionalPathVariable(ov, exp);
@@ -172,7 +171,7 @@ public class FunctionalPathVariable extends PathVariable {
 //			throws CoreException, InterruptedException {
 //		if (pv == null) return null;
 //		
-//		IASTArraySubscriptExpression subArray = Array.getSubArrayInParsing();
+//		ArrayAccess subArray = Array.getSubArrayInParsing();
 //		if (subArray == null) return pv;
 //		
 //		Version pvv = pv.getVersion(lv);
@@ -184,16 +183,16 @@ public class FunctionalPathVariable extends PathVariable {
 //	}
 
 //	public static PathVariablePlaceholder findVersion(
-//			IASTArraySubscriptExpression exp, VODCondGen condGen) {
+//			ArrayAccess exp, VODCondGen condGen) {
 //		if (exp == null) throwNullArgumentException("expression");
 //		
 //		final FunctionalPathVariable apv = fromRecursively(exp, condGen);
 //		return (apv != null) 
-//				? apv.getVersion((IASTArraySubscriptExpression) exp) 
+//				? apv.getVersion((ArrayAccess) exp) 
 //				: null ;
 //	}
 //	
-//	protected PathVariablePlaceholder getVersion(IASTArraySubscriptExpression exp) {
+//	protected PathVariablePlaceholder getVersion(ArrayAccess exp) {
 //		if (exp == null) throwNullArgumentException("expression");
 //		return ArrayPointer.fromRecursively(exp, getCondGen())
 //				.getTopPlaceholder();
@@ -212,7 +211,7 @@ public class FunctionalPathVariable extends PathVariable {
 //		preversion = null;	// reset the temporary cache preversion
 //	}
 	
-//	private void setVersion(IASTArraySubscriptExpression exp, Version vv) 
+//	private void setVersion(ArrayAccess exp, Version vv) 
 //			throws CoreException, InterruptedException {
 //		if (exp != null && vv != null) {
 //			LValue lv = vv.getLValue();
