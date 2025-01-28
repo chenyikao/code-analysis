@@ -107,12 +107,12 @@ public class FunctionalPathVariable extends PathVariable {
 	}
 
 	/**
-	 * @param declarator
+	 * @param astArrayType
 	 * @param asn
 	 * @param pv - pre-cached path variable if available
 	 * @return
 	 */
-	public static FunctionalPathVariable from(final ArrayType declarator, 
+	public static FunctionalPathVariable from(final ArrayType astArrayType, 
 			final Assignable<FunctionalPathVariable> asn, final PathVariable pv) {
 		if (asn == null) throwNullArgumentException("assignable");
 //		if (testsNot(asn.isFunctional())) throwTodoException("true array");
@@ -124,23 +124,23 @@ public class FunctionalPathVariable extends PathVariable {
 				: (pv instanceof FunctionalPathVariable 
 						? (FunctionalPathVariable) pv : new FunctionalPathVariable(pv));
 				
-		ArrayType at = null;
-		if (declarator != null) {
-			at = ((PointerType) DataType.from(declarator.getName())).toArrayType();
-			for (IASTArrayModifier am : declarator.getArrayModifiers()) {
-				IASTInitializerClause sizeExp = am.getConstantExpression();
-				if (sizeExp != null) try {
-					assert at != null;
-					at.setSize((ArithmeticExpression) Expression.fromRecursively(
-							sizeExp, asn.cacheRuntimeAddress(), asn.getCondGen()));
-					at = (ArrayType) at.nextPointingType();
-					
-				} catch (ClassCastException e) {
-					// at instanceof DataType at the last iteration;
-				} catch (Exception e) {
-					throwTodoException("unsupported sub-array accessing");
-				}
-			}
+		fozu.ca.vodcg.condition.data.ArrayType at = null;
+		if (astArrayType != null) {
+			at = (fozu.ca.vodcg.condition.data.ArrayType) DataType.from(astArrayType.resolveBinding());
+//			for (IASTArrayModifier am : astArrayType.getArrayModifiers()) {
+//				IASTInitializerClause sizeExp = am.getConstantExpression();
+//				if (sizeExp != null) try {
+//					assert at != null;
+//					at.setSize((ArithmeticExpression) Expression.fromRecursively(
+//							sizeExp, asn.cacheRuntimeAddress(), asn.getCondGen()));
+//					at = (ArrayType) at.nextPointingType();
+//					
+//				} catch (ClassCastException e) {
+//					// at instanceof DataType at the last iteration;
+//				} catch (Exception e) {
+//					throwTodoException("unsupported sub-array accessing");
+//				}
+//			}
 		}
 		
 		if (at != null) apv.setType(at);

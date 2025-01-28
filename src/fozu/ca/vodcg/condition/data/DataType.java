@@ -47,7 +47,7 @@ public enum DataType implements PlatformType {
         
         if (type.isArray()) {
             return ArrayType.from(
-                    from(type.getElementType()), 
+                    from(type.getComponentType()), 
                     fozu.ca.vodcg.condition.data.Int.from(type.getDimensions(), null));
         }
         

@@ -136,7 +136,8 @@ public class ArrayType extends PointerType {
 		return size;
 	}
 
-	public void setSize(final ArithmeticExpression size) {
+	@SuppressWarnings("removal")
+    public void setSize(final ArithmeticExpression size) {
 		if (isFinal()) throwTodoException("Immutable array type");
 
 		this.size = size;
@@ -147,7 +148,8 @@ public class ArrayType extends PointerType {
 	 * @return
 	 * @throws UnsupportedOperationException
 	 */
-	public ArrayType setDimension(int dim) throws UnsupportedOperationException {
+	@SuppressWarnings("removal")
+    public ArrayType setDimension(int dim) throws UnsupportedOperationException {
 		if (dim < 0) throwInvalidityException("negative dimension");
 		if (isFinal()) throwTodoException("Immutable array type");
 		
@@ -173,7 +175,8 @@ public class ArrayType extends PointerType {
 	 * @throws UnsupportedOperationException 
 	 * 	- not only immutable but non-produce-able if this array type is final.
 	 */
-	public ArrayType increaseDimension() throws UnsupportedOperationException {
+	@SuppressWarnings("removal")
+    public ArrayType increaseDimension() throws UnsupportedOperationException {
 		if (isFinal()) throwTodoException("Immutable array type");
 		ArrayType ida = new ArrayType(false);
 		ida.pointTo((Expression) this);
@@ -195,7 +198,8 @@ public class ArrayType extends PointerType {
 	 * @return
 	 * @throws UnsupportedOperationException
 	 */
-	private ArrayType insertDimension(PlatformType dimType) throws UnsupportedOperationException {
+	@SuppressWarnings("removal")
+    private ArrayType insertDimension(PlatformType dimType) throws UnsupportedOperationException {
 		if (dimType == null || isFinal()) throwTodoException("Immutable array type");
 		
 		ArrayType sub = from(dimType, null);
@@ -233,7 +237,8 @@ public class ArrayType extends PointerType {
 	
 
 	
-	private java.lang.String toZ3SmtDeclaration() {
+	@SuppressWarnings("removal")
+    private java.lang.String toZ3SmtDeclaration() {
 		final PlatformType ptt = nextPointingType();
 		return (size == null ? 
 				"Int" : debugGet((SystemElement) null, ()-> size.getType().toZ3SmtString(false, false)))
