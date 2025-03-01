@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNameCollector;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
-import org.eclipse.jdt.core.dom.IASTBinaryExpression;
+import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.IASTDeclarator;
 import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
 import org.eclipse.jdt.core.dom.Expression;
@@ -21,8 +21,10 @@ import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.IASTNameOwner;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.IASTUnaryExpression;
 import org.eclipse.jdt.core.dom.ArrayType;
+import org.eclipse.jdt.core.dom.Assignment;
 
 import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
@@ -282,8 +284,8 @@ public final class ASTAssignableComputer {
 		
 		if (clause instanceof IASTUnaryExpression) 
 			return ((IASTUnaryExpression) clause).getOperand().contains(assignedExp);
-		if (clause instanceof IASTBinaryExpression) 
-			return ((IASTBinaryExpression) clause).getOperand1().contains(assignedExp);
+		if (clause instanceof InfixExpression) 
+			return ((InfixExpression) clause).getOperand1().contains(assignedExp);
 		
 		return DebugElement.throwTodoException("Unsupported clause?");
 	}
@@ -445,7 +447,7 @@ public final class ASTAssignableComputer {
 		if (lValue == null) DebugElement.throwNullArgumentException("l-value");
 		if (!isBinaryAssignment(clause)) return false;
 		
-		final Expression lhsAsm = ((IASTBinaryExpression) clause).getOperand1();
+		final Expression lhsAsm = ((InfixExpression) clause).getOperand1();
 		final ASTNode lvArray = ASTUtil.getAncestorOfAs(lValue, ASTUtil.AST_ARRAY_SUB_TYPE, true);
 		
 		// the <code>clause</code> array[<code>lValue</code>] = ...
@@ -476,41 +478,43 @@ public final class ASTAssignableComputer {
 		while (expParent != null) {
 			expParent = expParent.getParent();
 			if (isAbbreviatedBinaryAssignment(expParent) 
-					|| (isPlainBinaryAssignment(expParent) && !isLValueOf(exp, (IASTBinaryExpression) expParent))) 
+					|| (isPlainBinaryAssignment(expParent) && !isLValueOf(exp, (InfixExpression) expParent))) 
 				if (clause == null || clause == expParent) return true;
 		}
 		return false;
 	}
 
 	public static boolean isPlainBinaryAssignment(ASTNode initializerOrClause) {
-		return (initializerOrClause instanceof IASTBinaryExpression 
-				&& ((IASTBinaryExpression) initializerOrClause).getOperator() == IASTBinaryExpression.op_assign)
-				|| initializerOrClause instanceof IASTEqualsInitializer;
+		return (initializerOrClause instanceof Assignment 
+				&& ((Assignment) initializerOrClause).getOperator() == Assignment.Operator.ASSIGN)
+				|| initializerOrClause instanceof VariableDeclarationFragment;
 	}
 
 	public static boolean isAbbreviatedBinaryAssignment(ASTNode initializerOrClause) {
-		if (initializerOrClause instanceof IASTBinaryExpression)
-			switch (((IASTBinaryExpression) initializerOrClause).getOperator()) {
-			case IASTBinaryExpression.op_binaryAndAssign	: return true;
-			case IASTBinaryExpression.op_binaryOrAssign		: return true;
-			case IASTBinaryExpression.op_binaryXorAssign	: return true;
-			case IASTBinaryExpression.op_divideAssign		: return true;
-			case IASTBinaryExpression.op_minusAssign		: return true;
-			case IASTBinaryExpression.op_moduloAssign		: return true;
-			case IASTBinaryExpression.op_multiplyAssign		: return true;
-			case IASTBinaryExpression.op_plusAssign			: return true;
-			case IASTBinaryExpression.op_shiftLeftAssign	: return true;
-			case IASTBinaryExpression.op_shiftRightAssign	: return true;
-			}
+		if (initializerOrClause instanceof Assignment) {
+			final Assignment.Operator op = ((Assignment) initializerOrClause).getOperator();
+			if (op == Assignment.Operator.BIT_AND_ASSIGN
+			        || op == Assignment.Operator.BIT_OR_ASSIGN
+			        || op == Assignment.Operator.BIT_XOR_ASSIGN
+			        || op == Assignment.Operator.DIVIDE_ASSIGN
+			        || op == Assignment.Operator.LEFT_SHIFT_ASSIGN
+			        || op == Assignment.Operator.MINUS_ASSIGN
+			        || op == Assignment.Operator.PLUS_ASSIGN
+			        || op == Assignment.Operator.REMAINDER_ASSIGN
+			        || op == Assignment.Operator.RIGHT_SHIFT_SIGNED_ASSIGN
+			        || op == Assignment.Operator.RIGHT_SHIFT_UNSIGNED_ASSIGN
+			        || op == Assignment.Operator.TIMES_ASSIGN) 
+			    return true;
+		}
 		
 		return false;
 	}
 	
-	public static boolean isConstantAssignment(IASTBinaryExpression exp) {
+	public static boolean isConstantAssignment(InfixExpression exp) {
 		return isPlainBinaryAssignment(exp) && ASTUtil.isConstant(exp.getOperand2());
 	}
 
-	public static boolean isLValueOf(Expression exp, IASTBinaryExpression binary) {
+	public static boolean isLValueOf(Expression exp, InfixExpression binary) {
 		if (binary == null) DebugElement.throwNullArgumentException("binary");
 		return binary.getOperand1().contains(exp);
 	}
@@ -521,7 +525,7 @@ public final class ASTAssignableComputer {
 		
 		// lhs of a binary assignment not appearing in rhs is not rewriting to lhs
 		if (isPlainBinaryAssignment(exp)) {
-			IASTBinaryExpression asg = (IASTBinaryExpression) exp;
+			InfixExpression asg = (InfixExpression) exp;
 			return isRewritingAssignmentTo(asg, getVariableNameOf(asg.getOperand1()));
 		}
 		
@@ -540,7 +544,7 @@ public final class ASTAssignableComputer {
 	 * @param var - may be in lhs, rhs or neither one of them
 	 * @return
 	 */
-	public static boolean isRewritingAssignmentTo(IASTBinaryExpression exp, Name var) {
+	public static boolean isRewritingAssignmentTo(InfixExpression exp, Name var) {
 		if (exp == null || var == null) return false;
 		
 		// every unary is rewriting to its only operand
@@ -574,8 +578,8 @@ public final class ASTAssignableComputer {
 	public static boolean isRewritinglyAssigned(Name var) {
 		final Expression varAsg = (Expression) var.getParent().getParent();	// bypassing IASTIdExpression 
 		return isUnaryAssignment(varAsg)
-				|| ((varAsg instanceof IASTBinaryExpression) 
-						&& isRewritingAssignmentTo((IASTBinaryExpression) varAsg, var));
+				|| ((varAsg instanceof InfixExpression) 
+						&& isRewritingAssignmentTo((InfixExpression) varAsg, var));
 	}
 
 	

@@ -8,7 +8,7 @@ import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.eclipse.jdt.core.dom.IASTBinaryExpression;
+import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.IASTDeclaration;
 import org.eclipse.jdt.core.dom.IASTDeclarationStatement;
 import org.eclipse.jdt.core.dom.IASTDeclarator;
@@ -103,19 +103,17 @@ public final class ASTLoopUtil {
 		if (lie instanceof IASTUnaryExpression) lie = ((IASTUnaryExpression) lie).getOperand();
 		
 		// binary incr-expr
-		else if (lie instanceof IASTBinaryExpression) {
-			final IASTBinaryExpression bie = (IASTBinaryExpression) lie;
-			switch (bie.getOperator()) {
-			// 					var += incr
-			case IASTBinaryExpression.op_plusAssign:
-				// 					var -= incr
-			case IASTBinaryExpression.op_minusAssign: 
+		else if (lie instanceof Assignment) {
+		    final Assignment bie = (Assignment) lie;
+			final Assignment.Operator op = bie.getOperator();
+			if (op == Assignment.Operator.PLUS_ASSIGN            // var += incr
+			        || op == Assignment.Operator.MINUS_ASSIGN    // var -= incr
+			        || op == Assignment.Operator.ASSIGN) 
 				// 					var = var + incr
 				//					var = incr + var
 				// 					var = var - incr
-			case IASTBinaryExpression.op_assign: lie = bie.getOperand1(); break;
-			default: // TODO
-			}
+			    lie = bie.getLeftHandSide(); 
+			// else TODO
 		}
 		return lie;
 	}
@@ -142,7 +140,7 @@ public final class ASTLoopUtil {
 		
 		ib = getCanonicalInitializerOf(loop);
 //		if (ASTLValueComputer.isUnaryAssignment(ib)) Debug.throwTodoException("unsupported bound?");
-		if (ASTAssignableComputer.isBinaryAssignment(ib)) ib = ((IASTBinaryExpression) ib).getOperand2();
+		if (ASTAssignableComputer.isBinaryAssignment(ib)) ib = ((Assignment) ib).getOperand2();
 		else DebugElement.throwTodoException("unsupported bound");
 
 		if (ib != null) LOOP_INITIAL_BOUND_CACHE.put(loop, ib);
@@ -250,17 +248,17 @@ public final class ASTLoopUtil {
 		Integer top = LOOP_TEST_OP_TO_VAR_CACHE.get(loop);
 		if (tb == null || top == null) {
 			final Expression condExp = loop.getConditionExpression();
-			if (condExp instanceof IASTBinaryExpression) {
-				final IASTBinaryExpression condBin = (IASTBinaryExpression) condExp;
+			if (condExp instanceof Assignment) {
+				final Assignment condBin = (Assignment) condExp;
 				final int op = condBin.getOperator();
 				final Expression oprd1 = condBin.getOperand1(), oprd2 = condBin.getOperand2(), 
 						it = getCanonicalIteratorOf(loop);
 				if (ASTAssignableComputer.getDependentOnBy(oprd1, it) != null) {	// var relational-op b
 					tb = oprd2; switch (op) {
-					case IASTBinaryExpression.op_lessThan: top = IASTBinaryExpression.op_greaterThan; break;
-					case IASTBinaryExpression.op_lessEqual: top = IASTBinaryExpression.op_greaterEqual; break;
-					case IASTBinaryExpression.op_greaterThan: top = IASTBinaryExpression.op_lessThan; break;
-					case IASTBinaryExpression.op_greaterEqual: top = IASTBinaryExpression.op_lessEqual; break;
+					case Assignment.op_lessThan: top = Assignment.op_greaterThan; break;
+					case Assignment.op_lessEqual: top = Assignment.op_greaterEqual; break;
+					case Assignment.op_greaterThan: top = Assignment.op_lessThan; break;
+					case Assignment.op_greaterEqual: top = Assignment.op_lessEqual; break;
 					}
 				}
 				else if (ASTAssignableComputer.getDependentOnBy(oprd2, it) != null) {	// b relational-op var
@@ -472,7 +470,7 @@ public final class ASTLoopUtil {
 		if (ASTAssignableComputer.isPlainBinaryAssignment(exp)) {	// when exp is the assignment part of init-expr
 			//bypassing the IASTExpressionStatement initializer statement
 			loop = (ForStatement) exp.getParent().getParent();	
-			return ASTAssignableComputer.isConstantAssignment((IASTBinaryExpression) exp) 
+			return ASTAssignableComputer.isConstantAssignment((Assignment) exp) 
 					&& isConditionedConstantly(loop) && iteratesConstantly(loop);
 		}
 
@@ -483,7 +481,7 @@ public final class ASTLoopUtil {
 		if (ASTUtil.isBinaryRelation(exp)) {	// exp is test-expr
 			loop = (ForStatement) exp.getParent();
 			return isInitializedConstantly(loop) 
-					&& isRelatedConstantly((IASTBinaryExpression) exp) && iteratesConstantly(loop);
+					&& isRelatedConstantly((Assignment) exp) && iteratesConstantly(loop);
 		}
 
 		/* 		incr-expr 	One of the following:
@@ -510,7 +508,7 @@ public final class ASTLoopUtil {
 			loop = (ForStatement) exp.getParent();
 			return isInitializedConstantly(loop) 
 					&& isConditionedConstantly(loop) 
-					&& (exp instanceof IASTBinaryExpression)?increasesConstantly((IASTBinaryExpression) exp):true;
+					&& (exp instanceof Assignment)?increasesConstantly((Assignment) exp):true;
 		}
 		
 		return false;
@@ -528,7 +526,7 @@ public final class ASTLoopUtil {
 		if (init instanceof IASTExpressionStatement) {
 			final Expression initExp = ((IASTExpressionStatement) init).getExpression();
 			if (ASTAssignableComputer.isPlainBinaryAssignment(initExp))
-				return ASTAssignableComputer.isConstantAssignment((IASTBinaryExpression) initExp);
+				return ASTAssignableComputer.isConstantAssignment((Assignment) initExp);
 		}
 
 		/* 					TODO: integer-type var = lb
@@ -542,12 +540,12 @@ public final class ASTLoopUtil {
 		//	for (init-expr; test-expr; incr-expr) structured-block
 		final Expression testExp = loop.getConditionExpression();	// TODO: getCanonicalConditionOf(loop)
 		if (ASTUtil.isBinaryRelation(testExp)) 
-			return isRelatedConstantly((IASTBinaryExpression) testExp);
+			return isRelatedConstantly((Assignment) testExp);
 		
 		return false;
 	}
 	
-	public static boolean isRelatedConstantly(IASTBinaryExpression rel) {
+	public static boolean isRelatedConstantly(Assignment rel) {
 		/* 		test-expr 	One of the following:
 		 * 					var relational-op b
 		 * 					b relational-op var
@@ -564,10 +562,10 @@ public final class ASTLoopUtil {
 
 	public static boolean increasesConstantly(Expression exp) {
 		return ASTAssignableComputer.isUnaryAssignment(exp)  
-				|| (exp instanceof IASTBinaryExpression && increasesConstantly((IASTBinaryExpression) exp));
+				|| (exp instanceof Assignment && increasesConstantly((Assignment) exp));
 	}
 	
-	public static boolean increasesConstantly(IASTBinaryExpression exp) {
+	public static boolean increasesConstantly(Assignment exp) {
 		final Expression incrExp = exp.getOperand2();
 		
 		/* 					var += incr
@@ -580,8 +578,8 @@ public final class ASTLoopUtil {
 		 *					var = incr + var
 		 * 					var = var - incr
 		 */
-		else if (ASTAssignableComputer.isPlainBinaryAssignment(exp) && incrExp instanceof IASTBinaryExpression) {
-			IASTBinaryExpression incrAdd = (IASTBinaryExpression) incrExp;
+		else if (ASTAssignableComputer.isPlainBinaryAssignment(exp) && incrExp instanceof Assignment) {
+			Assignment incrAdd = (Assignment) incrExp;
 			// a constant (IASTLiteralExpression) has no name (Name)
 			return ASTUtil.isConstant(incrAdd.getOperand1()) || 
 					ASTUtil.isConstant(incrAdd.getOperand2());
