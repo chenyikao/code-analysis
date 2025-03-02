@@ -408,8 +408,8 @@ public class Assignment extends SystemElement {
 	public boolean isDirectlyAssignedTo(IASTName lhs) {
 		return isDirect() 
 				&& (asmDcl != null
-				? ASTAssignableComputer.isDirectlyAssignedOf(lhs, asmDcl)
-				: ASTAssignableComputer.isDirectlyAssignedOf(lhs, asmAsm));
+				? ASTAssignableComputer.isDirectlyAssignedIn(lhs, asmDcl)
+				: ASTAssignableComputer.isDirectlyAssignedIn(lhs, asmAsm));
 	}
 	
 

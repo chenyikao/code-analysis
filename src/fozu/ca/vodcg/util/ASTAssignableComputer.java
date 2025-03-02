@@ -9,7 +9,7 @@ import org.eclipse.jdt.core.dom.ASTNameCollector;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.IASTDeclarator;
-import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IASTFieldReference;
 import org.eclipse.jdt.core.dom.ForStatement;
@@ -20,6 +20,7 @@ import org.eclipse.jdt.core.dom.IASTLiteralExpression;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.IASTNameOwner;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ArrayAccess;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.IASTUnaryExpression;
@@ -323,7 +324,7 @@ public final class ASTAssignableComputer {
 	 * @param clause
 	 * @return
 	 */
-	public static boolean isDirectlyAssignedOf(
+	public static boolean isDirectlyAssignedIn(
 			Name lValue, IASTInitializerClause clause) {
 		// A unary assignment has only one operand containing the given l-value
 		if (isUnaryAssignment(clause)) return true; 
@@ -332,11 +333,11 @@ public final class ASTAssignableComputer {
 		final IASTIdExpression idExp = getIdExpressionOf(lValue);
 		assert lValue != null;
 		// idExp == null -> not a classical AST ID, e.g. a parameter declaration
-		return idExp != null && isBinaryAssignedTo(clause, idExp);
+		return idExp != null && isBinaryAssignedIn(idExp, clause);
 	}
 	
-	public static boolean isDirectlyAssignedOf(
-			Name lValue, IASTEqualsInitializer init) {
+	public static boolean isDirectlyAssignedIn(
+			Name lValue, VariableDeclarationFragment init) {
 		@SuppressWarnings("unchecked")
 		final IASTDeclarator decl = (IASTDeclarator) ASTUtil.getAncestorOfAs(
 				lValue, new Class[] {IASTDeclarator.class}, false);
@@ -352,8 +353,8 @@ public final class ASTAssignableComputer {
 	 * 
 	 * @return
 	 */
-	public static boolean isDirectlyAssignedOf(
-			Expression lValue, IASTEqualsInitializer init) {
+	public static boolean isDirectlyAssignedIn(
+			Expression lValue, VariableDeclarationFragment init) {
 		if (init == null || lValue == null) return false;
 		
 		IASTDeclarator decl = (IASTDeclarator) init.getParent();
@@ -398,31 +399,15 @@ public final class ASTAssignableComputer {
 						new Class[] {Statement.class}, true);
 				if (lvAsg == null) break;
 
-				if (lvAsg instanceof IASTEqualsInitializer 
+				if (lvAsg instanceof VariableDeclarationFragment 
 						|| isAssignment((IASTInitializerClause) lvAsg)) return true;
-//				if (isAssignedTo(lvAsg instanceof IASTEqualsInitializer 
-//						? ((IASTEqualsInitializer) lvAsg).getInitializerClause() 
+//				if (isAssignedTo(lvAsg instanceof VariableDeclarationFragment 
+//						? ((VariableDeclarationFragment) lvAsg).getInitializerClause() 
 //						: (IASTInitializerClause) lvAsg, 
 //						lvExp)) return true;
 			}
 		}
 		return isPassedByRef(lvExp);
-	}
-	
-	
-	
-	public static boolean isUnaryAssignment(ASTNode initializerOrClause) {
-		return (initializerOrClause instanceof IASTUnaryExpression) 
-				? isAssignment((IASTUnaryExpression) initializerOrClause) : false;
-	}
-
-//	public static boolean isUnaryAssigning(Name var) {
-//		return isUnaryAssigned(var);
-//	}
-
-	public static boolean isBinaryAssignment(ASTNode initializerOrClause) {
-		return isPlainBinaryAssignment(initializerOrClause) 
-				|| isAbbreviatedBinaryAssignment(initializerOrClause);
 	}
 
 	/**
@@ -430,30 +415,30 @@ public final class ASTAssignableComputer {
 	 * @param asgn
 	 * @return true if {@code asgn} is assigned in {@code init}.
 	 */
-	public static boolean isBinaryAssignedTo(
-			IASTEqualsInitializer init, Expression asgn) {
+	public static boolean isBinaryAssignedIn(
+			Expression asgn, VariableDeclarationFragment init) {
 		if (asgn == null) DebugElement.throwNullArgumentException("assignable");
-		return isDirectlyAssignedOf(asgn, init);
+		return isDirectlyAssignedIn(asgn, init);
 	}
 	
 	/**
-	 * @param clause
 	 * @param lValue
+	 * @param clause
 	 * @return true if {@code lValue} is assigned in {@code clause}.
-	 * 	Excluding non-assigned arguments of some assigned arrays, such as the <code>clause</code> array[<code>lValue</code>] = ...
+	 * 	Excluding non-assigned arguments of some assigned arrays, such as some <code>clause</code> of array[<code>lValue</code>] = ...
 	 */
-	public static boolean isBinaryAssignedTo(
-			IASTInitializerClause clause, Expression lValue) {
+	public static boolean isBinaryAssignedIn(
+			Expression lValue, Assignment clause) {
 		if (lValue == null) DebugElement.throwNullArgumentException("l-value");
-		if (!isBinaryAssignment(clause)) return false;
+//		if (!isBinaryAssignment(clause)) return false;
 		
-		final Expression lhsAsm = ((InfixExpression) clause).getOperand1();
+		final Expression lhsAsm = clause.getLeftHandSide();
 		final ASTNode lvArray = ASTUtil.getAncestorOfAs(lValue, ASTUtil.AST_ARRAY_SUB_TYPE, true);
 		
-		// the <code>clause</code> array[<code>lValue</code>] = ...
+		// some <code>clause</code> of array[<code>lValue</code>] = ...
 		if (lvArray != null 
 				&& ASTUtil.hasAncestorAs(lvArray, lhsAsm, null) 
-				&& ASTUtil.hasAncestorAs(lValue, ((IASTArraySubscriptExpression) lvArray).getArgument(), null)) 
+				&& ASTUtil.hasAncestorAs(lValue, ((ArrayAccess) lvArray).getIndex(), null)) 
 			return false;
 		
 		return ASTUtil.hasAncestorAs(lValue, lhsAsm, null);
@@ -483,6 +468,22 @@ public final class ASTAssignableComputer {
 		}
 		return false;
 	}
+    
+    
+    
+    public static boolean isUnaryAssignment(ASTNode initializerOrClause) {
+        return (initializerOrClause instanceof IASTUnaryExpression) 
+                ? isAssignment((IASTUnaryExpression) initializerOrClause) : false;
+    }
+
+//  public static boolean isUnaryAssigning(Name var) {
+//      return isUnaryAssigned(var);
+//  }
+
+    public static boolean isBinaryAssignment(ASTNode initializerOrClause) {
+        return isPlainBinaryAssignment(initializerOrClause) 
+                || isAbbreviatedBinaryAssignment(initializerOrClause);
+    }
 
 	public static boolean isPlainBinaryAssignment(ASTNode initializerOrClause) {
 		return (initializerOrClause instanceof Assignment 
