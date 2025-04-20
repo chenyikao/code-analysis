@@ -137,7 +137,6 @@ public abstract class OmpThreadPrivatizable extends OmpFlushable {
 	
 	
 	
-	@SuppressWarnings("removal")
 	protected Proposition initPrecondition(
 			final Assignable<?> iAsn, final Statement block, final List<ArithmeticExpression> functionArgv) {
 		final Assignable<?> piAsn = iAsn.previous();
@@ -160,7 +159,8 @@ public abstract class OmpThreadPrivatizable extends OmpFlushable {
 	 * 
 	 * @return
 	 */
-	@Override
+	@SuppressWarnings("removal")
+    @Override
 	public Proposition getPrecondition() {
 		if (preCond == null) throwTodoException("empty condition");
 		

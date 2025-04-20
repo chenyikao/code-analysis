@@ -3,18 +3,19 @@
  */
 package fozu.ca;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
+
+import fozu.ca.vodcg.util.ASTAssignableComputer;
 
 /**
  * Providing all static general utility methods for other specific utility classes like {@link ASTAssignableComputer}, etc.
@@ -22,7 +23,7 @@ import java.util.function.Supplier;
  * @author Kao, Chen-yi
  *
  */
-public interface Elemental {
+public abstract class Elemental {
 
 	public static interface TryRunnable {
 		void run() throws Exception;
@@ -35,7 +36,7 @@ public interface Elemental {
 				if (skips != null) 
 					for (Class<? extends Exception> skip : skips) 
 						if (skip.isInstance(e)) return;
-				if (nonSkips == null) DebugElement.throwUnhandledException(e);
+				if (nonSkips == null) throwUnhandledException(e);
 				nonSkips.add(e);
 			}};
 		}
@@ -67,9 +68,9 @@ public interface Elemental {
 					for (Class<? extends Exception> skip : skips) 
 						if (skip.isInstance(e)) return null;
 				
-				if (nonSkips == null) DebugElement.throwUnhandledException(e);
+				if (nonSkips == null) throwUnhandledException(e);
 				try {nonSkips.add((E) e);}
-				catch (ClassCastException e2) {DebugElement.throwUnhandledException(e2);}
+				catch (ClassCastException e2) {throwUnhandledException(e2);}
 				return null;
 			}};
 		}
@@ -94,7 +95,7 @@ public interface Elemental {
 				if (skips != null) 
 					for (Class<? extends Exception> skip : skips) 
 						if (skip.isInstance(e)) return null;
-				if (nonSkips == null) DebugElement.throwUnhandledException(e);
+				if (nonSkips == null) throwUnhandledException(e);
 				nonSkips.add(e);
 				return null;
 			}};
@@ -104,47 +105,45 @@ public interface Elemental {
 
 	
 	@SafeVarargs
-	static public void run(final Runnable r, final Supplier<Boolean>... conjTesters) {
+	public static void run(final Runnable r, final Supplier<Boolean>... conjTesters) {
 		if (!testsNot(testsSkipNullException(conjTesters))) r.run(); 
 	}
 	
-	static public void runSkipNull(final Runnable r) {
+	public static void runSkipNull(final Runnable r) {
 		try {
 			r.run();
 		} catch (NullPointerException e) {
-			return;
 		} catch (Exception e) {
-			DebugElement.throwTodoException(e);
+		    throwUnhandledException(e);
 		}
 	}
 	
-	static public void runSkipException(final Runnable r) {
+	public static void runSkipException(final Runnable r) {
 		try {
 			r.run();
 		} catch (Exception e) {
-			return;
 		}
 	}
 	
-	static public <T, U, R> R apply(
+	public static <T, U, R> R apply(
 			BiFunction<T, U, R> func, Supplier<T> input1, Supplier<U> input2, Function<Exception, R> returnAlt) {
 		return get(()-> func.apply(input1.get(), input2.get()), returnAlt);
 	}
 	
 	@SafeVarargs
-	static public <T, R> R apply(Function<T, R> func, Supplier<T> input, Supplier<R> returnAltNull, 
+	public static <T, R> R apply(Function<T, R> func, Supplier<T> input, Supplier<R> returnAltNull, 
 			Supplier<Boolean>... conjTesters) throws Exception {
 		return apply(func, input, returnAltNull, null, conjTesters);
 	}
 	
 	@SafeVarargs
-	static public <T, R> R apply(Function<T, R> func, Supplier<T> input, Function<Exception, R> returnAlt, 
+	public static <T, R> R apply(Function<T, R> func, Supplier<T> input, Function<Exception, R> returnAlt, 
 			Supplier<Boolean>... conjTesters) {
 		return apply(func, input, ()-> returnAlt.apply(null), returnAlt, conjTesters);
 	}
 	
 	@SafeVarargs
-	static public <T, R> R apply(Function<T, R> func, Supplier<T> input, Supplier<R> returnAltNull, 
+	public static <T, R> R apply(Function<T, R> func, Supplier<T> input, Supplier<R> returnAltNull, 
 			Function<Exception, R> returnAltExc, Supplier<Boolean>... conjTesters) {
 		if (input != null && func != null && !testsNot(testsSkipNullException(conjTesters))) try {
 			final T in = input.get();
@@ -161,10 +160,10 @@ public interface Elemental {
 	}
 	
 	@SafeVarargs
-	static public <T, R, E extends Exception> R apply(
+	public static <T, R, E extends Exception> R apply(
 			TryFunction<T, R> func, Supplier<T> input, TrySupplier<R, E> returnAltNull, 
 			TryFunction<Exception, R> returnAltExc, Class<? extends Exception>... skips) {
-		if (func == null) DebugElement.throwNullArgumentException("function");
+		if (func == null) throwNullArgumentException("function");
 		return apply(
 				func.toFunction(skips), 
 				input, 
@@ -172,11 +171,10 @@ public interface Elemental {
 				returnAltExc.toFunction(skips));
 	}
 	
-	static public String applySkipEmpty(
-			Function<String, String> func, Supplier<String> inputSup) 
+	public static String applySkipEmpty(UnaryOperator<String> func, Supplier<String> inputSup) 
 					throws Exception {
-		if (func == null) DebugElement.throwNullArgumentException("consumer");
-		if (inputSup == null) DebugElement.throwNullArgumentException("input supplier");
+		if (func == null) throwNullArgumentException("consumer");
+		if (inputSup == null) throwNullArgumentException("input supplier");
 		
 		final String input = getSkipNull(inputSup);
 		return input != null && !input.isBlank() ? func.apply(input) : "";
@@ -192,10 +190,10 @@ public interface Elemental {
 	 * @return
 	 */
 	@SafeVarargs
-	static public <T extends Emptable, R> R applySkipEmpty(
+	public static <T extends Emptable, R> R applySkipEmpty(
 			Function<T, R> func, Supplier<T> inputSup, Supplier<Boolean>... conjTesters) {
-		if (func == null) DebugElement.throwNullArgumentException("consumer");
-		if (inputSup == null) DebugElement.throwNullArgumentException("input supplier");
+		if (func == null) throwNullArgumentException("consumer");
+		if (inputSup == null) throwNullArgumentException("input supplier");
 		
 		if (testsNot(testsSkipNullException(conjTesters))) return null;
 		
@@ -205,7 +203,7 @@ public interface Elemental {
 	
 	@SuppressWarnings("unchecked")
 	@SafeVarargs
-	static public <C extends Collection<T>, T, R> R applySkipEmptyCol(
+	public static <C extends Collection<T>, T, R> R applySkipEmptyCol(
 			Function<C, R> func, Supplier<C> inputSup, Supplier<Boolean>... conjTesters) {
 		return applySkipEmpty(ec-> func.apply((C) ec.getKernel()), ()-> EmptableCollection.from(inputSup), conjTesters);
 	}
@@ -220,10 +218,10 @@ public interface Elemental {
 	 * @return
 	 */
 	@SafeVarargs
-	static public <T, R> R applySkipNullException(
+	public static <T, R> R applySkipNullException(
 			Function<T, R> func, Supplier<T> inputSup, Supplier<Boolean>... conjTesters) {
-		if (func == null) DebugElement.throwNullArgumentException("consumer");
-		if (inputSup == null) DebugElement.throwNullArgumentException("input supplier");
+		if (func == null) throwNullArgumentException("consumer");
+		if (inputSup == null) throwNullArgumentException("input supplier");
 		
 		if (testsNot(testsSkipNullException(conjTesters))) return null;
 		
@@ -241,10 +239,10 @@ public interface Elemental {
 	 * @return
 	 */
 	@SafeVarargs
-	static public <T, R> R applySkipNull(
+	public static <T, R> R applySkipNull(
 			Function<T, R> func, Supplier<T> inputSup, Supplier<Boolean>... conjTesters) {
-		if (func == null) DebugElement.throwNullArgumentException("consumer");
-		if (inputSup == null) DebugElement.throwNullArgumentException("input supplier");
+		if (func == null) throwNullArgumentException("consumer");
+		if (inputSup == null) throwNullArgumentException("input supplier");
 		
 		if (testsNot(testsSkipNullException(conjTesters))) return null;
 		
@@ -253,7 +251,7 @@ public interface Elemental {
 	}
 	
 	@SafeVarargs
-	static public <T, R> R applySkipNull(
+	public static <T, R> R applySkipNull(
 			TryFunction<T, R> func, Supplier<T> inputSup, Class<? extends Exception>... skips) 
 					throws Exception {
 		final List<Exception> nonSkips = new ArrayList<>();
@@ -273,34 +271,34 @@ public interface Elemental {
 	 * @return
 	 */
 	@SafeVarargs
-	static public <T, R> R applySkipNull(
+	public static <T, R> R applySkipNull(
 			Function<T, R> func, Supplier<T> inputSup, Function<Exception, R> nnpeFunc, Supplier<Boolean>... conjTesters) {
 		try {
 			return applySkipNull(func, inputSup, conjTesters);
 			
 		} catch (Exception e) {
 			return nnpeFunc == null
-					? DebugElement.throwUnhandledException(e)
+					? throwUnhandledException(e)
 					: nnpeFunc.apply(e);
 		}
 	}
 	
 
 	
-	static public <T> boolean add(
+	public static <T> boolean add(
 			Collection<T> col, T ele, List<Class<? extends Exception>> skips) 
 					throws Exception {
 		return add(col, (Supplier<T>) ()-> ele, skips);
 	}
 	
-	static public <T> boolean add(
+	public static <T> boolean add(
 			Collection<T> col, Supplier<T> eleSup, List<Class<? extends Exception>> skips) 
 					throws Exception {
 		return add(col, eleSup, null, skips);
 	}
 	
 	@SafeVarargs
-	static public <T> boolean add(
+	public static <T> boolean add(
 			final Collection<T> col, final Supplier<T> eleSup, final Supplier<Boolean> nullAlt, 
 			final List<Class<? extends Exception>> skips, final Supplier<Boolean>... conjTesters) 
 					throws Exception {
@@ -312,18 +310,19 @@ public interface Elemental {
 					conjTesters);
 			
 		} catch (Exception e) {
-			if (skips != null) for (Class<? extends Exception> skip : skips) 
-				if (skip.isInstance(e)) return false;
-			return DebugElement.throwUnhandledException(e);
+			if (skips != null) 
+			    for (Class<? extends Exception> skip : skips) 
+			        if (skip.isInstance(e)) return false;
+			return throwUnhandledException(e);
 		}
 	}
 	
 	@SafeVarargs
-	static public <T> boolean addNonNull(Collection<T> col, 
+	public static <T> boolean addNonNull(Collection<T> col, 
 			Supplier<T> eleSup, String exception, Supplier<Boolean>... conjTesters) 
 					throws Exception {
-		if (col == null) DebugElement.throwNullArgumentException("collection");
-		if (!addSkipNull(col, eleSup, null, conjTesters)) DebugElement.throwNullArgumentException(exception);
+		if (col == null) throwNullArgumentException("collection");
+		if (!addSkipNull(col, eleSup, null, conjTesters)) throwNullArgumentException(exception);
 		return true;
 	}
 	
@@ -336,7 +335,7 @@ public interface Elemental {
 	 * @return
 	 * @throws Exception
 	 */
-	static public <T> boolean addSkipNull(
+	public static <T> boolean addSkipNull(
 			Collection<T> col, Supplier<T> eleSup) 
 					throws Exception {
 		return addSkipNull(
@@ -350,19 +349,8 @@ public interface Elemental {
 //		return addSkipNull(col, eleSup, null, skips);
 //	}
 	
-	static public <T> boolean addSkipNull(Collection<T> col, Supplier<T> eleSup, Supplier<Boolean> tester,
-			List<Class<? extends Exception>> skips) throws Exception {
-		if (col instanceof List<?>) col = new ArrayList<>(col != null ? col : Collections.emptyList()); 
-		else if (col instanceof Set<?>) col = new HashSet<>(col != null ? col : Collections.emptySet());
-		else if (col != null) DebugElement.throwTodoException("unsupported collection");
-
-		return tester == null 
-				? addSkipNull(col, eleSup, skips) 
-				: addSkipNull(col, eleSup, skips, tester);
-	}
-	
 	@SafeVarargs
-	static public <T> boolean addSkipNull(
+	public static <T> boolean addSkipNull(
 			Collection<T> col, Supplier<T> eleSup, 
 			List<Class<? extends Exception>> skips, 
 			Supplier<Boolean>... conjTesters) 
@@ -375,22 +363,23 @@ public interface Elemental {
 					conjTesters);
 				
 		} catch (Exception e) {
-			if (skips != null) for (Class<? extends Exception> s : skips) 
-				if (s.isInstance(e)) return false;
+			if (skips != null) 
+			    for (Class<? extends Exception> s : skips) 
+			        if (s.isInstance(e)) return false;
 			throw e;
 		}
 	}
 	
 	@SafeVarargs
-	static public <T> boolean addAllNonNull(Collection<T> col, 
+	public static <T> boolean addAllNonNull(Collection<T> col, 
 			Supplier<Collection<? extends T>> col2Sup, String exception, 
 			Supplier<Boolean>... conjTesters) throws IllegalArgumentException, Exception {
-		if (col == null) DebugElement.throwNullArgumentException("collection");
-		if (!addAllSkipNull(col, col2Sup, conjTesters)) DebugElement.throwNullArgumentException(exception);
+		if (col == null) throwNullArgumentException("collection");
+		if (!addAllSkipNull(col, col2Sup, conjTesters)) throwNullArgumentException(exception);
 		return true;
 	}
 	
-	static public <T> boolean addAllSkipException(Collection<T> col, 
+	public static <T> boolean addAllSkipException(Collection<T> col, 
 			Supplier<Collection<? extends T>> col2Sup) {
 		if (col == null || col2Sup == null) return false;
 		try {
@@ -401,17 +390,17 @@ public interface Elemental {
 	}
 	
 	@SafeVarargs
-	static public <T> boolean addAllSkipNull(Collection<T> col, 
+	public static <T> boolean addAllSkipNull(Collection<T> col, 
 			Supplier<Collection<? extends T>> col2Sup, 
 			Supplier<Boolean>... conjTesters) {
 		if (col == null) return false;
 		return get( 
-				()-> applySkipNull(col2-> col.addAll(col2), col2Sup, conjTesters),
+				()-> applySkipNull(col::addAll, col2Sup, conjTesters),
 				e-> false);
 	}
 	
 	@SafeVarargs
-	static public <T> void consume(Consumer<T> con, Supplier<T> input, Consumer<Exception> conAlt, 
+	public static <T> void consume(Consumer<T> con, Supplier<T> input, Consumer<Exception> conAlt, 
 			Supplier<Boolean>... conjTesters) {
 		apply(	t-> {con.accept(t); return null;}, 
 				input, 
@@ -421,7 +410,7 @@ public interface Elemental {
 	}
 	
 	@SafeVarargs
-	static public <T extends Emptable> void consumeAltEmpty(
+	public static <T extends Emptable> void consumeAltEmpty(
 			Consumer<T> con, Supplier<T> inputSup, Runnable runAltEmpty, Supplier<Boolean>... conjTesters) 
 					throws Exception {
 		apply(input-> {if (!input.isEmpty()) con.accept(input); return null;}, 
@@ -431,10 +420,10 @@ public interface Elemental {
 	}
 	
 	@SafeVarargs
-	static public <T> void consumeNonNull(
+	public static <T> void consumeNonNull(
 			final Consumer<T> con, final T input, Supplier<Boolean>... conjTesters) {
-		if (con == null) DebugElement.throwNullArgumentException("consumer");
-		if (input == null) DebugElement.throwNullArgumentException("input");
+		if (con == null) throwNullArgumentException("consumer");
+		if (input == null) throwNullArgumentException("input");
 		
 		if (!tests(testsSkipNullException(conjTesters))) return;
 		
@@ -449,9 +438,9 @@ public interface Elemental {
 	 * @throws Exception 
 	 */
 	@SafeVarargs
-	static public <T> void consumeNonNull(
+	public static <T> void consumeNonNull(
 			final Consumer<T> con, final Supplier<T> inputSup, Supplier<Boolean>... conjTesters) throws Exception {
-		if (inputSup == null) DebugElement.throwNullArgumentException("input supplier");
+		if (inputSup == null) throwNullArgumentException("input supplier");
 		
 		if (!tests(testsSkipNullException(conjTesters))) return;
 		
@@ -467,10 +456,10 @@ public interface Elemental {
 	 * @throws Exception 
 	 */
 	@SafeVarargs
-	static public <T, E extends Exception> void consumeNonNull(
+	public static <T, E extends Exception> void consumeNonNull(
 			final Consumer<T> con, final TrySupplier<T, E> inputSup, Supplier<Boolean>... conjTesters) 
 					throws E {
-		if (inputSup == null) DebugElement.throwNullArgumentException("input supplier");
+		if (inputSup == null) throwNullArgumentException("input supplier");
 		
 		if (!tests(testsSkipNullException(conjTesters))) return;
 		
@@ -478,7 +467,7 @@ public interface Elemental {
 	}
 	
 	@SafeVarargs
-	static public <T> void consumeSkipNull(
+	public static <T> void consumeSkipNull(
 			Consumer<T> con, Supplier<T> inputSup, Supplier<Boolean>... conjTesters) {
 		applySkipNull(
 				input-> {con.accept(input); return null;}, 
@@ -487,7 +476,7 @@ public interface Elemental {
 	}
 	
 	@SafeVarargs
-	static public <T extends Emptable> void consumeSkipEmpty(
+	public static <T extends Emptable> void consumeSkipEmpty(
 			Consumer<T> con, Supplier<T> inputSup, Supplier<Boolean>... conjTesters) throws Exception {
 		applySkipEmpty(
 				input-> {con.accept(input); return null;}, 
@@ -497,7 +486,7 @@ public interface Elemental {
 	
 	@SuppressWarnings("unchecked")
 	@SafeVarargs
-	static public <T extends Collection<?>, ET extends Emptable> void consumeSkipEmptyCol(
+	public static <T extends Collection<?>, ET extends Emptable> void consumeSkipEmptyCol(
 			Consumer<ET> con, Supplier<T> inputSup, Supplier<Boolean>... conjTesters) throws Exception {
 		if (inputSup == null) return;
 		final Collection<?> input = inputSup.get();
@@ -509,7 +498,7 @@ public interface Elemental {
 	}
 	
 	@SafeVarargs
-	static public <T> void consumeSkipNullException(
+	public static <T> void consumeSkipNullException(
 			Consumer<T> con, Supplier<T> inputSup, Supplier<Boolean>... conjTesters) {
 		applySkipNullException(
 				input-> {con.accept(input); return null;}, 
@@ -519,12 +508,12 @@ public interface Elemental {
 	
 	
 	
-	static public <T> T get(Supplier<T> sup, Supplier<T> nullAlt) {
+	public static <T> T get(Supplier<T> sup, Supplier<T> nullAlt) {
 		return get(sup, nullAlt, null);
 	}
 	
-	static public <T> T get(Supplier<T> sup, Function<Exception, T> alt) {
-		if (alt == null) DebugElement.throwNullArgumentException("null-or-exception handler");
+	public static <T> T get(Supplier<T> sup, Function<Exception, T> alt) {
+		if (alt == null) throwNullArgumentException("null-or-exception handler");
 		return get(sup, ()-> alt.apply(null), alt);
 	}
 	
@@ -536,7 +525,7 @@ public interface Elemental {
 	 * @param nonNullExcAlt
 	 * @return
 	 */
-	static public <T> T get(Supplier<T> sup, 
+	public static <T> T get(Supplier<T> sup, 
 			Supplier<T> nullAlt, Function<Exception, T> nonNullExcAlt) {
 		try {
 			T result = sup.get();
@@ -547,7 +536,7 @@ public interface Elemental {
 //			if (nonNullExcAlt == null) throw e; 
 //			return nonNullExcAlt.apply(e);
 			return nonNullExcAlt == null 
-					? DebugElement.throwUnhandledException(e) 
+					? throwUnhandledException(e) 
 					: nonNullExcAlt.apply(e);
 		}
 		return nullAlt == null ? null : nullAlt.get();
@@ -564,11 +553,11 @@ public interface Elemental {
 //		}
 //	}
 
-	static public <T> T getNonException(Supplier<T> sup) {
+	public static <T> T getNonException(Supplier<T> sup) {
 		try {
 			return sup.get();
 		} catch (Exception e) {
-			DebugElement.throwUnhandledException(e);
+			throwUnhandledException(e);
 		}
 		return null;
 	}
@@ -579,21 +568,21 @@ public interface Elemental {
 	 * @param sup
 	 * @return
 	 */
-	static public <T> T getNonNull(Supplier<T> sup) {
-		return get(sup, ()-> DebugElement.throwInvalidityException("null supplier or result"));
+	public static <T> T getNonNull(Supplier<T> sup) {
+		return get(sup, ()-> throwInvalidityException("null supplier or result"));
 	}
 	
 	public static <T> T getNonNullSupplier(Supplier<T> sup) {
-		if (sup == null) DebugElement.throwNullArgumentException("supplier");
+		if (sup == null) throwNullArgumentException("supplier");
 		return sup.get();
 	}
 	
-	static public <T> T getSkipNull(Supplier<T> sup) {
-		return get(sup, ()-> null, e-> DebugElement.throwUnhandledException(e));
+	public static <T> T getSkipNull(Supplier<T> sup) {
+		return get(sup, ()-> null, Elemental::throwUnhandledException);
 	}
 	
 	@SafeVarargs
-	static public <T, E extends Exception> T getSkipNull(
+	public static <T, E extends Exception> T getSkipNull(
 			TrySupplier<T, E> sup, Class<? extends Exception>... skips) throws E {
 		final List<E> nonSkips = new ArrayList<>();
 		final T result = get(sup.toSupplier(nonSkips, skips), ()-> null, null);
@@ -602,22 +591,22 @@ public interface Elemental {
 	}
 	
 	@SuppressWarnings("unchecked")
-	static public <T, E extends Exception> T getSkipNull(
+	public static <T, E extends Exception> T getSkipNull(
 			TrySupplier<T, E> sup, Function<E, T> execAlt, Class<? extends Exception>... skips) {
 		try {
 			return getSkipNull(sup, skips);
 			
 		} catch (Exception e) {
-			if (execAlt == null) DebugElement.throwNullArgumentException("exception handler");
+			if (execAlt == null) throwNullArgumentException("exception handler");
 			return execAlt.apply((E) e);
 		}
 	}
 	
-	static public <T> T getSkipEmpty(Function<Collection<T>, T> func, Supplier<Collection<T>> sup) {
+	public static <T> T getSkipEmpty(Function<Collection<T>, T> func, Supplier<Collection<T>> sup) {
 		return applySkipEmptyCol(func, sup);
 	}
 	
-	static public <T> T getSkipException(Supplier<T> sup) {
+	public static <T> T getSkipException(Supplier<T> sup) {
 		return get(sup, e-> null);
 	}
 	
@@ -628,7 +617,7 @@ public interface Elemental {
 			return getThrow(sup);
 		
 		} catch (Exception e) {
-			if (alt == null) DebugElement.throwNullArgumentException("alternative");
+			if (alt == null) throwNullArgumentException("alternative");
 			return alt.apply(e);
 		}
 	}
@@ -646,7 +635,7 @@ public interface Elemental {
 	 */
 	public static <T, E extends Exception> T getThrow(
 			TrySupplier<T, E> sup, Supplier<T> nullAlt) throws E {
-		if (sup == null) DebugElement.throwNullArgumentException("supplier");
+		if (sup == null) throwNullArgumentException("supplier");
 		return getThrow(sup, nullAlt, NullPointerException.class);
 	}
 	
@@ -678,19 +667,6 @@ public interface Elemental {
 
 	
 	
-	static public Method getMethod(
-			Class<?> clazz, String name, Class<?>... parameterTypes) {
-		if (clazz == null || name == null) return null;
-		try {
-			return clazz.getDeclaredMethod(name, parameterTypes);
-		
-		} catch (NoSuchMethodException | SecurityException e) {
-			return DebugElement.throwTodoException(e.toString());
-		}	
-	}
-	
-
-	
 	@SafeVarargs
 	static Boolean tests(
 			boolean isConjunctive, Function<Supplier<Boolean>, Boolean> testerResolver, Supplier<Boolean>... testers) {
@@ -706,50 +682,50 @@ public interface Elemental {
 		return result;
 	}
 	
-	static public boolean tests(Boolean tester) {
+	public static boolean tests(Boolean tester) {
 		return tester != null && tester;
 	}
 	
-	static public boolean tests(Supplier<Boolean> tester) {
+	public static boolean tests(Supplier<Boolean> tester) {
 		return get(tester, ()-> false, e-> false);	// the null testing including NullPointerException
 	}
 	
-	static public boolean tests(Supplier<Boolean> tester, Supplier<Boolean> nullTester) {
+	public static boolean tests(Supplier<Boolean> tester, Supplier<Boolean> nullTester) {
 		return get(tester, nullTester, null);	// the null testing including NullPointerException
 	}
 	
-	static public boolean testsNot(Boolean tester) {
+	public static boolean testsNot(Boolean tester) {
 		return tester != null && !tester;
 	}
 	
-	static public boolean testsNot(Supplier<Boolean> tester) {
+	public static boolean testsNot(Supplier<Boolean> tester) {
 		return !get(tester, ()-> false, e-> false);	// the null testing including NullPointerException
 	}
 	
-	static public boolean testsNonNull(Supplier<Boolean> tester) {
+	public static boolean testsNonNull(Supplier<Boolean> tester) {
 		return getNonNull(tester);
 	}
 	
 	@SafeVarargs
-	static public Boolean testsSkipNull(Supplier<Boolean>... conjTesters) {
-		return tests(true, tester-> getSkipNull(tester), conjTesters);	
+	public static Boolean testsSkipNull(Supplier<Boolean>... conjTesters) {
+		return tests(true, Elemental::getSkipNull, conjTesters);	
 	}
 	
-	static public <T> boolean testsSkipNull(Function<T, Boolean> tester, Supplier<T> tSup) {
-		if (tester == null) DebugElement.throwNullArgumentException("tester");
-		if (tSup == null) DebugElement.throwNullArgumentException("supplier");
+	public static <T> boolean testsSkipNull(Function<T, Boolean> tester, Supplier<T> tSup) {
+		if (tester == null) throwNullArgumentException("tester");
+		if (tSup == null) throwNullArgumentException("supplier");
 		final T t = tSup.get();
 		return t != null && tester.apply(t);
 	}
 	
-	static public <T> T testsSkipNull(Boolean tester, Supplier<T> trueResult, Supplier<T> falseResult) {
+	public static <T> T testsSkipNull(Boolean tester, Supplier<T> trueResult, Supplier<T> falseResult) {
 		if (tester == null) return null;
-		if (trueResult == null || falseResult == null) DebugElement.throwNullArgumentException("supplier");
+		if (trueResult == null || falseResult == null) throwNullArgumentException("supplier");
 		return tester ? trueResult.get() : falseResult.get();
 	}
 	
 	@SafeVarargs
-	static public Boolean testsSkipNullException(Supplier<Boolean>... conjTesters) {
+	public static Boolean testsSkipNullException(Supplier<Boolean>... conjTesters) {
 		try {
 			return tests(true, tester-> get(tester, e-> null), conjTesters);
 			
@@ -759,8 +735,8 @@ public interface Elemental {
 	}
 	
 	@SafeVarargs
-	static public Boolean testsAnySkipNull(Supplier<Boolean>... disjTesters) {
-		return tests(false, tester-> getSkipNull(tester), disjTesters);
+	public static Boolean testsAnySkipNull(Supplier<Boolean>... disjTesters) {
+		return tests(false, Elemental::getSkipNull, disjTesters);
 	}
 	
 	/**
@@ -768,25 +744,22 @@ public interface Elemental {
 	 * @return the first testing true if there is, or false if once tested, or null.
 	 */
 	@SafeVarargs
-	static public Boolean testsFirst(Supplier<Boolean>... disjTesters) {
-		Boolean result = null;
+	public static Boolean testsFirst(BooleanSupplier... disjTesters) {
+		boolean result = false;
 		if (disjTesters != null && disjTesters.length > 0) 
-			for (Supplier<Boolean> sup : disjTesters) {
-				final Boolean subr = sup.get();
-				if (subr != null) {
-					result = subr;
-					if (subr) break;
-				}
+			for (BooleanSupplier sup : disjTesters) {
+			    result = sup.getAsBoolean();
+			    if (result) break;
 			}
 		return result;
 	}
 	
 	@SafeVarargs
-	static public Boolean testsAnySkipNullException(Supplier<Boolean>... disjTesters) {
+	public static Boolean testsAnySkipNullException(Supplier<Boolean>... disjTesters) {
 		try {
 			return tests(
 					false, 
-					tester-> getSkipException(tester), 
+					Elemental::getSkipException, 
 					disjTesters);
 			
 		} catch (Exception e) {
@@ -795,10 +768,111 @@ public interface Elemental {
 	}
 	
 	@SafeVarargs
-	static public <T> List<T> toList(T... array) {
+	public static <T> List<T> toList(T... array) {
 		return array == null || array.length == 0 
 				? Collections.emptyList() 
 				: Arrays.asList(array);
 	}
 	
+	/************************************************************
+	 * The following exception creation methods are not removable
+	 ************************************************************/
+	
+    private static boolean haltsException = false;
+
+    public static void haltException() {
+        haltsException = true;
+    }
+    
+    /**
+     * Temporarily halting for printing exception stack trace and debugging. 
+     * @param source
+     */
+    public static void haltException(Exception source) {
+        haltException();
+        try {
+            throwHaltableException(source);
+        } catch (Exception e) {
+            haltException();
+        }
+    }
+    
+    public static void passException() {
+        haltsException = false;
+//      if (this instanceof SystemElement) ((SystemElement) this).clear();
+    }
+    
+    public static <E extends Throwable, T> T throwHaltableException(E e) 
+            throws E {
+        if (e == null) throwNullArgumentException("exception");
+//      final Throwable cause = e.getCause();
+//      if (haltsException || (cause != null && cause.getCause() != null)) {
+        if (haltsException) {
+            e.printStackTrace();
+            passException();
+        }
+        throw e;
+    }
+    
+    public static <T> T throwIllegalStateException(String msg) 
+            throws IllegalStateException {
+        return throwHaltableException(new IllegalStateException(msg));
+    }
+    
+    public static <T> T throwInvalidityException(String message) 
+            throws IllegalArgumentException {
+        return throwInvalidityException(message, null);
+    }
+    
+    /**
+     * For all easily intercept-able exception breakpoints!
+     * 
+     * @param message
+     * @param source 
+     * @throws IllegalArgumentException
+     */
+    public static <T> T throwInvalidityException(
+            String message, Exception source) 
+                    throws IllegalArgumentException {
+        if (message == null) throwNullArgumentException("message");
+        
+        try {
+            haltException();
+            message = "Invalid: " + message + "! Please contact the development team!";
+            source = source == null 
+                    ? new IllegalArgumentException(message)
+                            : new IllegalArgumentException(message, source);
+            return throwHaltableException(source);
+            
+        } catch (IllegalArgumentException e1) {
+            throw e1;
+        } catch (Exception e) {
+            return null;    
+        }
+    }
+    
+    public static <T> T throwNullArgumentException(String arg) {
+        return throwNullArgumentException(arg, null);
+    }
+    
+//  public static <T> T throwNullArgumentException(String arg, Supplier<T> returnAlt) {
+//      return throwNullArgumentException(arg, null);
+//  }
+    
+    public static <T> T throwNullArgumentException(String arg, Exception e) 
+            throws IllegalArgumentException {
+        haltException();
+        return throwHaltableException(new IllegalArgumentException("must provide some " + arg, e));
+    }
+    
+    public static <T> T throwStackOverflowException() 
+            throws StackOverflowError {
+        haltException();
+        return throwHaltableException(new StackOverflowError("stack overflow?"));
+    }
+    
+    public static <T> T throwUnhandledException(Exception source) {
+        return throwInvalidityException("unhandled exception", source);
+    }
+    
 }
