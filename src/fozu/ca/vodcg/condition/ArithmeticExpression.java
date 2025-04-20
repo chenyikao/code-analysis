@@ -4,6 +4,7 @@
 package fozu.ca.vodcg.condition;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -88,67 +89,68 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	 * TODO: merging with {@link Assignable#fromCanonicalIteratorOf(ForStatement)}?
 	 * TODO? return Expression.from(loop.getIterationExpression()).getConstantPart()
 	 * 
-	 * @param loop
-	 * @param sideEffect
-	 * @param condGen 
-	 * @return
+	 * @param loop - assumed a valid loop iteration expression
+	 * @param rtAddr
+	 * @param condGen
+	 * @return an increment map of <incrementor, increment>
 	 */
-	public static ArithmeticExpression fromIncrementOf(ForStatement loop, final ASTAddressable rtAddr, VODCondGen condGen) {
+	public static Map<Expression, ArithmeticExpression> fromIncrementOf(ForStatement loop, final ASTAddressable rtAddr, VODCondGen condGen) {
 		if (loop == null) return null;
 		
-		org.eclipse.jdt.core.dom.Expression exp = loop.getIterationExpression();	// assumed a valid loop iteration expression
-		if (exp instanceof IASTUnaryExpression) {
-			IASTUnaryExpression uie = (IASTUnaryExpression) exp;
+		for (org.eclipse.jdt.core.dom.Expression exp : loop.updaters()) {
+		    if (exp instanceof IASTUnaryExpression) {
+		        IASTUnaryExpression uie = (IASTUnaryExpression) exp;
 //			if (LValueComputer.getDependentOnBy(uie.getOperand(), it) != null) 
-			switch (uie.getOperator()) {
-			/* 					++var
-			 * 					var++
-			 * 					--var
-			 * 					var--
-			 */
-			case IASTUnaryExpression.op_prefixIncr:
-			case IASTUnaryExpression.op_postFixIncr:	return Int.ONE;
-			case IASTUnaryExpression.op_prefixDecr:
-			case IASTUnaryExpression.op_postFixDecr:	return Int.MINUS_ONE;
-			}
-			
-		} else if (exp instanceof IASTBinaryExpression) try {
-			final IASTBinaryExpression bie = (IASTBinaryExpression) exp;	// binary incr-expr
-			final org.eclipse.jdt.core.dom.Expression bieRhs = bie.getOperand2();
+		        switch (uie.getOperator()) {
+		        /* 					++var
+		         * 					var++
+		         * 					--var
+		         * 					var--
+		         */
+		        case IASTUnaryExpression.op_prefixIncr:
+		        case IASTUnaryExpression.op_postFixIncr:	return Int.ONE;
+		        case IASTUnaryExpression.op_prefixDecr:
+		        case IASTUnaryExpression.op_postFixDecr:	return Int.MINUS_ONE;
+		        }
+		        
+		    } else if (exp instanceof IASTBinaryExpression) try {
+		        final IASTBinaryExpression bie = (IASTBinaryExpression) exp;	// binary incr-expr
+		        final org.eclipse.jdt.core.dom.Expression bieRhs = bie.getOperand2();
 //			if (LValueComputer.getDependentOnBy(bie.getOperand1(), it) != null) 
-			switch (bie.getOperator()) {
-			/* 					var += incr
-			 * 					var -= incr
-			 */
-			case IASTBinaryExpression.op_plusAssign: 
-				return Elemental.getSkipNull(()-> (ArithmeticExpression) Expression.fromRecursively(bieRhs, rtAddr, condGen));
-			case IASTBinaryExpression.op_minusAssign: 
-				return Elemental.getSkipNull(()-> (ArithmeticExpression) Expression.fromRecursively(bieRhs, rtAddr, condGen).minus());
-				
-			case IASTBinaryExpression.op_assign:
-				if (bieRhs instanceof IASTBinaryExpression) {
-					final IASTBinaryExpression asgr = (IASTBinaryExpression) bieRhs;	// assigner
-					final org.eclipse.jdt.core.dom.Expression asgrOp1 = asgr.getOperand1(), 
-							asgrOp2 = asgr.getOperand2();
-					final Name citName = ASTUtil.getNameOf(bie.getOperand1()), 
-							asgrOp1Name = ASTUtil.getNameOf(asgrOp1);
-					switch (asgr.getOperator()) {
-					case IASTBinaryExpression.op_plus:
-						// 					var = var + incr
-						if (ASTUtil.equals(citName, asgrOp1Name, true)) return Elemental.getSkipNull(()-> 
-							(ArithmeticExpression) Expression.fromRecursively(asgrOp2, rtAddr, condGen));
-						//					var = incr + var
-						if (ASTUtil.equals(citName, ASTUtil.getNameOf(asgrOp2), true)) return Elemental.getSkipNull(()-> 
-							(ArithmeticExpression) Expression.fromRecursively(asgrOp1, rtAddr, condGen));
-					case IASTBinaryExpression.op_minus:	
-						// 					var = var - incr
-						if (ASTUtil.equals(citName, asgrOp1Name, true)) return Elemental.getSkipNull(()-> 
-							(ArithmeticExpression) Expression.fromRecursively(asgrOp2, rtAddr, condGen).minus());
-					}
-				}
-			}
-		} catch (Exception e) {
-			DebugElement.throwUnhandledException(e);
+		        switch (bie.getOperator()) {
+		        /* 					var += incr
+		         * 					var -= incr
+		         */
+		        case IASTBinaryExpression.op_plusAssign: 
+		            return Elemental.getSkipNull(()-> (ArithmeticExpression) Expression.fromRecursively(bieRhs, rtAddr, condGen));
+		        case IASTBinaryExpression.op_minusAssign: 
+		            return Elemental.getSkipNull(()-> (ArithmeticExpression) Expression.fromRecursively(bieRhs, rtAddr, condGen).minus());
+		            
+		        case IASTBinaryExpression.op_assign:
+		            if (bieRhs instanceof IASTBinaryExpression) {
+		                final IASTBinaryExpression asgr = (IASTBinaryExpression) bieRhs;	// assigner
+		                final org.eclipse.jdt.core.dom.Expression asgrOp1 = asgr.getOperand1(), 
+		                        asgrOp2 = asgr.getOperand2();
+		                final Name citName = ASTUtil.getNameOf(bie.getOperand1()), 
+		                        asgrOp1Name = ASTUtil.getNameOf(asgrOp1);
+		                switch (asgr.getOperator()) {
+		                case IASTBinaryExpression.op_plus:
+		                    // 					var = var + incr
+		                    if (ASTUtil.equals(citName, asgrOp1Name, true)) return Elemental.getSkipNull(()-> 
+		                    (ArithmeticExpression) Expression.fromRecursively(asgrOp2, rtAddr, condGen));
+		                    //					var = incr + var
+		                    if (ASTUtil.equals(citName, ASTUtil.getNameOf(asgrOp2), true)) return Elemental.getSkipNull(()-> 
+		                    (ArithmeticExpression) Expression.fromRecursively(asgrOp1, rtAddr, condGen));
+		                case IASTBinaryExpression.op_minus:	
+		                    // 					var = var - incr
+		                    if (ASTUtil.equals(citName, asgrOp1Name, true)) return Elemental.getSkipNull(()-> 
+		                    (ArithmeticExpression) Expression.fromRecursively(asgrOp2, rtAddr, condGen).minus());
+		                }
+		            }
+		        }
+		    } catch (Exception e) {
+		        DebugElement.throwUnhandledException(e);
+		    }
 		}
 		
 		return null;
