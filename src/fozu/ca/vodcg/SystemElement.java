@@ -29,16 +29,16 @@ import fozu.ca.vodcg.util.ASTUtil;
  *
  */
 @SuppressWarnings("removal")
-public abstract class SystemElement extends DebugElement implements Elemental {
+public abstract class SystemElement extends DebugElement /*extends Elemental */{
 
 	private static final Method METHOD_EQUALS = 
-			Elemental.getMethod(SystemElement.class, "equals", Object.class);
+			getMethod(SystemElement.class, "equals", Object.class);
 //	private static final Method METHOD_HASH_CODE = 
 //			Elemental.getMethod(SystemElement.class, "hashCode");
 //	private static final Method METHOD_IS_CONSTANT = 
 //			getMethod(Element.class, "isConstant");
 	private static final Method METHOD_TO_CONSTANT = 
-			Elemental.getMethod(SystemElement.class, "toConstant");
+			getMethod(SystemElement.class, "toConstant");
 	
 	/**
 	 * Clustering lambda instances since a lambda function may differ 
@@ -206,37 +206,19 @@ public abstract class SystemElement extends DebugElement implements Elemental {
 	
 	
 
-	@SafeVarargs
-	static public <T> void consume(Consumer<T> con, Supplier<T> input, Consumer<Exception> conAlt, 
-			Supplier<Boolean>... conjTesters) {
-		Elemental.consume(con, input, conAlt, conjTesters);
-	}
-	
-	public <T, E extends Exception> void consumeNonNull(
-			final Consumer<T> con, final TrySupplier<T, E> inputSup, 
-			@SuppressWarnings("unchecked") Supplier<Boolean>... conjTesters) throws E {
-		Elemental.consumeNonNull(con, inputSup, conjTesters);
-	}
-	
-	public <T> void consumeSkipNull(
-			Consumer<T> con, Supplier<T> inputSup, 
-			@SuppressWarnings("unchecked") Supplier<Boolean>... conjTesters) {
-		Elemental.consumeSkipNull(con, inputSup, conjTesters);
-	}
-	
-	public <T> void consumeSkipNullException(
+	public <T> void guardConsumeSkipNullException(
 			Consumer<T> con, Supplier<T> inputSup, 
 			@SuppressWarnings("unchecked") Supplier<Boolean>... conjTesters) {
 		guard(()-> Elemental.consumeSkipNullException(con, inputSup, conjTesters));
 	}
 	
-	static public <T> boolean addSkipNull(
+	public static <T> boolean addSkipNull(
 			Collection<T> col, Supplier<T> eleSup) 
 			throws Exception {
 		return Elemental.addSkipNull(col, eleSup);
 	}
 	
-	static public <T> boolean addSkipException(Collection<T> col, T ele) {
+	public static <T> boolean addSkipException(Collection<T> col, T ele) {
 		try {
 			return Elemental.add(
 					col, (Supplier<T>) ()-> ele, ASTUtil.DEFAULT_EXCEPTION);
@@ -247,14 +229,14 @@ public abstract class SystemElement extends DebugElement implements Elemental {
 	}
 	
 	@SafeVarargs
-	static public <T> boolean addAllSkipNull(Collection<T> col, 
+	public static <T> boolean addAllSkipNull(Collection<T> col, 
 			Supplier<Collection<? extends T>> col2Sup, 
 			Supplier<Boolean>... conjTesters) {
 		return Elemental.addAllSkipNull(col, col2Sup, conjTesters);
 	}
 	
 	@SuppressWarnings("unchecked")
-	static public <T, E extends Exception> boolean addAllSkipNull(Collection<T> col, 
+	public static <T, E extends Exception> boolean addAllSkipNull(Collection<T> col, 
 			TrySupplier<Collection<? extends T>, E> col2Sup) throws E {
 		final List<E> nonSkips = new ArrayList<>();
 		final boolean result = Elemental.addAllSkipNull(col, col2Sup.toSupplier(nonSkips));
@@ -265,84 +247,48 @@ public abstract class SystemElement extends DebugElement implements Elemental {
 		return result;
 	}
 	
-	static public <T> boolean addAllSkipException(
+	public static <T> boolean addAllSkipException(
 			Collection<T> col, Supplier<Collection<? extends T>> col2Sup) {
 		return Elemental.addAllSkipException(col, col2Sup);
 	}
 	
-	static public <T, U, R> R apply(
+	
+
+	public static <T, U, R> R apply(
 			BiFunction<T, U, R> func, Supplier<T> input1, Supplier<U> input2, Function<Exception, R> returnAlt) {
 		return Elemental.apply(func, input1, input2, returnAlt);
 	}
 
 	@SafeVarargs
-	static public <T, R> R apply(
+	public static <T, R> R apply(
 			Function<T, R> func, Supplier<T> input, Function<Exception, R> returnAlt, 
 			Supplier<Boolean>... conjTesters) {
 		return Elemental.apply(func, input, returnAlt, conjTesters);
 	}
 	
 	@SafeVarargs
-	static public <T, R, E extends Exception> R apply(
+	public static <T, R, E extends Exception> R apply(
 			TryFunction<T, R> func, Supplier<T> input, 
 			TrySupplier<R, E> returnAltNull, TryFunction<Exception, R> returnAltExc, 
 			Class<? extends Exception>... skips) {
 		return Elemental.apply(func, input, returnAltNull, returnAltExc, skips);
 	}
 	
-	static public String applySkipEmpty(
-			Function<String, String> func, Supplier<String> inputSup) 
-					throws Exception {
-		return Elemental.applySkipEmpty(func, inputSup);
-	}
-
-	static public <T, R> R applySkipNull(
-			Function<T, R> func, Supplier<T> inputSup) {
-//			Function<T, R> func, Supplier<T> inputSup, Supplier<Boolean>... conjTesters) {
-		return Elemental.applySkipNull(func, inputSup);
-//		return Elemental.applySkipNull(func, inputSup, conjTesters);
-//		return super.applySkipNull(func, inputSup, conjTesters);
-	}
-	
-	public <T, R> R applySkipNull(
-			Function<T, R> func, 
-			Supplier<T> inputSup, Function<Exception, R> nnpeFunc, 
-			@SuppressWarnings("unchecked") Supplier<Boolean>... conjTesters) {
-		return Elemental.applySkipNull(func, inputSup, nnpeFunc, conjTesters);
-//		return super.applySkipNull(func, inputSup, conjTesters);
-	}
-	
 	@SafeVarargs
-	static public <T, R> R applySkipNullThrow(
+	public static <T, R> R applySkipNullThrow(
 			TryFunction<T, R> func, Supplier<T> inputSup, Class<? extends Exception>... skips) 
 					throws Exception {
 		return Elemental.applySkipNull(func, inputSup, skips);
-	}
-	
-	public void run(final Runnable r, 
-			@SuppressWarnings("unchecked") Supplier<Boolean>... conjTesters) {
-		Elemental.run(r, conjTesters);
 	}
 	
 	public static void run(Runnable r, Consumer<Exception> alt) {
 		get(()-> {r.run(); return null;}, e-> {alt.accept(e); return null;});
 	}
 	
-	static public void runSkipNull(final Runnable r) {
-		Elemental.runSkipNull(r);
-	}
-	
-	static public void runSkipException(final Runnable r) {
-		Elemental.runSkipException(r);
-	}
+
 	
 	public static <T> T get(Supplier<T> sup, Supplier<T> nullAlt) {
 		return Elemental.get(sup, nullAlt, null);
-	}
-	
-	public static <T> T get(Supplier<T> sup, Function<Exception, T> alt) {
-//		return super.get(sup, alt);
-		return Elemental.get(sup, alt);
 	}
 	
 	public static <T> T get(
@@ -370,15 +316,6 @@ public abstract class SystemElement extends DebugElement implements Elemental {
 	
 	public static <T> T getSkipEmpty(Function<Collection<T>, T> func, Supplier<Collection<T>> sup) {
 		return Elemental.getSkipEmpty(func, sup);
-	}
-	
-	public <T> T getSkipException(Supplier<T> sup) {
-//		return DebugElement.getSkipException(this, sup);
-		return Elemental.getSkipException(sup);
-	}
-	
-	public <T, E extends Exception> T getTry(TrySupplier<T, E> sup, Function<Exception, T> alt) {
-		return Elemental.getTry(sup, alt);
 	}
 	
 	public static <T, E extends Exception> T getThrow(
@@ -414,7 +351,7 @@ public abstract class SystemElement extends DebugElement implements Elemental {
 	
 
 	
-	final public void guard(Runnable runnable, Object... args) {
+	public final void guard(Runnable runnable, Object... args) {
 		guard(()-> {runnable.run(); return null;}, ()-> null, args);
 	}
 	
@@ -440,7 +377,7 @@ public abstract class SystemElement extends DebugElement implements Elemental {
 //				args);
 	}
 	
-	final public <T> T guard(Supplier<T> returnSupplier, 
+	public final <T> T guard(Supplier<T> returnSupplier, 
 			Supplier<T> reenterSupplier, Method callee) {
 		try {
 			return callee == null
@@ -473,7 +410,7 @@ public abstract class SystemElement extends DebugElement implements Elemental {
 		return guard(caller, callee, reenterSupplier, 1, excSupplier, args);
 	}
 	
-	static public <T> T guard(
+	public static <T> T guard(
 			SystemElement caller, Supplier<T> callee, 
 			Supplier<T> reenterSupplier, int reenterCount,
 			Function<Exception, T> excSupplier, Object... args) {
@@ -940,57 +877,6 @@ public abstract class SystemElement extends DebugElement implements Elemental {
 		return re;
 	}
 	
-	
-	
-	static public boolean tests(final Boolean tester) {
-		return Elemental.tests(tester);
-	}
-	
-	static public boolean tests(final Supplier<Boolean> tester) {
-		return Elemental.tests(tester);
-	}
-	
-	static public boolean testsNot(final Boolean tester) {
-		return Elemental.testsNot(tester);
-	}
-	
-	static public boolean testsNot(final Supplier<Boolean> tester) {
-		return Elemental.testsNot(tester);
-	}
-	
-	static public <T> boolean testsSkipNull(Function<T, Boolean> tester, Supplier<T> tSup) {
-		return Elemental.testsSkipNull(tester, tSup);
-	}
-	
-	static public boolean testsNonNull(Supplier<Boolean> tester) {
-		return Elemental.testsNonNull(tester);
-	}
-	
-	@SafeVarargs
-	static public Boolean testsAnySkipNull(Supplier<Boolean>... disjTesters) {
-		return Elemental.testsAnySkipNull(disjTesters);
-	}
-	
-	@SafeVarargs
-	static public Boolean testsAnySkipNullException(Supplier<Boolean>... disjTesters) {
-		return Elemental.testsAnySkipNullException(disjTesters);
-	}
-	
-	@SafeVarargs
-	static public Boolean testsFirst(Supplier<Boolean>... disjTesters) {
-		return Elemental.testsFirst(disjTesters);
-	}
-	
-	@SafeVarargs
-	static public Boolean testsSkipNull(Supplier<Boolean>... conjTesters) {
-		return Elemental.testsSkipNull(conjTesters);
-	}
-		
-	public <T> T testsSkipNull(Boolean tester, Supplier<T> trueResult, Supplier<T> falseResult) {
-//		return super.testsSkipNull(tester, trueResult, falseResult);
-		return Elemental.testsSkipNull(tester, trueResult, falseResult);
-	}
-
 	
 	
 	public <T, E extends Exception> T trySkipException(

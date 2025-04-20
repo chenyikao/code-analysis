@@ -18,6 +18,8 @@ import org.eclipse.jdt.core.dom.IASTInitializerList;
 import org.eclipse.jdt.core.dom.IASTName;
 import org.eclipse.jdt.core.dom.IASTNode;
 import org.eclipse.jdt.core.dom.IASTUnaryExpression;
+import org.eclipse.jdt.core.dom.PostfixExpression;
+import org.eclipse.jdt.core.dom.PrefixExpression;
 
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.condition.ArithmeticExpression;
@@ -40,7 +42,7 @@ import fozu.ca.vodcg.util.ASTUtil;
 public class Assignment extends SystemElement {
 
 	// union structure: assert !(asmAsm != null && asmDcl != null);
-	private org.eclipse.jdt.core.dom.Assignment asmAsm = null;
+	private org.eclipse.jdt.core.dom.Expression asmAsm = null;
 	private VariableDeclaration asmDcl = null;
 	private Proposition asmEq = null;
 	
@@ -186,18 +188,21 @@ public class Assignment extends SystemElement {
 		return les;
 	}
 	
-	public org.eclipse.jdt.core.dom.Assignment getAssignerClause() {
+	@SuppressWarnings("removal")
+    public org.eclipse.jdt.core.dom.Expression getAssignerClause() {
 		assert !(asmAsm != null && asmDcl != null);
 		
 		if (asmDcl != null) return asmDcl.getInitializerClause();
 		
-		if (asmAsm instanceof IASTUnaryExpression) 
-			return ((IASTUnaryExpression) asmAsm).getOperand();
+		if (asmAsm instanceof PrefixExpression) 
+			return ((PrefixExpression) asmAsm).getOperand();     // TODO: +-*/ 1?
+		if (asmAsm instanceof PostfixExpression) 
+		    return ((PostfixExpression) asmAsm).getOperand();    // TODO: +-*/ 1?
 
 		if (ASTAssignableComputer.isAbbreviatedBinaryAssignment(asmAsm)) 
-			return asmAsm;
+			return ((org.eclipse.jdt.core.dom.Assignment) asmAsm).getLeftHandSide(); // TODO: +-*/ getRightHandSide()?
 		if (ASTAssignableComputer.isPlainBinaryAssignment(asmAsm)) 
-			return ((IASTBinaryExpression) asmAsm).getOperand2();
+			return ((org.eclipse.jdt.core.dom.Assignment) asmAsm).getRightHandSide();
 		
 		return throwTodoException(asmAsm != null
 				? ASTUtil.toStringOf(asmAsm) : "assignment without assigners");
