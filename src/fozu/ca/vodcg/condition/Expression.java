@@ -15,6 +15,7 @@ import java.util.TreeSet;
 import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.IASTArraySubscriptExpression;
 import org.eclipse.jdt.core.dom.IASTBinaryExpression;
 import org.eclipse.jdt.core.dom.IASTCastExpression;
@@ -33,6 +34,7 @@ import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IEnumeration;
 import org.eclipse.jdt.core.dom.IEnumerator;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.InfixExpression;
 
 import fozu.ca.Elemental;
 import fozu.ca.MultiPartitionable;
@@ -230,8 +232,8 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 		else if (exp instanceof IASTUnaryExpression) 
 			e = fromRecursively((IASTUnaryExpression) exp, rtAddr, condGen);
 		
-		else if (exp instanceof IASTBinaryExpression) 
-			e = fromRecursively((IASTBinaryExpression) exp, rtAddr, condGen);
+		else if (exp instanceof org.eclipse.jdt.core.dom.Assignment) 
+			e = fromRecursively((org.eclipse.jdt.core.dom.Assignment) exp, rtAddr, condGen);
 		
 //		else if (exp instanceof IASTArraySubscriptExpression) 
 //			e = ArrayPointer.fromRecursively((IASTArraySubscriptExpression) exp, rtAddr, condGen);
@@ -440,25 +442,25 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 		
 
 	private static Expression fromRecursively(
-			IASTBinaryExpression binary, final ASTAddressable rtAddr, VODCondGen condGen) 
+	        Assignment binary, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
-		final Expression lhs = fromRecursively(binary.getOperand1(), rtAddr, condGen), 
-				rhs = fromRecursively(binary.getOperand2(), rtAddr, condGen);
-		int binaryOp = binary.getOperator();
+		final Expression lhs = fromRecursively(binary.getLeftHandSide(), rtAddr, condGen), 
+				rhs = fromRecursively(binary.getRightHandSide(), rtAddr, condGen);
+		final Assignment.Operator binaryOp = binary.getOperator();
 //		Function scope = Function.getFunctionScopeOf(binary, condGen);
 		
-		switch (binaryOp) {
-		case IASTBinaryExpression.op_assign:
-		case IASTBinaryExpression.op_divideAssign:
-		case IASTBinaryExpression.op_minusAssign:
-		case IASTBinaryExpression.op_moduloAssign:
-		case IASTBinaryExpression.op_multiplyAssign:
-		case IASTBinaryExpression.op_plusAssign:
-		case IASTBinaryExpression.op_binaryAndAssign:
-		case IASTBinaryExpression.op_binaryOrAssign:
-		case IASTBinaryExpression.op_binaryXorAssign:
-		case IASTBinaryExpression.op_shiftLeftAssign:
-		case IASTBinaryExpression.op_shiftRightAssign:
+		if (binaryOp == Assignment.Operator.ASSIGN
+		        || binaryOp == Assignment.Operator.DIVIDE_ASSIGN
+		        || binaryOp == Assignment.Operator.MINUS_ASSIGN
+		        || binaryOp == Assignment.Operator.REMAINDER_ASSIGN
+		        || binaryOp == Assignment.Operator.TIMES_ASSIGN
+		        || binaryOp == Assignment.Operator.PLUS_ASSIGN
+		        || binaryOp == Assignment.Operator.BIT_AND_ASSIGN
+		        || binaryOp == Assignment.Operator.BIT_OR_ASSIGN
+		        || binaryOp == Assignment.Operator.BIT_XOR_ASSIGN
+		        || binaryOp == Assignment.Operator.LEFT_SHIFT_ASSIGN
+		        || binaryOp == Assignment.Operator.RIGHT_SHIFT_SIGNED_ASSIGN
+		        || binaryOp == Assignment.Operator.RIGHT_SHIFT_UNSIGNED_ASSIGN) {
 			/* Assignment with equality side effect:
 			 *  =, /=, -=, %=, *=, +=, TODO: &=, |=, ^=, <<=, >>=
 			 */
@@ -466,48 +468,51 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 //			lhs.setAssigned(eq.cacheAssignerIf());
 			lhs.andSideEffect(()-> eq);
 			return lhs;
-			
+		}
+        return throwTodoException("unsupported binary expression");
+	}
+
+	@SuppressWarnings("removal")
+    private static Expression fromRecursively(
+	        InfixExpression binary, final ASTAddressable rtAddr, VODCondGen condGen) 
+                    throws ASTException {
+        final Expression lhs = fromRecursively(binary.getLeftOperand(), rtAddr, condGen), 
+                rhs = fromRecursively(binary.getRightOperand(), rtAddr, condGen);
+        final InfixExpression.Operator binaryOp = binary.getOperator();
 		// binary proposition
-		case IASTBinaryExpression.op_logicalAnd:
+        if (binaryOp == InfixExpression.Operator.CONDITIONAL_AND)
 			return And.from((Proposition) lhs, ()-> (Proposition) rhs);
 //			return Elemental.getNonNull(()-> And.get((Proposition) lhs, ()-> (Proposition) rhs));
-		case IASTBinaryExpression.op_logicalOr:
+        if (binaryOp == InfixExpression.Operator.CONDITIONAL_OR)
 			return Or.from((Proposition) lhs, ()-> (Proposition) rhs);
 //			return Elemental.getNonNull(()-> Or.get((Proposition) lhs, ()-> (Proposition) rhs));
 
-		case IASTBinaryExpression.op_equals:
-		case IASTBinaryExpression.op_notequals:
-		case IASTBinaryExpression.op_greaterEqual:
-		case IASTBinaryExpression.op_greaterThan:
-		case IASTBinaryExpression.op_lessEqual:
-		case IASTBinaryExpression.op_lessThan:
+        if (binaryOp == InfixExpression.Operator.EQUALS
+                || binaryOp == InfixExpression.Operator.NOT_EQUALS
+                || binaryOp == InfixExpression.Operator.GREATER_EQUALS
+                || binaryOp == InfixExpression.Operator.GREATER
+                || binaryOp == InfixExpression.Operator.LESS_EQUALS
+                || binaryOp == InfixExpression.Operator.LESS)
 			// binary order relation
 			return OrderRelation.fromRecursively(binaryOp, lhs, rhs);
 //			return Elemental.getNonNull(()-> OrderRelation.fromRecursively(binaryOp, lhs, rhs, condGen));
 		
-		case IASTBinaryExpression.op_divide:
-		case IASTBinaryExpression.op_max:
-		case IASTBinaryExpression.op_min:
-		case IASTBinaryExpression.op_minus:
-		case IASTBinaryExpression.op_modulo:
-		case IASTBinaryExpression.op_multiply:
-		case IASTBinaryExpression.op_shiftLeft:
-		case IASTBinaryExpression.op_plus:
-		case IASTBinaryExpression.op_binaryAnd:
+        if (binaryOp == InfixExpression.Operator.DIVIDE
+                || binaryOp == InfixExpression.Operator.MINUS
+                || binaryOp == InfixExpression.Operator.REMAINDER
+                || binaryOp == InfixExpression.Operator.TIMES
+                || binaryOp == InfixExpression.Operator.LEFT_SHIFT
+                || binaryOp == InfixExpression.Operator.PLUS
+                || binaryOp == InfixExpression.Operator.AND)
 			// binary arithmetics
 			return Arithmetic.from(binaryOp, lhs, rhs);
 //			return Elemental.getNonNull(()-> Arithmetic.from(binaryOp, lhs, rhs));
 			
-		case IASTBinaryExpression.op_binaryOr:
-		case IASTBinaryExpression.op_binaryXor:
-		case IASTBinaryExpression.op_ellipses:
-		case IASTBinaryExpression.op_pmarrow:
-		case IASTBinaryExpression.op_pmdot:
-		case IASTBinaryExpression.op_shiftRight:
-		default:
-			throwTodoException("unsupported binary expression");
-			return null;
-		}
+//        if (binaryOp == InfixExpression.Operator.OR
+//                || binaryOp == InfixExpression.Operator.XOR
+//                || binaryOp == InfixExpression.Operator.RIGHT_SHIFT_SIGNED
+//                || binaryOp == InfixExpression.Operator.RIGHT_SHIFT_UNSIGNED)
+        return throwTodoException(binaryOp + "unsupported binary expression");
 	}
 
 	

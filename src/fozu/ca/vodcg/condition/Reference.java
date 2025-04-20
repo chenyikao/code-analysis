@@ -4,7 +4,6 @@
 package fozu.ca.vodcg.condition;
 
 import java.lang.reflect.Method;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -13,7 +12,7 @@ import java.util.function.Function;
 
 import org.eclipse.jdt.core.dom.Name;
 
-import fozu.ca.Elemental;
+import fozu.ca.DebugElement;
 import fozu.ca.condition.SerialFormat;
 import fozu.ca.vodcg.IncomparableException;
 import fozu.ca.vodcg.ReenterException;
@@ -33,10 +32,12 @@ extends Referenceable {
 
 	public static final String ILLEGAL_SUBJECT_EXCEPTION = "Must provide a non-null subject to reference!";
 
-	private static final Method METHOD_DEPENDS_ON = 
-			Elemental.getMethod(Reference.class, "dependsOn", Expression.class);
-	private static final Method METHOD_GET_SUBJECT = 
-			Elemental.getMethod(Reference.class, "getSubject");
+	@SuppressWarnings("removal")
+    private static final Method METHOD_DEPENDS_ON = 
+	        DebugElement.getMethod(Reference.class, "dependsOn", Expression.class);
+	@SuppressWarnings("removal")
+    private static final Method METHOD_GET_SUBJECT = 
+	        DebugElement.getMethod(Reference.class, "getSubject");
 
 	
 	

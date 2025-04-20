@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.IASTBinaryExpression;
+import org.eclipse.jdt.core.dom.InfixExpression;
 
 import fozu.ca.DebugElement;
 import fozu.ca.DuoKeyMap;
@@ -227,23 +228,21 @@ public class OrderRelation extends Proposition {
 	 * 
 	 * @return
 	 */
-	public static Proposition fromRecursively(int expOp, Expression lhs, Expression rhs) {
+	public static Proposition fromRecursively(InfixExpression.Operator expOp, Expression lhs, Expression rhs) {
 		if (lhs == null) throwNullArgumentException("lhs");
 		if (rhs == null) throwNullArgumentException("rhs");
 		
 		Operator op = null;
-		switch (expOp) {
 		// >=
-		case IASTBinaryExpression.op_greaterEqual:	op = Operator.GreaterEqual; break;
+		if (expOp == InfixExpression.Operator.GREATER_EQUALS)     op = Operator.GreaterEqual;
 		// >
-		case IASTBinaryExpression.op_greaterThan:	op = Operator.GreaterThan; break;
+		else if (expOp == InfixExpression.Operator.GREATER)       op = Operator.GreaterThan;
 		// <=
-		case IASTBinaryExpression.op_lessEqual:		op = Operator.LessEqual; break;
+		else if (expOp == InfixExpression.Operator.LESS_EQUALS)   op = Operator.LessEqual;
 		// <
-		case IASTBinaryExpression.op_lessThan:		op = Operator.LessThan; break;
+		else if (expOp == InfixExpression.Operator.LESS)          op = Operator.LessThan;
 		// !=: TODO creating Inequality class with Set of operands?
-		case IASTBinaryExpression.op_notequals:		op = Operator.NotEqual; break;
-		}
+		else if (expOp == InfixExpression.Operator.NOT_EQUALS)    op = Operator.NotEqual;
 
 		if (op != null) {
 //			if (Elemental.tests(()-> lhs.isConstant() && rhs.isConstant())) throwReductionException();

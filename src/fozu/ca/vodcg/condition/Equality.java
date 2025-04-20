@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.NavigableSet;
 import java.util.Set;
 
+import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.ast.IASTBinaryExpression;
 import org.eclipse.jdt.core.dom.ast.IASTDeclarator;
 import org.eclipse.jdt.core.dom.ast.IASTEqualsInitializer;
@@ -49,7 +51,11 @@ implements AssignableExpression {
 //		add(lhs, rhs);
 //	}
 	
-	/**
+	private static final String UNSUPPORTED_EQUALITY = "unsupported equality";
+
+
+
+    /**
 	 * @param exps - may not be empty.
 	 * @param scopeManager 
 	 */
@@ -147,12 +153,12 @@ implements AssignableExpression {
 			// Subtraction assignment: clause--, --clause
 			case IASTUnaryExpression.op_postFixDecr	: 
 			case IASTUnaryExpression.op_prefixDecr	: 
-				return fromFunctional(IASTBinaryExpression.op_minusAssign, pvp, Int.ONE);
+				return fromFunctional(Assignment.Operator.MINUS_ASSIGN, pvp, Int.ONE);
 				
 				// Addition assignment: clause++, ++clause
 			case IASTUnaryExpression.op_postFixIncr	: 
 			case IASTUnaryExpression.op_prefixIncr	: 
-				return fromFunctional(IASTBinaryExpression.op_plusAssign, pvp, Int.ONE);
+				return fromFunctional(Assignment.Operator.PLUS_ASSIGN, pvp, Int.ONE);
 		}
 		if (pvp.isLoopIterator()) return ExpressionRange.fromIteratorOf(
 				pvp.getEnclosingCanonicalLoop(), pvp.cacheRuntimeAddress(), pvp.getCondGen());
@@ -191,28 +197,36 @@ implements AssignableExpression {
 	 * @param rhs
 	 * @return
 	 */
-	public static Proposition from(int expOp, Expression lhs, final Expression rhs) {
+	public static Proposition from(InfixExpression.Operator expOp, Expression lhs, final Expression rhs) {
 		if (lhs == null) throwNullArgumentException("lhs");
 		if (rhs == null) throwNullArgumentException("rhs");
 		
-		Proposition eq = null;
-		switch (expOp) {
 		// ==: non-assignment-equality binary relational proposition
-		case IASTBinaryExpression.op_equals:
-			eq = from(lhs, rhs);
-			break;
-		// =: a ::= a makes no side-effects, even tautology
-		case IASTBinaryExpression.op_assign:
-			if (lhs != rhs) {
-				eq = fromAssignment(lhs, rhs);
-//				eq = new Equality(Arrays.asList(lhs, rhs), ()-> rhs.getCondGen());
-//				((Equality) eq).setAssigned();
-			}
-			break;
-		}
-		return eq != null ? eq : fromFunctional(expOp, lhs, rhs);
+		if (expOp == InfixExpression.Operator.EQUALS) return from(lhs, rhs);
+		return fromFunctional(expOp, lhs, rhs);
 	}
 		
+	/**
+	 * Factory constructor for an AST-derived binary assignment.
+	 * 
+	 * @param expOp - Op code of {@link IASTBinaryExpression}
+	 * @param lhs
+	 * @param rhs
+	 * @return
+	 */
+	public static Proposition from(Assignment.Operator expOp, Expression lhs, final Expression rhs) {
+	    if (lhs == null) throwNullArgumentException("lhs");
+	    if (rhs == null) throwNullArgumentException("rhs");
+	    
+	    // =: a ::= a makes no side-effects, even tautology
+	    if (expOp == Assignment.Operator.ASSIGN && lhs != rhs) {
+	        return fromAssignment(lhs, rhs);
+//				eq = new Equality(Arrays.asList(lhs, rhs), ()-> rhs.getCondGen());
+//				((Equality) eq).setAssigned();
+	    }
+	    return fromFunctional(expOp, lhs, rhs);
+	}
+	
 	public static Proposition from(OrderRelation or) {
 		if (or == null) return null;
 		if (or instanceof Equality) return (Equality) or;
@@ -243,64 +257,64 @@ implements AssignableExpression {
 	 * 		? FunctionalIntInputVersion.from(pvd.getAssignable()).getFuncCallView().toProposition()
 	 * 		: Equality.from(unaryOp, pvd);
 	 */
-	@SuppressWarnings("unchecked")
-	private static Proposition fromFunctional(int expOp, Expression lhs, final Expression rhs) {
+	@SuppressWarnings({ "unchecked", "removal" })
+	private static Proposition fromFunctional(Assignment.Operator expOp, Expression lhs, final Expression rhs) {
 		assert lhs != null && rhs != null;
 		try {
-		Expression plhs = null;
-		if (lhs instanceof AssignableExpression) {
-			final Assignable<?> lhsAsn = ((AssignableExpression) lhs).getAssignable();
-			if (lhsAsn.hasDependingLoop()) {
-				// Handling sequential loop-dependent self assignments only
-				lhs = FunctionalVersion.from((Assignable<PathVariable>) lhsAsn); 
-				plhs = ((FunctionalVersion) lhs).cloneAssigner();
-			}
-		}
-		if (plhs == null) {
-			if (lhs instanceof VersionEnumerable) 
-				plhs = (Expression) ((VersionEnumerable<?>) lhs).previousRuntimeAssigneds();
-			else if (plhs instanceof PathVariablePlaceholder) {
-				final PathVariablePlaceholder pvp = (PathVariablePlaceholder) plhs;
-				if (pvp.isLoopIterator()) return ExpressionRange.fromIteratorOf(
-						pvp.getEnclosingCanonicalLoop(), pvp.cacheRuntimeAddress(), pvp.getCondGen());
-			}
-		}
-		if (plhs == null) throwTodoException("unsupported equality");
-
-		switch (expOp) {
-		// /=
-		case IASTBinaryExpression.op_divideAssign:
-			// TODO: new Arithmetic(Arithmetic.Operator.IntegerDivide, ...);
-			return fromAssignment(lhs, Arithmetic.from(Arithmetic.Operator.Divide, plhs, rhs));
-		// -=
-		case IASTBinaryExpression.op_minusAssign:
-			return fromAssignment(lhs, Arithmetic.from(Arithmetic.Operator.Subtract, plhs, rhs));
-		// %=
-		case IASTBinaryExpression.op_moduloAssign:
-			return fromAssignment(lhs, Arithmetic.from(Arithmetic.Operator.Modulo, plhs, rhs));
-		// *=
-		case IASTBinaryExpression.op_multiplyAssign:
-			return fromAssignment(lhs, Arithmetic.from(Arithmetic.Operator.Multiply, plhs, rhs));
-		// +=
-		case IASTBinaryExpression.op_plusAssign:
-			return fromAssignment(lhs, Arithmetic.from(Arithmetic.Operator.Add, plhs, rhs));
-		// TODO: &=?
-		case IASTBinaryExpression.op_binaryAndAssign:
-		// TODO: |=?
-		case IASTBinaryExpression.op_binaryOrAssign:
-		// TODO: ^=?
-		case IASTBinaryExpression.op_binaryXorAssign:
-		// TODO: <<=?
-		case IASTBinaryExpression.op_shiftLeftAssign:
-		// TODO: >>=?
-		case IASTBinaryExpression.op_shiftRightAssign:
-		}} catch (Exception e) {
+		    Expression plhs = null;
+		    if (lhs instanceof AssignableExpression) {
+		        final Assignable<?> lhsAsn = ((AssignableExpression) lhs).getAssignable();
+		        if (lhsAsn.hasDependingLoop()) {
+		            // Handling sequential loop-dependent self assignments only
+		            lhs = FunctionalVersion.from(lhsAsn); 
+		            plhs = ((FunctionalVersion) lhs).cloneAssigner();
+		        }
+		    }
+		    if (plhs == null) {
+		        if (lhs instanceof VersionEnumerable) 
+		            plhs = (Expression) ((VersionEnumerable<?>) lhs).previousRuntimeAssigneds();
+		        else if (plhs instanceof PathVariablePlaceholder) {
+		            final PathVariablePlaceholder pvp = (PathVariablePlaceholder) plhs;
+		            if (pvp.isLoopIterator()) return ExpressionRange.fromIteratorOf(
+		                    pvp.getEnclosingCanonicalLoop(), pvp.cacheRuntimeAddress(), pvp.getCondGen());
+		        }
+		    }
+		    if (plhs == null) throwTodoException(UNSUPPORTED_EQUALITY);
+		    
+		    // /=
+		    if (expOp == Assignment.Operator.DIVIDE_ASSIGN)
+		        // TODO: new Arithmetic(Arithmetic.Operator.IntegerDivide, ...);
+		        return fromAssignment(lhs, Arithmetic.from(Arithmetic.Operator.Divide, plhs, rhs));
+		    // -=
+		    else if (expOp == Assignment.Operator.MINUS_ASSIGN)
+		        return fromAssignment(lhs, Arithmetic.from(Arithmetic.Operator.Subtract, plhs, rhs));
+		    // %=
+		    else if (expOp == Assignment.Operator.REMAINDER_ASSIGN)
+		        return fromAssignment(lhs, Arithmetic.from(Arithmetic.Operator.Modulo, plhs, rhs));
+		    // *=
+		    else if (expOp == Assignment.Operator.TIMES_ASSIGN)
+		        return fromAssignment(lhs, Arithmetic.from(Arithmetic.Operator.Multiply, plhs, rhs));
+		    // +=
+		    else if (expOp == Assignment.Operator.PLUS_ASSIGN)
+		        return fromAssignment(lhs, Arithmetic.from(Arithmetic.Operator.Add, plhs, rhs));
+		    // TODO: &=?
+		    else if (expOp == Assignment.Operator.BIT_AND_ASSIGN) return throwTodoException(UNSUPPORTED_EQUALITY);
+		    // TODO: |=?
+		    else if (expOp == Assignment.Operator.BIT_OR_ASSIGN) return throwTodoException(UNSUPPORTED_EQUALITY);
+		    // TODO: ^=?
+		    else if (expOp == Assignment.Operator.BIT_XOR_ASSIGN) return throwTodoException(UNSUPPORTED_EQUALITY);
+		    // TODO: <<=?
+		    else if (expOp == Assignment.Operator.LEFT_SHIFT_ASSIGN) return throwTodoException(UNSUPPORTED_EQUALITY);
+		    // TODO: >>=?
+		    else if (expOp == Assignment.Operator.RIGHT_SHIFT_SIGNED_ASSIGN) return throwTodoException(UNSUPPORTED_EQUALITY);
+		    else if (expOp == Assignment.Operator.RIGHT_SHIFT_UNSIGNED_ASSIGN) return throwTodoException(UNSUPPORTED_EQUALITY);
+		} catch (Exception e) {
 //		}} catch (ClassCastException | NoSuchVersionException e) {
 			return throwTodoException(e);
 		}
 		
 //		if (eq instanceof Equality) ((Equality) eq).setAssigned();
-		return throwTodoException("unsupported equality");
+		return throwTodoException(UNSUPPORTED_EQUALITY);
 	}
 	
 	
@@ -380,7 +394,7 @@ implements AssignableExpression {
 	public Expression getAssignerIf() {
 		return isBinary() 
 				? getRightHandSide()
-				: throwTodoException("unsupported equality");
+				: throwTodoException(UNSUPPORTED_EQUALITY);
 	}
 	
 //	@Override

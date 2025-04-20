@@ -9,6 +9,8 @@ import java.util.Map;
 
 import org.eclipse.cdt.core.dom.ast.IASTBinaryExpression;
 import org.eclipse.cdt.core.dom.ast.IASTUnaryExpression;
+import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.InfixExpression;
 
 import fozu.ca.DuoKeyMultiPartitionMap;
 import fozu.ca.DuoKeySetMultiPartitionMap;
@@ -301,25 +303,22 @@ public class Arithmetic extends Relation implements ArithmeticExpression {
 	 * @param rhs
 	 * @return
 	 */
-	public static Expression from(int expOp, Expression lhs, Expression rhs) {
+	@SuppressWarnings("removal")
+    public static Expression from(InfixExpression.Operator expOp, Expression lhs, Expression rhs) {
 		if (lhs == null) throwNullArgumentException("lhs!");
 		if (rhs == null) throwNullArgumentException("rhs!");
 		
 		Operator op = null;
-		switch (expOp) {
-		case IASTBinaryExpression.op_divide:	op = Operator.Divide; 	break;
-		case IASTBinaryExpression.op_max:		op = Operator.Max; 		break;
-		case IASTBinaryExpression.op_min:		op = Operator.Min; 		break;
-		case IASTBinaryExpression.op_minus:		op = Operator.Subtract; break;
-		case IASTBinaryExpression.op_modulo:	op = Operator.Modulo; 	break;
-		case IASTBinaryExpression.op_multiply:	op = Operator.Multiply; break;
-		case IASTBinaryExpression.op_plus:		op = Operator.Add; 		break;
+		if (expOp == InfixExpression.Operator.DIVIDE) op = Operator.Divide; 	
+		else if (expOp == InfixExpression.Operator.MINUS) op = Operator.Subtract; 
+		else if (expOp == InfixExpression.Operator.REMAINDER) op = Operator.Modulo;
+		else if (expOp == InfixExpression.Operator.TIMES) op = Operator.Multiply; 
+		else if (expOp == InfixExpression.Operator.PLUS)	op = Operator.Add; 		
 		
-		// Todo? op = Bitvector.Operator.ShiftLeft or reduced by lhs * 2^rhs 
-		case IASTBinaryExpression.op_shiftLeft: op = Operator.ShiftLeft;break;
-		case IASTBinaryExpression.op_binaryAnd: op = Operator.BitAnd;	break;
-		case IASTBinaryExpression.op_shiftRight:throwTodoException("op = Bitvector.Operator.ShiftRight"); break;
-		}
+		// TODO: op = Bitvector.Operator.ShiftLeft or reduced by lhs * 2^rhs? 
+		else if (expOp == InfixExpression.Operator.LEFT_SHIFT) op = Operator.ShiftLeft;
+		else if (expOp == InfixExpression.Operator.AND) op = Operator.BitAnd;	
+		else if (expOp == InfixExpression.Operator.RIGHT_SHIFT_SIGNED) throwTodoException("op = Bitvector.Operator.ShiftRightSigned"); 
 		
 		return op == null ? null : from(op, lhs, rhs); 
 	}

@@ -7,34 +7,28 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.eclipse.jdt.core.dom.IASTBinaryExpression;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IASTInitializerClause;
-import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.Statement;
-import org.eclipse.jdt.core.dom.IASTUnaryExpression;
 
 import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.ASTException;
+import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.ReenterException;
+import fozu.ca.vodcg.SystemElement;
+import fozu.ca.vodcg.UncertainException;
 import fozu.ca.vodcg.VODCondGen;
+import fozu.ca.vodcg.condition.Arithmetic.Operator;
+import fozu.ca.vodcg.condition.data.Int;
 import fozu.ca.vodcg.condition.data.Number;
-import fozu.ca.vodcg.condition.data.NumericExpression;
-import fozu.ca.vodcg.condition.version.Version;
-import fozu.ca.vodcg.util.ASTLoopUtil;
-import fozu.ca.vodcg.util.ASTUtil;
 import fozu.ca.vodcg.condition.data.NumericExpression;
 import fozu.ca.vodcg.condition.version.FunctionallableRole;
 import fozu.ca.vodcg.condition.version.ThreadRoleMatchable;
-import fozu.ca.vodcg.ASTException;
-import fozu.ca.vodcg.Assignable;
-import fozu.ca.vodcg.SystemElement;
-import fozu.ca.vodcg.UncertainException;
-import fozu.ca.vodcg.condition.Arithmetic.Operator;
-import fozu.ca.vodcg.condition.data.Int;
-import fozu.ca.vodcg.condition.version.ThreadRoleMatchable;
+import fozu.ca.vodcg.condition.version.Version;
+import fozu.ca.vodcg.util.ASTLoopUtil;
 
 /**
  * @author Kao, Chen-yi
@@ -43,22 +37,24 @@ import fozu.ca.vodcg.condition.version.ThreadRoleMatchable;
 @SuppressWarnings("deprecation")
 public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatchable {
 
-	static public ArithmeticExpression from(
+	public static final String NULL = "(null)";
+
+    @SuppressWarnings("removal")
+    public static ArithmeticExpression from(
 			Operator op, ArithmeticExpression lhs, ArithmeticExpression rhs) 
 			throws ASTException, ReenterException {
-		if (op == null) DebugElement.throwNullArgumentException("operator");
-		if (lhs == null) DebugElement.throwNullArgumentException("lhs");
-		if (rhs == null) DebugElement.throwNullArgumentException("rhs");
+		if (op == null) Elemental.throwNullArgumentException("operator");
+		if (lhs == null) Elemental.throwNullArgumentException("lhs");
+		if (rhs == null) Elemental.throwNullArgumentException("rhs");
 
 		try { switch (op) {
-		case Add:			return lhs.add(rhs);
-		case Subtract:		return lhs.subtract(rhs);
-		case Multiply:		return lhs.multiply(rhs);
-		case ShiftLeft:		return lhs.shiftLeft(rhs);
-		case BitAnd:		return lhs.bitAnd(rhs);
-		case Divide:
-		case IntegerDivide:	return lhs.divide(rhs);
-		case Modulo:		return lhs.modulo(rhs);
+		case Add:                     return lhs.add(rhs);
+		case Subtract:                return lhs.subtract(rhs);
+		case Multiply:                return lhs.multiply(rhs);
+		case ShiftLeft:               return lhs.shiftLeft(rhs);
+		case BitAnd:                  return lhs.bitAnd(rhs);
+		case Divide, IntegerDivide:   return lhs.divide(rhs);
+		case Modulo:                  return lhs.modulo(rhs);
 			
 		case Max:
 			// TODO: (MAX ...) MAX (MAX ...) = lhs.addAll(rhs)
@@ -88,71 +84,16 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	 * TODO: merging with {@link Assignable#fromCanonicalIteratorOf(ForStatement)}?
 	 * TODO? return Expression.from(loop.getIterationExpression()).getConstantPart()
 	 * 
-	 * @param loop
-	 * @param sideEffect
-	 * @param condGen 
-	 * @return
+	 * @param loop - assumed a valid loop iteration expression
+	 * @param runTimeAddr
+	 * @param condGen
+	 * @return an increment map of <incrementor, increment>
 	 */
-	public static ArithmeticExpression fromIncrementOf(ForStatement loop, final ASTAddressable rtAddr, VODCondGen condGen) {
-		if (loop == null) return null;
-		
-		org.eclipse.jdt.core.dom.Expression exp = loop.getIterationExpression();	// assumed a valid loop iteration expression
-		if (exp instanceof IASTUnaryExpression) {
-			IASTUnaryExpression uie = (IASTUnaryExpression) exp;
-//			if (LValueComputer.getDependentOnBy(uie.getOperand(), it) != null) 
-			switch (uie.getOperator()) {
-			/* 					++var
-			 * 					var++
-			 * 					--var
-			 * 					var--
-			 */
-			case IASTUnaryExpression.op_prefixIncr:
-			case IASTUnaryExpression.op_postFixIncr:	return Int.ONE;
-			case IASTUnaryExpression.op_prefixDecr:
-			case IASTUnaryExpression.op_postFixDecr:	return Int.MINUS_ONE;
-			}
-			
-		} else if (exp instanceof IASTBinaryExpression) try {
-			final IASTBinaryExpression bie = (IASTBinaryExpression) exp;	// binary incr-expr
-			final org.eclipse.jdt.core.dom.Expression bieRhs = bie.getOperand2();
-//			if (LValueComputer.getDependentOnBy(bie.getOperand1(), it) != null) 
-			switch (bie.getOperator()) {
-			/* 					var += incr
-			 * 					var -= incr
-			 */
-			case IASTBinaryExpression.op_plusAssign: 
-				return Elemental.getSkipNull(()-> (ArithmeticExpression) Expression.fromRecursively(bieRhs, rtAddr, condGen));
-			case IASTBinaryExpression.op_minusAssign: 
-				return Elemental.getSkipNull(()-> (ArithmeticExpression) Expression.fromRecursively(bieRhs, rtAddr, condGen).minus());
-				
-			case IASTBinaryExpression.op_assign:
-				if (bieRhs instanceof IASTBinaryExpression) {
-					final IASTBinaryExpression asgr = (IASTBinaryExpression) bieRhs;	// assigner
-					final org.eclipse.jdt.core.dom.Expression asgrOp1 = asgr.getOperand1(), 
-							asgrOp2 = asgr.getOperand2();
-					final Name citName = ASTUtil.getNameOf(bie.getOperand1()), 
-							asgrOp1Name = ASTUtil.getNameOf(asgrOp1);
-					switch (asgr.getOperator()) {
-					case IASTBinaryExpression.op_plus:
-						// 					var = var + incr
-						if (ASTUtil.equals(citName, asgrOp1Name, true)) return Elemental.getSkipNull(()-> 
-							(ArithmeticExpression) Expression.fromRecursively(asgrOp2, rtAddr, condGen));
-						//					var = incr + var
-						if (ASTUtil.equals(citName, ASTUtil.getNameOf(asgrOp2), true)) return Elemental.getSkipNull(()-> 
-							(ArithmeticExpression) Expression.fromRecursively(asgrOp1, rtAddr, condGen));
-					case IASTBinaryExpression.op_minus:	
-						// 					var = var - incr
-						if (ASTUtil.equals(citName, asgrOp1Name, true)) return Elemental.getSkipNull(()-> 
-							(ArithmeticExpression) Expression.fromRecursively(asgrOp2, rtAddr, condGen).minus());
-					}
-				}
-			}
-		} catch (Exception e) {
-			DebugElement.throwUnhandledException(e);
-		}
-		
-		return null;
+	@SuppressWarnings("unchecked")
+    public static ArithmeticExpression fromIncrementOf(ForStatement loop, Expression initializer, final ASTAddressable runTimeAddr, VODCondGen condGen) {
+	    return ASTLoopUtil.getIncrementOf(loop, initializer, runTimeAddr, condGen);
 	}
+		
 	
 	/**
 	 * TODO: handling non-canonical loops.
@@ -184,7 +125,7 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 		Expression ibe = Expression.fromRecursively(ib, rtAddr, condGen), 
 				tbe = Expression.fromRecursively(tb, rtAddr, condGen); 
 		final Int incr = Int.fromCanonicalIncrementOf(loop, rtAddr, condGen);
-		final int tbOp = ASTLoopUtil.getCanonicalTestOperatorToVarOf(loop, condGen);
+		final InfixExpression.Operator tbOp = ASTLoopUtil.getCanonicalTestOperatorToVarOf(loop, condGen);
 		OrderRelation.Operator orOp;
 		
 		/* normalization of [ib,test-expr operator,tb] does NOT work
@@ -192,128 +133,128 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 		 *  -> ib <|<|>|>= tb	(leaving arithmetic semantics checking to Z3)
 		 */
 		try {
-		if (tests(incr.isPositiveOrZero())) switch (tbOp) {
-		case IASTBinaryExpression.op_lessThan:
-			/*
-			 * tb[Or1:e0]	<	(var =	ib[Or2:e1])	&& var += |incr|
-			 * (ib			=	var) >	tb			&& var += |incr|
-			 * 
-			 * 	=>	lb = ib[Or2:e1], 
-			 * 		ub = (tb[Or1:e0] < ib[Or2:e1]) ? +oo : ib[Or2:e1]
-			 */
-			orOp = OrderRelation.Operator.LessThan;
+		if (tests(incr.isPositiveOrZero())) {
+		    if (tbOp == InfixExpression.Operator.LESS)
+		        /*
+		         * tb[Or1:e0]	<	(var =	ib[Or2:e1])	&& var += |incr|
+		         * (ib			=	var) >	tb			&& var += |incr|
+		         * 
+		         * 	=>	lb = ib[Or2:e1], 
+		         * 		ub = (tb[Or1:e0] < ib[Or2:e1]) ? +oo : ib[Or2:e1]
+		         */
+		        orOp = OrderRelation.Operator.LessThan;
+		    
+		    else if (tbOp == InfixExpression.Operator.LESS_EQUALS) {
+		        /*
+		         * tb			<=	(var =	ib)			&& var += |incr|
+		         * (ib			=	var) >=	tb			&& var += |incr|
+		         * 
+		         * 	=>	lb = ib[Or2:e1], 
+		         * 		ub = (tb[Or1:e0] <= ib[Or2:e1]) ? +oo : ib[Or2:e1]
+		         */
+		        orOp = OrderRelation.Operator.LessEqual;
+		        final OrderRelation.Operator orOp_ = orOp;
+		        final Expression tbe_ = tbe;
+		        lb = getSkipNull(()-> (ArithmeticExpression) ibe);
+		        ub = getSkipNull(()-> (ArithmeticExpression) ConditionalExpression.from(
+		                OrderRelation.from(orOp_, tbe_, ibe, null), Int.POSITIVE_INFINITY, ibe));
+		    }
+		    
+		    else if (tbOp == InfixExpression.Operator.GREATER) {
+		        /*
+		         * (ib	=	var) <	tb	&& var += |incr|
+		         * tb	>	(var =	ib)	&& var += |incr|
+		         * 
+		         * 	=>	lb = ib,
+		         * 		ub = (ib < tb) ? tb-1 : ib
+		         */
+		        final Expression tbe__ = tbe;
+		        lb = getSkipNull(()-> (ArithmeticExpression) ibe);
+		        ub = getSkipNull(()-> (ArithmeticExpression) ConditionalExpression.from(
+		                OrderRelation.from(OrderRelation.Operator.LessThan, ibe, tbe__, null), 
+		                Arithmetic.from(Operator.Subtract, tbe__, Int.ONE), 
+		                ibe));
+		    }
+		    
+		    else if (tbOp == InfixExpression.Operator.GREATER_EQUALS) {
+		        /* 
+		         * (ib			=	var) <=	tb			&& var += |incr|
+		         * tb			>=	(var =	ib)			&& var += |incr|
+		         * 
+		         * 	=>	lb = ib,
+		         * 		ub = (ib 		 <= tb) ? tb : ib
+		         */
+		        final Expression tbe___ = tbe;
+		        lb = getSkipNull(()-> (ArithmeticExpression) ibe);
+		        ub = getSkipNull(()-> (ArithmeticExpression) ConditionalExpression.from(
+		                OrderRelation.from(OrderRelation.Operator.LessEqual, ibe, tbe___, null), tbe___, ibe));
+		    }
 			
-		case IASTBinaryExpression.op_lessEqual:
-			/*
-			 * tb			<=	(var =	ib)			&& var += |incr|
-			 * (ib			=	var) >=	tb			&& var += |incr|
-			 * 
-			 * 	=>	lb = ib[Or2:e1], 
-			 * 		ub = (tb[Or1:e0] <= ib[Or2:e1]) ? +oo : ib[Or2:e1]
-			 */
-			orOp = OrderRelation.Operator.LessEqual;
-			final OrderRelation.Operator orOp_ = orOp;
-			final Expression tbe_ = tbe;
-			lb = getSkipNull(()-> (ArithmeticExpression) ibe);
-			ub = getSkipNull(()-> (ArithmeticExpression) ConditionalExpression.from(
-					OrderRelation.from(orOp_, tbe_, ibe, null), Int.POSITIVE_INFINITY, ibe));
-			break;
-			
-		case IASTBinaryExpression.op_greaterThan:
-			/*
-			 * (ib	=	var) <	tb	&& var += |incr|
-			 * tb	>	(var =	ib)	&& var += |incr|
-			 * 
-			 * 	=>	lb = ib,
-			 * 		ub = (ib < tb) ? tb-1 : ib
-			 */
-			final Expression tbe__ = tbe;
-			lb = getSkipNull(()-> (ArithmeticExpression) ibe);
-			ub = getSkipNull(()-> (ArithmeticExpression) ConditionalExpression.from(
-					OrderRelation.from(OrderRelation.Operator.LessThan, ibe, tbe__, null), 
-					Arithmetic.from(Operator.Subtract, tbe__, Int.ONE), 
-					ibe));
-			break;
-			
-		case IASTBinaryExpression.op_greaterEqual:
-			/* 
-			 * (ib			=	var) <=	tb			&& var += |incr|
-			 * tb			>=	(var =	ib)			&& var += |incr|
-			 * 
-			 * 	=>	lb = ib,
-			 * 		ub = (ib 		 <= tb) ? tb : ib
-			 */
-			final Expression tbe___ = tbe;
-			lb = getSkipNull(()-> (ArithmeticExpression) ibe);
-			ub = getSkipNull(()-> (ArithmeticExpression) ConditionalExpression.from(
-					OrderRelation.from(OrderRelation.Operator.LessEqual, ibe, tbe___, null), tbe___, ibe));
-			break;
-			
-		} else switch (tbOp) {
-		case IASTBinaryExpression.op_lessThan:
-			/*
-			 * tb			<	(var =	ib[Or2:e1])	&& var -= |incr|
-			 * (ib			=	var) >	tb			&& var -= |incr|
-			 * 
-			 * 	=>	lb = (ib[Or2:e1] < tb[Or1:e0]) ? ib[Or2:e1] : tb[Or1:e0]+1,
-			 * 		ub = ib[Or2:e1]
-			 */
-			orOp = OrderRelation.Operator.LessThan;
-			if (tbe instanceof ArithmeticExpression)
-				tbe = (Expression) ((ArithmeticExpression) tbe).add(Int.ONE);
-			else DebugElement.throwTodoException(
-					tbe.toString() + " should be ArithmeticExpression!");
-			
-		case IASTBinaryExpression.op_lessEqual:
-			/*
-			 * tb			<=	(var =	ib)			&& var -= |incr|
-			 * (ib			=	var) >=	tb			&& var -= |incr|
-			 * 
-			 * 	=>	lb = (ib <= tb) ? ib : tb,
-			 * 		ub = ib
-			 */
-			orOp = OrderRelation.Operator.LessEqual;
-			final OrderRelation.Operator orOp_ = orOp;
-			final Expression tbe_ = tbe;
-			lb = getSkipNull(()-> (ArithmeticExpression) 
-					ConditionalExpression.from(
-					OrderRelation.from(orOp_, ibe, tbe_, null), ibe, tbe_));
-			ub = getSkipNull(()-> (ArithmeticExpression) ibe);
-			break;
-			
-		case IASTBinaryExpression.op_greaterThan:
-			/*
-			 * (ib			=	var) <	tb			&& var -= |incr|
-			 * tb			>	(var =	ib)			&& var -= |incr|
-			 * 
-			 * 	=>	lb = (ib[Or1:e0] < tb[Or2:e1]) ? -oo : ib[Or1:e0],
-			 * 		ub = ib[Or1:e0]
-			 */
-			orOp = OrderRelation.Operator.LessThan;
-			
-		case IASTBinaryExpression.op_greaterEqual:
-			/*
-			 * (ib			=	var) <=	tb			&& var -= |incr|
-			 * tb			>=	(var =	ib)			&& var -= |incr|
-			 * 
-			 * 	=>	lb = (ib[Or1:e0] <= tb[Or2:e1]) ? -oo : ib[Or1:e0],
-			 * 		ub = ib[Or1:e0]
-			 */
-			orOp = OrderRelation.Operator.LessEqual;
-			final OrderRelation.Operator orOp__ = orOp;
-			final Expression tbe__ = tbe;
-			lb = getSkipNull(()-> (ArithmeticExpression) 
-					ConditionalExpression.from(
-					OrderRelation.from(orOp__, ibe, tbe__, null), 
-					Int.NEGATIVE_INFINITY, ibe));
-			ub = getSkipNull(()-> (ArithmeticExpression) ibe);
-			break;
+		} else {
+		    if (tbOp == InfixExpression.Operator.LESS) {
+		        /*
+		         * tb			<	(var =	ib[Or2:e1])	&& var -= |incr|
+		         * (ib			=	var) >	tb			&& var -= |incr|
+		         * 
+		         * 	=>	lb = (ib[Or2:e1] < tb[Or1:e0]) ? ib[Or2:e1] : tb[Or1:e0]+1,
+		         * 		ub = ib[Or2:e1]
+		         */
+		        orOp = OrderRelation.Operator.LessThan;
+		        if (tbe instanceof ArithmeticExpression)
+		            tbe = (Expression) ((ArithmeticExpression) tbe).add(Int.ONE);
+		        else DebugElement.throwTodoException(
+		                tbe.toString() + " should be ArithmeticExpression!");
+		        
+		    } else if (tbOp == InfixExpression.Operator.LESS_EQUALS) {
+		        /*
+		         * tb			<=	(var =	ib)			&& var -= |incr|
+		         * (ib			=	var) >=	tb			&& var -= |incr|
+		         * 
+		         * 	=>	lb = (ib <= tb) ? ib : tb,
+		         * 		ub = ib
+		         */
+		        orOp = OrderRelation.Operator.LessEqual;
+		        final OrderRelation.Operator orOp_ = orOp;
+		        final Expression tbe_ = tbe;
+		        lb = getSkipNull(()-> (ArithmeticExpression) 
+		                ConditionalExpression.from(
+		                        OrderRelation.from(orOp_, ibe, tbe_, null), ibe, tbe_));
+		        ub = getSkipNull(()-> (ArithmeticExpression) ibe);
+		    }
+		    
+		    else if (tbOp == InfixExpression.Operator.GREATER) {
+		        /*
+		         * (ib			=	var) <	tb			&& var -= |incr|
+		         * tb			>	(var =	ib)			&& var -= |incr|
+		         * 
+		         * 	=>	lb = (ib[Or1:e0] < tb[Or2:e1]) ? -oo : ib[Or1:e0],
+		         * 		ub = ib[Or1:e0]
+		         */
+		        orOp = OrderRelation.Operator.LessThan;
+		        
+		    } else if (tbOp == InfixExpression.Operator.GREATER_EQUALS) {
+		        /*
+		         * (ib			=	var) <=	tb			&& var -= |incr|
+		         * tb			>=	(var =	ib)			&& var -= |incr|
+		         * 
+		         * 	=>	lb = (ib[Or1:e0] <= tb[Or2:e1]) ? -oo : ib[Or1:e0],
+		         * 		ub = ib[Or1:e0]
+		         */
+		        orOp = OrderRelation.Operator.LessEqual;
+		        final OrderRelation.Operator orOp__ = orOp;
+		        final Expression tbe__ = tbe;
+		        lb = getSkipNull(()-> (ArithmeticExpression) 
+		                ConditionalExpression.from(
+		                        OrderRelation.from(orOp__, ibe, tbe__, null), 
+		                        Int.NEGATIVE_INFINITY, ibe));
+		        ub = getSkipNull(()-> (ArithmeticExpression) ibe);
+		    }
 		}
 		
 		} catch (ASTException | UncertainException e) {
 			throw e;
 		} catch (Exception e) {
-			DebugElement.throwUnhandledException(e);
+			Elemental.throwUnhandledException(e);
 		}
 		ASTLoopUtil.setBoundsOf(loop, bounds = new ArithmeticExpression[] {lb, ub});
 		return wantsLowerBound ? lb : ub;
@@ -342,31 +283,31 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	
 	
 	
-	static public <T> T getSkipNull(Supplier<T> sup) {
+	public static <T> T getSkipNull(Supplier<T> sup) {
 		return Elemental.getSkipNull(sup);
 	}
 
 	
 	
-	static public boolean tests(Boolean tester) {
+	public static boolean tests(Boolean tester) {
 		return Elemental.tests(tester);
 	}
 	
-	default public boolean containsArithmetic() {
+	public default boolean containsArithmetic() {
 		return true;
 	}
 	
 	
 	
-	default public boolean contains(ArithmeticExpression ae2) {
+	public default boolean contains(ArithmeticExpression ae2) {
 		return ae2 != null && toExpression().contains(ae2.toExpression());
 	}
 	
-	default public boolean contains(PathVariablePlaceholder pvp) {
+	public default boolean contains(PathVariablePlaceholder pvp) {
 		return pvp != null && toExpression().contains(pvp);
 	}
 	
-	default public boolean contains(Iterable<Assignable<?>> asns) {
+	public default boolean contains(Iterable<Assignable<?>> asns) {
 		if (asns != null) 
 			for (Assignable<?> asn : asns)
 				if (contains(asn.getPathVariablePlaceholder())) return true;
@@ -376,46 +317,45 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	
 
 	
-	default public boolean derives(ThreadRoleMatchable matchable2) {
+	@Override
+	public default boolean derives(ThreadRoleMatchable matchable2) {
 		final boolean sd = ThreadRoleMatchable.super.derives(matchable2);
 		return matchable2 instanceof ArithmeticExpression
 				? sd || derives(((ArithmeticExpression) matchable2).getDirectVariableReferences())
 				: sd;
 	}
 	
-	default public boolean derives(Collection<ArithmeticExpression> ae2s) {
-		if (ae2s == null) DebugElement.throwNullArgumentException("arithmetic expression");
+	public default boolean derives(Collection<ArithmeticExpression> ae2s) {
+		if (ae2s == null) Elemental.throwNullArgumentException("arithmetic expression");
 		
 		for (ArithmeticExpression ae2 : ae2s) 
 			if (derives(ae2) || derives(ae2.getDirectVariableReferences())) return true;
 		return false;
 	}
 
-	default public boolean derives(Set<Version<?>> vers) {
+	public default boolean derives(Set<Version<?>> vers) {
 		return Version.derives(getDirectVariableReferences(), vers);
 	}
 	
 	
 
-	default public boolean isUnary() {
-		return this instanceof Relation
-				? ((Relation) this).isUnary()
-				: true;
-//		DebugElement.throwTodoException("unsupported arithmetic expression");
+	public default boolean isUnary() {
+		return !(this instanceof Relation)
+				|| ((Relation) this).isUnary();
 	}
 	
 	@Override
-	default public boolean isPrivate() {
+	public default boolean isPrivate() {
 		return ThreadRoleMatchable.super.isPrivate();
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	default public Boolean isNegativeInfinity() 
+	public default Boolean isNegativeInfinity() 
 			throws ReenterException {
 		return trySkipNullException(
 				getMethod(ArithmeticExpression.class, "isNegativeInfinity"),
-				()-> NumericExpression.super.isNegativeInfinity(),
+				NumericExpression.super::isNegativeInfinity,
 				// main return
 				()-> getZero().subtract(this).isPositiveInfinity());
 	}
@@ -423,33 +363,33 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	
 	
 	@SuppressWarnings({ "unchecked" })
-	default public ArithmeticExpression add(ArithmeticExpression addend) {
-		if (addend == null) DebugElement.throwNullArgumentException("addend");
+	public default ArithmeticExpression add(ArithmeticExpression addend) {
+		if (addend == null) Elemental.throwNullArgumentException("addend");
 
-		final Number<?> ZERO = getZero(addend);
+		final Number<?> zero = getZero(addend);
 		try {
 			return trySkipNullException(
 					// 0 + (? ...) = rhs
-					()-> isZero() ? addend : null,
+					()-> Boolean.TRUE.equals(isZero()) ? addend : null,
 					// (? ...) + 0 = lhs
-					()-> addend.isZero() ? this : null,
+					()-> Boolean.TRUE.equals(addend.isZero()) ? this : null,
 					// x + (? - x) = ?
 					()-> addSubtract(addend),
 					// (? - x) + x = ?
 					()-> addend.addSubtract(this),
 					()-> applyConst(con-> con.add(addend), ()-> (ArithmeticExpression) toNonSelfConstant()),
-					()-> applyConst(con-> add(con), ()-> (ArithmeticExpression) addend.toNonSelfConstant()),
+					()-> applyConst(this::add, ()-> (ArithmeticExpression) addend.toNonSelfConstant()),
 
 					// oo + -oo = 0, oo + ? = oo
-					()-> isPositiveInfinity() ? 
-							(addend.isNegativeInfinity() ? ZERO : this) : null,
+					()-> Boolean.TRUE.equals(isPositiveInfinity()) ? 
+							(Boolean.TRUE.equals(addend.isNegativeInfinity()) ? zero : this) : null,
 					// -oo + oo = 0, -oo + ? = -oo
-					()-> isNegativeInfinity() ? 
-							(addend.isPositiveInfinity() ? ZERO : this) : null,
+					()-> Boolean.TRUE.equals(isNegativeInfinity()) ? 
+							(Boolean.TRUE.equals(addend.isPositiveInfinity()) ? zero : this) : null,
 					()-> Arithmetic.from(Operator.Add, this, addend));
 			
 		} catch (Exception e) {
-			return DebugElement.throwUnhandledException(e);
+			return Elemental.throwUnhandledException(e);
 		} 
 	}
 	
@@ -457,12 +397,15 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	 * @param subtract - assumed in form s1 - s2
 	 * @return aRest if this is at + aRest and at == s2.
 	 */
-	default public ArithmeticExpression addSubtract(ArithmeticExpression subtract) {
-		final Arithmetic a = (Arithmetic) this, s = (Arithmetic) subtract;
+	@SuppressWarnings("removal")
+    public default ArithmeticExpression addSubtract(ArithmeticExpression subtract) {
+		final Arithmetic a = (Arithmetic) this;
+		final Arithmetic s = (Arithmetic) subtract;
 		if (subtract == null || !s.getOp().equals(Operator.Subtract)) 
 			return throwNullArithmeticException("subtraction expression");
 		
-		final Expression s1 = s.getOperand1(), s2 = s.getOperand2();
+		final Expression s1 = s.getOperand1();
+		final Expression s2 = s.getOperand2();
 		if (a.getOp().equals(Operator.Add)) {
 			for (Expression at : a.getOperands()) if (at.equals(s2)) {
 				final Arithmetic ass = (Arithmetic) a.rest(at);
@@ -478,19 +421,19 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	
 
 	
-	@SuppressWarnings("unchecked")
-	default public ArithmeticExpression subtract(ArithmeticExpression subtrahend) 
+	@SuppressWarnings({ "unchecked", "removal" })
+	public default ArithmeticExpression subtract(ArithmeticExpression subtrahend) 
 			throws ReenterException {
-		if (subtrahend == null) DebugElement.throwNullArgumentException("subtrahend");
+		if (subtrahend == null) Elemental.throwNullArgumentException("subtrahend");
 
-		final Number<?> ZERO = getZero(subtrahend);
+		final Number<?> zero = getZero(subtrahend);
 		/* breaking isNegativeInfinity()-subtract(this)-subtrahend.isNegative() 
 		 * and minus()/negate()-subtract(this) cycles
 		 */
 		try {
 			return trySkipNullException(
 					// (? ...) - 0 = lhs
-					()-> subtrahend.isZero() ? this : null,
+					()-> Boolean.TRUE.equals(subtrahend.isZero()) ? this : null,
 					// 0 - (- ...) = -rhs
 					()-> isZero() && subtrahend.isNegative() ? 
 							(ArithmeticExpression) subtrahend.negate() : null,
@@ -499,21 +442,21 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 					// (? + x) - x = ?
 					()-> subtractByAugend(subtrahend),
 					()-> applyConst(con-> con.subtract(subtrahend), ()-> (ArithmeticExpression) toNonSelfConstant()),
-					()-> applyConst(con-> subtract(con), ()-> (ArithmeticExpression) subtrahend.toNonSelfConstant()),
+					()-> applyConst(this::subtract, ()-> (ArithmeticExpression) subtrahend.toNonSelfConstant()),
 
 					// oo - oo = 0, oo - ? = oo
-					()-> isPositiveInfinity() ? 
-							(subtrahend.isPositiveInfinity() ? ZERO : this) : null,
+					()-> Boolean.TRUE.equals(isPositiveInfinity()) ? 
+							(Boolean.TRUE.equals(subtrahend.isPositiveInfinity()) ? zero : this) : null,
 					// -oo - -oo = 0, -oo - ? = -oo
-					()-> isNegativeInfinity() ? 
-							(subtrahend.isNegativeInfinity() ? ZERO : this) : null,
+					()-> Boolean.TRUE.equals(isNegativeInfinity()) ? 
+							(Boolean.TRUE.equals(subtrahend.isNegativeInfinity()) ? zero : this) : null,
 					// TODO: (- ...) - ? = lhs.add(rhs)
 					()-> Arithmetic.from(Operator.Subtract, this, subtrahend));
 			
 		} catch (ReenterException e) {
 			throw e;
 		} catch (Exception e) {
-			return DebugElement.throwUnhandledException(e);
+			return Elemental.throwUnhandledException(e);
 		} 
 	}
 	
@@ -521,9 +464,9 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	 * @param subtrahend
 	 * @return aRest if this is at + aRest and at == subtrahend.
 	 */
-	@SuppressWarnings("unlikely-arg-type")
-	default public ArithmeticExpression subtractByAugend(ArithmeticExpression subtrahend) {
-		if (subtrahend == null) DebugElement.throwNullArgumentException("subtrahend");
+	@SuppressWarnings({ "unlikely-arg-type", "removal" })
+	public default ArithmeticExpression subtractByAugend(ArithmeticExpression subtrahend) {
+		if (subtrahend == null) Elemental.throwNullArgumentException("subtrahend");
 
 		final Arithmetic a = (Arithmetic) this;
 		if (a.getOp().equals(Operator.Add)) 
@@ -537,7 +480,7 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	 * @return -aRest if this is at.
 	 */
 	@SuppressWarnings("unlikely-arg-type")
-	default public ArithmeticExpression subtractAdd(ArithmeticExpression add) {
+	public default ArithmeticExpression subtractAdd(ArithmeticExpression add) {
 		if (add == null) return throwNullArithmeticException("addition expression");
 		
 		final Arithmetic a = (Arithmetic) add;
@@ -549,91 +492,92 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	
 	
 	
-	@SuppressWarnings("unchecked")
-	default public ArithmeticExpression multiply(ArithmeticExpression multiplicand) 
+	@SuppressWarnings({ "unchecked", "removal" })
+	public default ArithmeticExpression multiply(ArithmeticExpression multiplicand) 
 			throws UncertainException {
-		if (multiplicand == null) DebugElement.throwNullArgumentException("multiplicand");
+		if (multiplicand == null) Elemental.throwNullArgumentException("multiplicand");
 
-		final Number<?> ZERO = getZero(multiplicand);
-		if (ZERO == null) DebugElement.throwTodoException("unsupported zero type");
-		final Number<?> OO = ZERO.getPositiveInfinity(), NOO = ZERO.getNegativeInfinity();
+		final Number<?> zero = getZero(multiplicand);
+		if (zero == null) DebugElement.throwTodoException("unsupported zero type");
+		final Number<?> oo = zero.getPositiveInfinity();
+		final Number<?> noo = zero.getNegativeInfinity();
 		try {
 			return trySkipNullException(
 					// 0 * A = A * 0 = 0
-					()-> isZero() || multiplicand.isZero() ? ZERO : null,
+					()-> isZero() || multiplicand.isZero() ? zero : null,
 					// 1 * A = A
-					()-> isOne() ? multiplicand : null,
+					()-> Boolean.TRUE.equals(isOne()) ? multiplicand : null,
 					// A * 1 = A
-					()-> multiplicand.isOne() ? this : null,
+					()-> Boolean.TRUE.equals(multiplicand.isOne()) ? this : null,
 					()-> applyConst(con-> con.multiply(multiplicand), ()-> (ArithmeticExpression) toNonSelfConstant()),
-					()-> applyConst(con-> multiply(con), ()-> (ArithmeticExpression) multiplicand.toNonSelfConstant()),
+					()-> applyConst(this::multiply, ()-> (ArithmeticExpression) multiplicand.toNonSelfConstant()),
 
 					// locally defining for breaking isNegative()-subtract(...) cycle
 					// oo * (-) = -oo, oo * (+) = oo
-					()-> isPositiveInfinity() ? 
-							(multiplicand.isNegative() ? NOO : OO) : null,
+					()-> Boolean.TRUE.equals(isPositiveInfinity()) ? 
+							(Boolean.TRUE.equals(multiplicand.isNegative()) ? noo : oo) : null,
 					// (-) * oo = -oo, (+) * oo = oo
-					()-> multiplicand.isPositiveInfinity() ? 
-							(isNegative() ? NOO : OO) : null,
+					()-> Boolean.TRUE.equals(multiplicand.isPositiveInfinity()) ? 
+							(Boolean.TRUE.equals(isNegative()) ? noo : oo) : null,
 					// -oo * (-) = oo, -oo * (+) = -oo
-					()-> isNegativeInfinity() ? 
-							(multiplicand.isNegative() ? OO : NOO) : null,
+					()-> Boolean.TRUE.equals(isNegativeInfinity()) ? 
+							(Boolean.TRUE.equals(multiplicand.isNegative()) ? oo : noo) : null,
 					// (-) * -oo = oo, (+) * -oo = -oo
-					()-> multiplicand.isNegativeInfinity() ? 
-							(isNegative() ? OO : NOO) : null,
+					()-> Boolean.TRUE.equals(multiplicand.isNegativeInfinity()) ? 
+							(Boolean.TRUE.equals(isNegative()) ? oo : noo) : null,
 					()-> Arithmetic.from(Operator.Multiply, this, multiplicand));
 			
 		} catch (UncertainException e) {
 			throw e;
 		} catch (Exception e) {
-			return DebugElement.throwUnhandledException(e);
+			return Elemental.throwUnhandledException(e);
 		} 
 	}
 	
-	@SuppressWarnings("unchecked")
-	default public ArithmeticExpression bitAnd(ArithmeticExpression ae2) {
-		if (ae2 == null) DebugElement.throwNullArgumentException("exponent");
+	@SuppressWarnings({ "unchecked", "removal" })
+	public default ArithmeticExpression bitAnd(ArithmeticExpression ae2) {
+		if (ae2 == null) Elemental.throwNullArgumentException("exponent");
 		
-		final Number<?> ZERO = getZero(ae2);
-		if (ZERO == null) DebugElement.throwTodoException("unsupported zero type");
+		final Number<?> zero = getZero(ae2);
+		if (zero == null) DebugElement.throwTodoException("unsupported zero type");
 //		final Number<?> OO = ZERO.getPositiveInfinity(), NOO = ZERO.getNegativeInfinity();
 		try {
 			return trySkipNullException(
 					// 0 & A = 0
-					()-> isZero() ? ZERO : null,
+					()-> Boolean.TRUE.equals(isZero()) ? zero : null,
 					// A & 0 = 0
-					()-> ae2.isZero() ? ZERO : null,
+					()-> Boolean.TRUE.equals(ae2.isZero()) ? zero : null,
 					// 1 & A = A
-					()-> isOne() ? ae2 : null,
+					()-> Boolean.TRUE.equals(isOne()) ? ae2 : null,
 					// A & 1 = A
-					()-> ae2.isOne() ? this : null,
+					()-> Boolean.TRUE.equals(ae2.isOne()) ? this : null,
 							
 					()-> applyConst(con-> con.bitAnd(ae2), ()-> (ArithmeticExpression) toNonSelfConstant()),
-					()-> applyConst(con-> bitAnd(con), ()-> (ArithmeticExpression) ae2.toNonSelfConstant()),
+					()-> applyConst(this::bitAnd, ()-> (ArithmeticExpression) ae2.toNonSelfConstant()),
 					()-> Arithmetic.from(Operator.BitAnd, this, ae2));
 			
 //		} catch (UncertainException e) {
 //			throw e;
 		} catch (Exception e) {
-			return DebugElement.throwUnhandledException(e);
+			return Elemental.throwUnhandledException(e);
 		} 
 	}
 	
-	@SuppressWarnings("unchecked")
-	default public ArithmeticExpression shiftLeft(ArithmeticExpression exponent) {
-		if (exponent == null) DebugElement.throwNullArgumentException("exponent");
+	@SuppressWarnings({ "unchecked", "removal" })
+	public default ArithmeticExpression shiftLeft(ArithmeticExpression exponent) {
+		if (exponent == null) Elemental.throwNullArgumentException("exponent");
 		
-		final Number<?> ZERO = getZero(exponent);
-		if (ZERO == null) DebugElement.throwTodoException("unsupported zero type");
+		final Number<?> zero = getZero(exponent);
+		if (zero == null) DebugElement.throwTodoException("unsupported zero type");
 //		final Number<?> OO = ZERO.getPositiveInfinity(), NOO = ZERO.getNegativeInfinity();
 		try {
 			return trySkipNullException(
 					// 0 << A = 0
-					()-> isZero() ? ZERO : null,
+					()-> Boolean.TRUE.equals(isZero()) ? zero : null,
 					// A << 0 = A
-					()-> exponent.isZero() ? this : null,
+					()-> Boolean.TRUE.equals(exponent.isZero()) ? this : null,
 					()-> applyConst(con-> con.shiftLeft(exponent), ()-> (ArithmeticExpression) toNonSelfConstant()),
-					()-> applyConst(con-> shiftLeft(con), ()-> (ArithmeticExpression) exponent.toNonSelfConstant()),
+					()-> applyConst(this::shiftLeft, ()-> (ArithmeticExpression) exponent.toNonSelfConstant()),
 					
 					// locally defining for breaking isNegative()-subtract(...) cycle
 //					// oo * (-) = -oo, oo * (+) = oo
@@ -649,58 +593,60 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 //		} catch (UncertainException e) {
 //			throw e;
 		} catch (Exception e) {
-			return DebugElement.throwUnhandledException(e);
+			return Elemental.throwUnhandledException(e);
 		} 
 	}
 	
-	@SuppressWarnings("unchecked")
-	default public ArithmeticExpression divide(ArithmeticExpression divisor) 
+	@SuppressWarnings({ "unchecked", "removal" })
+	public default ArithmeticExpression divide(ArithmeticExpression divisor) 
 			throws UncertainException {
-		if (divisor == null) DebugElement.throwNullArgumentException("divisor");
+		if (divisor == null) Elemental.throwNullArgumentException("divisor");
 		
-		final Number<?> ZERO = getZero(divisor);
+		final Number<?> zero = getZero(divisor);
 		try {
 			return trySkipNullException(
 					// 0 / A = 0
-					()-> isZero() ? ZERO : null,
+					()-> Boolean.TRUE.equals(isZero()) ? zero : null,
 					// ? / 0 = exception
-					()-> divisor.isZero() ? DebugElement.throwTodoException("DIVIDE by zero!") : null,
+					()-> Boolean.TRUE.equals(divisor.isZero()) ? DebugElement.throwTodoException("DIVIDE by zero!") : null,
 					()-> applyConst(con-> con.divide(divisor), ()-> (ArithmeticExpression) toNonSelfConstant()),
-					()-> applyConst(con-> divide(con), ()-> (ArithmeticExpression) divisor.toNonSelfConstant()),
+					()-> applyConst(this::divide, ()-> (ArithmeticExpression) divisor.toNonSelfConstant()),
 					()-> Arithmetic.from(Operator.Divide, this, divisor));
 //	TODO, type-checking:()-> Arithmetic.from(Operator.IntegerDivide, this, divisor));
 
 		} catch (UncertainException e) {
 			throw e;
 		} catch (Exception e) {
-			return DebugElement.throwUnhandledException(e);
+			return Elemental.throwUnhandledException(e);
 		} 
 	}
 	
-	@SuppressWarnings("unchecked")
-	default public ArithmeticExpression modulo(ArithmeticExpression modulus) 
+	@SuppressWarnings({ "unchecked", "removal" })
+	public default ArithmeticExpression modulo(ArithmeticExpression modulus) 
 			throws UncertainException {
-		if (modulus == null) DebugElement.throwNullArgumentException("modulus");
+		if (modulus == null) Elemental.throwNullArgumentException("modulus");
 		
-		final Number<?> ZERO = getZero(modulus);
+		final Number<?> zero = getZero(modulus);
 		try {
 			return trySkipNullException(
 					// 0 % A = 0
-					()-> isZero() ? ZERO : null,
+					()-> Boolean.TRUE.equals(isZero()) ? zero : null,
 					// ? % 0 = exception
-					()-> modulus.isZero() ? DebugElement.throwTodoException("MODULO by zero!") : null,
+					()-> Boolean.TRUE.equals(modulus.isZero()) ? DebugElement.throwTodoException("MODULO by zero!") : null,
 					()-> applyConst(con-> con.modulo(modulus), ()-> (ArithmeticExpression) toNonSelfConstant()),
-					()-> applyConst(con-> modulo(con), ()-> (ArithmeticExpression) modulus.toNonSelfConstant()),
+					()-> applyConst(this::modulo, ()-> (ArithmeticExpression) modulus.toNonSelfConstant()),
 					()-> Arithmetic.from(Operator.Modulo, this, modulus));
 
 		} catch (UncertainException e) {
 			throw e;
 		} catch (Exception e) {
-			return DebugElement.throwUnhandledException(e);
+			return Elemental.throwUnhandledException(e);
 		} 
 	}
 	
-	default public Expression negate() 
+	@Override
+	@SuppressWarnings("removal")
+    public default Expression negate() 
 			throws ReenterException, UnsupportedOperationException {
 		try {
 		final Expression result = NumericExpression.super.negate();
@@ -714,7 +660,7 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 		} catch (ClassCastException e) {
 			return SystemElement.throwUnsupportedNegation();
 		} catch (Exception e) {
-			return DebugElement.throwUnhandledException(e);
+			return Elemental.throwUnhandledException(e);
 		}
 	}
 	
@@ -725,21 +671,21 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 //		return toExpression().cloneIfChangeRole(role);
 //	}
 	
-	default public ArithmeticExpression cloneReindex(VariablePlaceholder<?> oldIndex, VariablePlaceholder<?> newIndex) {
+	public default ArithmeticExpression cloneReindex(VariablePlaceholder<?> oldIndex, VariablePlaceholder<?> newIndex) {
 		return ((Expression) toExpression().clone()).substitute(oldIndex, newIndex);
 	}
 	
-	default public <T extends ConditionElement> T cloneReversion(
+	public default <T extends ConditionElement> T cloneReversion(
 			final Statement blockStat, final FunctionallableRole role, Version<? extends PathVariable> ver) {
 		return toExpression().cloneReversion(blockStat, role, ver);
 	}
 	
 	
 	
-	default public <T> T throwNullArithmeticException(String message) {
-//		return null;
+	@SuppressWarnings("removal")
+    public default <T> T throwNullArithmeticException(String message) {
 		if (message == null) message = "arithmetic expression";
-		return DebugElement.throwNullArgumentException(message);
+		return Elemental.throwNullArgumentException(message);
 //		TODO: throw new NullArithmeticException(); super("null Arithmetic");
 	}
 	
@@ -747,9 +693,9 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	
 	public static String toString(
 			Operator op, ArithmeticExpression lhs, ArithmeticExpression rhs) {
-		return lhs == null ? "(null)" : lhs.toString() 
-				+ " " + op == null ? "(null)" : op.toString() 
-				+ " " + rhs == null ? "(null)" : rhs.toString();
+		return lhs == null ? NULL : lhs.toString() 
+				+ " " + op == null ? NULL : op.toString() 
+				+ " " + rhs == null ? NULL : rhs.toString();
 	}
 	
 	/**

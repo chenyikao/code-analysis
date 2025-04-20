@@ -73,7 +73,6 @@ public abstract class OmpReduceable extends OmpThreadPrivatizable {
 	 * @return The last privatized delegate version for performing reduction.
 	 * @throws NoSuchVersionException 
 	 */
-	@SuppressWarnings({ "removal" })
 	public Version<FunctionalPathVariable> getPrivatizedReductionVersion(
 			PathVariable v, int threadId) throws NoSuchVersionException {
 		try {
@@ -104,7 +103,8 @@ public abstract class OmpReduceable extends OmpThreadPrivatizable {
 	 * 				= frc1(chunk*(round*nthread+thread)	 	... chunk*(round*nthread+thread+1) - 1)
 	 * @return
 	 */
-	public ArithmeticExpression getTaskIndex() {
+	@SuppressWarnings("removal")
+    public ArithmeticExpression getTaskIndex() {
 		throwTodoException("unimplemented method");
 		return null;
 	}

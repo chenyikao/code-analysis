@@ -18,6 +18,8 @@ import org.eclipse.jdt.core.dom.IASTInitializerList;
 import org.eclipse.jdt.core.dom.IASTName;
 import org.eclipse.jdt.core.dom.IASTNode;
 import org.eclipse.jdt.core.dom.IASTUnaryExpression;
+import org.eclipse.jdt.core.dom.PostfixExpression;
+import org.eclipse.jdt.core.dom.PrefixExpression;
 
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.condition.ArithmeticExpression;
@@ -40,7 +42,7 @@ import fozu.ca.vodcg.util.ASTUtil;
 public class Assignment extends SystemElement {
 
 	// union structure: assert !(asmAsm != null && asmDcl != null);
-	private org.eclipse.jdt.core.dom.Assignment asmAsm = null;
+	private org.eclipse.jdt.core.dom.Expression asmAsm = null;
 	private VariableDeclaration asmDcl = null;
 	private Proposition asmEq = null;
 	
@@ -186,18 +188,21 @@ public class Assignment extends SystemElement {
 		return les;
 	}
 	
-	public org.eclipse.jdt.core.dom.Assignment getAssignerClause() {
+	@SuppressWarnings("removal")
+    public org.eclipse.jdt.core.dom.Expression getAssignerClause() {
 		assert !(asmAsm != null && asmDcl != null);
 		
 		if (asmDcl != null) return asmDcl.getInitializerClause();
 		
-		if (asmAsm instanceof IASTUnaryExpression) 
-			return ((IASTUnaryExpression) asmAsm).getOperand();
+		if (asmAsm instanceof PrefixExpression) 
+			return ((PrefixExpression) asmAsm).getOperand();     // TODO: +-*/ 1?
+		if (asmAsm instanceof PostfixExpression) 
+		    return ((PostfixExpression) asmAsm).getOperand();    // TODO: +-*/ 1?
 
 		if (ASTAssignableComputer.isAbbreviatedBinaryAssignment(asmAsm)) 
-			return asmAsm;
+			return ((org.eclipse.jdt.core.dom.Assignment) asmAsm).getLeftHandSide(); // TODO: +-*/ getRightHandSide()?
 		if (ASTAssignableComputer.isPlainBinaryAssignment(asmAsm)) 
-			return ((IASTBinaryExpression) asmAsm).getOperand2();
+			return ((org.eclipse.jdt.core.dom.Assignment) asmAsm).getRightHandSide();
 		
 		return throwTodoException(asmAsm != null
 				? ASTUtil.toStringOf(asmAsm) : "assignment without assigners");
@@ -255,50 +260,78 @@ public class Assignment extends SystemElement {
 	 * asn-- || --asn || asn -= const || asn += -const
 	 * @return
 	 */
-	public boolean assignsDecreasingly() {
-		final Expression ae = getAssigned().getAssigner();
-		if (!(ae instanceof ArithmeticExpression)) throwTodoException("unsupported assignment");
-		final ArithmeticExpression aae = (ArithmeticExpression) ae;
-		if (asmAsm != null) {
-			if (asmAsm instanceof IASTUnaryExpression) 
-				switch (((IASTUnaryExpression) asmAsm).getOperator()) {
-				case IASTUnaryExpression.op_postFixDecr	: return true;
-				case IASTUnaryExpression.op_prefixDecr	: return true;
-				}
-			else if (asmAsm instanceof IASTBinaryExpression) 
-				switch (((IASTBinaryExpression) asmAsm).getOperator()) {
-				case IASTBinaryExpression.op_divideAssign : 
-				case IASTBinaryExpression.op_minusAssign : 	return Elemental.tests(aae.isPositive());
-				case IASTBinaryExpression.op_plusAssign	: 	return Elemental.tests(aae.isNegative());
-				}
-		}
-		return false;
+	@SuppressWarnings("removal")
+    public boolean assignsDecreasingly() {
+		return !assignsIncreasingly() && !assignsEqually();
 	}
 
+	/**
+	 * asn -= 0 || asn += 0
+	 * @return
+	 */
+	@SuppressWarnings("removal")
+	public boolean assignsEqually() {
+	    if (asmAsm == null) return false;
+	    if (asmAsm instanceof PrefixExpression) return false; 
+	    if (asmAsm instanceof PostfixExpression) return false; 
+	    return throwTodoException("unsupported assignment");
+	}
+	
 	/**
 	 * asn++ || ++asn || asn += const || asn -= -const
 	 * @return
 	 */
-	public boolean assignsIncreasingly() {
-		final Expression ae = getAssigned().getAssigner();
-		if (!(ae instanceof ArithmeticExpression)) throwTodoException("unsupported assignment");
-		final ArithmeticExpression aae = (ArithmeticExpression) ae;
-		if (asmAsm != null) {
-			if (asmAsm instanceof IASTUnaryExpression) 
-				switch (((IASTUnaryExpression) asmAsm).getOperator()) {
-				case IASTUnaryExpression.op_postFixIncr	: return true;
-				case IASTUnaryExpression.op_prefixIncr	: return true;
-				}
-			else if (asmAsm instanceof IASTBinaryExpression) 
-				switch (((IASTBinaryExpression) asmAsm).getOperator()) {
-				case IASTBinaryExpression.op_multiplyAssign	: 
-				case IASTBinaryExpression.op_minusAssign	: 	return Elemental.tests(aae.isNegative());
-				case IASTBinaryExpression.op_plusAssign		: 	return Elemental.tests(aae.isPositive());
-				}
-		}
-		return false;
+	@SuppressWarnings("removal")
+    public boolean assignsIncreasingly() {
+	    if (asmAsm == null) return false;
+		if (asmAsm instanceof PrefixExpression) return assignsIncreasingly((PrefixExpression) asmAsm); 
+		if (asmAsm instanceof PostfixExpression) return assignsIncreasingly((PostfixExpression) asmAsm); 
+		if (asmAsm instanceof org.eclipse.jdt.core.dom.Assignment) return assignsIncreasingly((org.eclipse.jdt.core.dom.Assignment) asmAsm);
+		return throwTodoException("unsupported assignment");
 	}
 	
+	/**
+	 * ++asn 
+	 * @return
+	 */
+	@SuppressWarnings("removal")
+	private boolean assignsIncreasingly(PrefixExpression asm) {
+	    PrefixExpression.Operator op = asm.getOperator();
+	    if (op == PrefixExpression.Operator.DECREMENT) return false;
+	    if (op == PrefixExpression.Operator.INCREMENT) return true;
+	    return throwTodoException("unsupported assignment");
+	}
+	
+	/**
+	 * asn++
+	 * @return
+	 */
+	@SuppressWarnings("removal")
+	private boolean assignsIncreasingly(PostfixExpression asm) {
+	    PostfixExpression.Operator op = asm.getOperator();
+	    if (op == PostfixExpression.Operator.DECREMENT) return false;
+	    if (op == PostfixExpression.Operator.INCREMENT) return true;
+	    return throwTodoException("unsupported assignment");
+	}
+	
+    /**
+     * asn += const || asn -= -const
+     * @return
+     */
+    @SuppressWarnings("removal")
+    private boolean assignsIncreasingly(org.eclipse.jdt.core.dom.Assignment asm) {
+        org.eclipse.jdt.core.dom.Assignment.Operator op = asm.getOperator();
+        if (op == org.eclipse.jdt.core.dom.Assignment.Operator.ASSIGN) throwTodoException("unsupported assignment");
+
+        final Expression ae = getAssigned().getAssigner();
+        if (!(ae instanceof ArithmeticExpression)) return throwTodoException("unsupported assignment");
+        final ArithmeticExpression aae = (ArithmeticExpression) ae;
+        
+        if (op == org.eclipse.jdt.core.dom.Assignment.Operator.MINUS_ASSIGN) return Elemental.tests(aae.isPositive());
+        if (op == org.eclipse.jdt.core.dom.Assignment.Operator.PLUS_ASSIGN) return Elemental.tests(aae.isNegative());
+        return throwTodoException("unsupported assignment");
+    }
+    
 	private void collectAssignables() 
 			throws ASTException, UncertainException {
 		assert !(asmAsm != null && asmDcl != null);
@@ -309,18 +342,25 @@ public class Assignment extends SystemElement {
 			asns.addAll(Assignable.fromOf(asmDcl.getInitializerClause(), null, cg));
 		}
 		
-		else if (isUnary()) {
+		else if (asmAsm instanceof PrefixExpression) {
+		    final Assignable<?> asnd = Assignable.from(
+		            ((PrefixExpression) asmAsm).getOperand(), null, cg);
+		    asns.add(asnd);
+		    asds.add(asnd);
+		} 
+		else if (asmAsm instanceof PostfixExpression) {
 			final Assignable<?> asnd = Assignable.from(
-					((IASTUnaryExpression) asmAsm).getOperand(), null, cg);
+					((PostfixExpression) asmAsm).getOperand(), null, cg);
 			asns.add(asnd);
 			asds.add(asnd);
 		}
 		
-		else if (isBinary()) {
+		else if (asmAsm instanceof org.eclipse.jdt.core.dom.Assignment) {
+		    final org.eclipse.jdt.core.dom.Assignment asm = (org.eclipse.jdt.core.dom.Assignment) asmAsm;
 			asds.add(Assignable.from(
-					((IASTBinaryExpression) asmAsm).getOperand1(), null, cg));
+					asm.getLeftHandSide(), null, cg));
 			for (IASTName rhsName : ASTUtil.getDescendantsOfAs(
-					getAssignerClause(), IASTName.class)) try {
+			        asm.getRightHandSide(), IASTName.class)) try {
 				final Assignable<?> rhs = Assignable.from(rhsName, null, cg);
 				/* rhsLv == this && asgm is binary 
 				 * => lv's not at lhs && lv's not unary-assigned
@@ -384,10 +424,13 @@ public class Assignment extends SystemElement {
 		return isPlainBinary() || isAbbreviatedBinary();
 	}
 	
+	/**
+	 * @return
+	 */
 	public boolean isPlainBinary() {
-		return (asmAsm instanceof IASTBinaryExpression 
-				&& ((IASTBinaryExpression) asmAsm).getOperator() == 
-				IASTBinaryExpression.op_assign)
+		return (asmAsm instanceof org.eclipse.jdt.core.dom.Assignment 
+				&& ((org.eclipse.jdt.core.dom.Assignment) asmAsm).getOperator() == 
+				org.eclipse.jdt.core.dom.Assignment.Operator.ASSIGN)
 				|| asmDcl != null;
 	}
 

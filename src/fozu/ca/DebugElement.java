@@ -3,13 +3,17 @@
  */
 package fozu.ca;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import fozu.ca.Elemental.TrySupplier;
 import fozu.ca.vodcg.SystemElement;
 
 /**
@@ -18,10 +22,9 @@ import fozu.ca.vodcg.SystemElement;
  *
  */
 @Deprecated(forRemoval=true)
-public abstract class DebugElement {
+public abstract class DebugElement extends Elemental {
 	
 	protected static final int DEFAULT_DEPTH = 20;
-	private static boolean haltsException = false;
 	
 //	public <T> T get(Supplier<T> sup) {
 //	return get(sup, null);
@@ -42,6 +45,21 @@ public abstract class DebugElement {
 //return debugCallDepth(caller, ()-> Elemental.get(sup, alt));
 //}
 
+	
+	
+    public static Method getMethod(
+            Class<?> clazz, String name, Class<?>... parameterTypes) {
+        if (clazz == null || name == null) return null;
+        try {
+            return clazz.getDeclaredMethod(name, parameterTypes);
+            
+        } catch (NoSuchMethodException | SecurityException e) {
+            return DebugElement.throwTodoException(e.toString());
+        }   
+    }
+    
+    
+    
 //static public <T> T getNonNull(Supplier<T> sup) {
 //return debugCallDepth((Supplier<T>)
 //		()-> Elemental.getNonNull(sup));
@@ -66,6 +84,17 @@ public abstract class DebugElement {
 		return debugCallDepth(caller, ()-> Elemental.getSkipException(sup));
 	}
 	
+    public static <T> boolean addSkipNull(Collection<T> col, Supplier<T> eleSup, Supplier<Boolean> tester,
+            List<Class<? extends Exception>> skips) throws Exception {
+        if (col instanceof List<?>) col = new ArrayList<>(col != null ? col : Collections.emptyList()); 
+        else if (col instanceof Set<?>) col = new HashSet<>(col != null ? col : Collections.emptySet());
+        else if (col != null) throwTodoException("unsupported collection");
+        
+        return tester == null 
+                ? Elemental.addSkipNull(col, eleSup, skips) 
+                : Elemental.addSkipNull(col, eleSup, skips, tester);
+    }
+    
 //public <T, R> R applySkipNull(
 //Function<T, R> func, Supplier<T> inputSup, @SuppressWarnings("unchecked") Supplier<Boolean>... conjTesters) 
 //		throws Exception {
@@ -83,19 +112,11 @@ public abstract class DebugElement {
 	
 	
 	
-	public <T> T testsSkipNull(
-			Boolean tester, Supplier<T> trueResult, Supplier<T> falseResult) {
-		return debugCallDepth((Supplier<T>) ()-> 
-		Elemental.testsSkipNull(tester, trueResult, falseResult));
-	}
-	
-	
-	
 	public static <T> T debug(Supplier<T> subject) {
 		if (subject != null) try {
 			return subject.get();
 		} catch (Exception e) {
-			throwInvalidityException(e.toString());
+			Elemental.throwInvalidityException(e.toString());
 		}
 		return null;
 	}
@@ -105,17 +126,17 @@ public abstract class DebugElement {
 		try {
 			subject.run();
 		} catch (Exception e) {
-			throwInvalidityException(e.toString());
+		    Elemental.throwInvalidityException(e.toString());
 		}
 	}
 	
 	public <T> void debug(T target, Consumer<T> tester) {
-		if (target == null) throwInvalidityException("must provide a target");
-		if (tester == null) throwInvalidityException("must provide a tester");
+		if (target == null) Elemental.throwInvalidityException("must provide a target");
+		if (tester == null) Elemental.throwInvalidityException("must provide a tester");
 		try {
 			tester.accept(target);
 		} catch (Exception e) {
-			throwInvalidityException(e.toString());
+		    Elemental.throwInvalidityException(e.toString());
 		}
 	}
 	
@@ -154,7 +175,7 @@ public abstract class DebugElement {
 			int depth, DebugElement caller, Supplier<T> callee, Object... args) {
 		return caller == null || caller instanceof SystemElement
 				? SystemElement.guard(
-						(SystemElement) caller, callee, ()-> throwStackOverflowException(), depth, null, args)
+						(SystemElement) caller, callee, Elemental::throwStackOverflowException, depth, null, args)
 						: throwTodoException("unsupported element type");
 	}
 	
@@ -203,7 +224,7 @@ public abstract class DebugElement {
 	}
 	
 	public static void debugRun(SystemElement caller, Runnable call, Object... args) {
-		if (call == null) throwNullArgumentException("call");
+		if (call == null) Elemental.throwNullArgumentException("call");
 		debugCallDepth(caller, ()-> {call.run(); return null;}, args);
 	}
 	
@@ -243,124 +264,37 @@ public abstract class DebugElement {
 	}
 	
 	public static <T> T debugGetNonNull(SystemElement caller, Supplier<T> sup, Object... args) {
-		return debugCallDepth(caller, (Supplier<T>) ()-> Elemental.getNonNull(sup), args);
+		return debugCallDepth(caller, (Supplier<T>) ()-> getNonNull(sup), args);
 	}
 	
 	public <T> T debugGetSkipNull(Supplier<T> sup) {
 		return debugCallDepth((SystemElement) this,
-				(Supplier<T>) ()-> Elemental.getSkipNull(sup));
+				(Supplier<T>) ()-> getSkipNull(sup));
 	}
 	
 	public <T, E extends Exception> T debugGetThrow(
 			TrySupplier<T, E> sup, Supplier<T> nullAlt) throws E {
-		return debugCallDepthThrow(()-> Elemental.getThrow(sup, nullAlt));
+		return debugCallDepthThrow(()-> getThrow(sup, nullAlt));
 	}
 	
 	public boolean debugTests(Supplier<Boolean> target) {
 		return debugCallDepth((SystemElement) this,
-				()-> Elemental.tests(target));
+				()-> tests(target));
 	}
 	
+    public <T> T debugTestsSkipNull(
+            Boolean tester, Supplier<T> trueResult, Supplier<T> falseResult) {
+        return debugCallDepth((Supplier<T>) ()-> 
+        testsSkipNull(tester, trueResult, falseResult));
+    }
+    
+    
+    
 	public <T> void debugToString(T target) {
 		debug(target, Object::toString);
 	}
 	
 	
-	
-	public static void haltException() {
-		haltsException = true;
-	}
-	
-	/**
-	 * Temporarily halting for printing exception stack trace and debugging. 
-	 * @param source
-	 */
-	public static void haltException(Exception source) {
-		haltException();
-		try {
-			throwHaltableException(source);
-		} catch (Exception e) {
-			haltException();
-		}
-	}
-	
-	public static void passException() {
-		haltsException = false;
-//		if (this instanceof SystemElement) ((SystemElement) this).clear();
-	}
-	
-	public static <E extends Throwable, T> T throwHaltableException(E e) 
-			throws E {
-		if (e == null) throwNullArgumentException("exception");
-//		final Throwable cause = e.getCause();
-//		if (haltsException || (cause != null && cause.getCause() != null)) {
-		if (haltsException) {
-			e.printStackTrace();
-			passException();
-		}
-		throw e;
-	}
-	
-	public static <T> T throwUnhandledException(Exception source) {
-		return throwInvalidityException("unhandled exception", source);
-	}
-	
-	public static <T> T throwIllegalStateException(String msg) 
-			throws IllegalStateException {
-		return throwHaltableException(new IllegalStateException(msg));
-	}
-	
-	/**
-	 * For all easily intercept-able exception breakpoints!
-	 * 
-	 * @param message
-	 * @param source 
-	 * @throws IllegalArgumentException
-	 */
-	public static <T> T throwInvalidityException(
-			String message, Exception source) 
-			throws IllegalArgumentException {
-		if (message == null) throwNullArgumentException("message");
-		
-		try {
-			haltException();
-			message = "Invalid: " + message + "! Please contact the development team!";
-			source = source == null 
-					? new IllegalArgumentException(message)
-					: new IllegalArgumentException(message, source);
-			return throwHaltableException(source);
-
-		} catch (IllegalArgumentException e1) {
-			throw e1;
-		} catch (Exception e) {
-			return null;	
-		}
-	}
-	
-	public static <T> T throwInvalidityException(String message) 
-			throws IllegalArgumentException {
-		return throwInvalidityException(message, null);
-	}
-	
-	public static <T> T throwNullArgumentException(String arg) {
-		return throwNullArgumentException(arg, null);
-	}
-	
-//	public static <T> T throwNullArgumentException(String arg, Supplier<T> returnAlt) {
-//		return throwNullArgumentException(arg, null);
-//	}
-	
-	public static <T> T throwNullArgumentException(String arg, Exception e) 
-			throws IllegalArgumentException {
-		haltException();
-		return throwHaltableException(new IllegalArgumentException("must provide some " + arg, e));
-	}
-	
-	public static <T> T throwStackOverflowException() 
-			throws StackOverflowError {
-		haltException();
-		return throwHaltableException(new StackOverflowError("stack overflow?"));
-	}
 	
 	public static <T> T throwReductionException() 
 			throws UnsupportedOperationException {
@@ -392,10 +326,10 @@ public abstract class DebugElement {
 		if (message == null) message = "unhandled exception";
 		
 		try {
-			haltException();
+			Elemental.haltException();
 			if (cause == null) cause = new UnsupportedOperationException(
 					"Sorry and please contact the development team to finish this task:\n" + message + "?");
-			throwHaltableException(cause);
+			Elemental.throwHaltableException(cause);
 			
 		} catch (UnsupportedOperationException e1) {
 			throw e1;

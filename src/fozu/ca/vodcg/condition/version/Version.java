@@ -18,6 +18,7 @@ import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Statement;
 
+import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
 import fozu.ca.condition.SerialFormat;
 import fozu.ca.solver.CarryInRangeDegrader;
@@ -59,8 +60,9 @@ implements ASTAddressable, AppendableVersion<S>, AssignableExpression, ThreadRol
 	 */
 //	private static final Set<String> 					DECL_CACHE = new HashSet<>();
 	
-	private static final Method METHOD_TO_Z3_SMT_STRING = 
-			Elemental.getMethod(Version.class, "toZ3SmtString", boolean.class, boolean.class, boolean.class);
+	@SuppressWarnings("removal")
+    private static final Method METHOD_TO_Z3_SMT_STRING = 
+	        DebugElement.getMethod(Version.class, "toZ3SmtString", boolean.class, boolean.class, boolean.class);
 
 	
 	

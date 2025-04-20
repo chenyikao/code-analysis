@@ -31,8 +31,7 @@ import fozu.ca.vodcg.util.JavaUtil;
  * @author Kao, Chen-yi
  *
  */
-@SuppressWarnings("deprecation")
-public interface NumericExpression extends Elemental {
+public interface NumericExpression {
 
 	/**
 	 * Simplifying to {@link Proposition#True}/{@link Proposition#False} 
@@ -45,9 +44,9 @@ public interface NumericExpression extends Elemental {
 	 */
 	public static Proposition from(
 			OrderRelation.Operator op, NumericExpression lhs, NumericExpression rhs) {
-		if (op == null) DebugElement.throwNullArgumentException("operator");
-		if (lhs == null) DebugElement.throwNullArgumentException("lhs");
-		if (rhs == null) DebugElement.throwNullArgumentException("rhs");
+		if (op == null) Elemental.throwNullArgumentException("operator");
+		if (lhs == null) Elemental.throwNullArgumentException("lhs");
+		if (rhs == null) Elemental.throwNullArgumentException("rhs");
 		
 		Boolean isTF = null;
 		try { 
@@ -127,12 +126,12 @@ public interface NumericExpression extends Elemental {
 	
 	
 	
-	default public <T, R> R applyConst(
+	public default <T, R> R applyConst(
 			Function<T, R> func, Supplier<T> inputSup) {
 		return Elemental.applySkipNull(func, inputSup);
 	}
 	
-	static public <T1, T2, R> R applySkipNull(
+	public static <T1, T2, R> R applySkipNull(
 			BiFunction<T1, T2, R> func, Supplier<T1> input1Sup, Supplier<T2> input2Sup) {
 		return Elemental.getSkipNull(()-> {
 			final T1 in1 = input1Sup.get(); 
@@ -142,13 +141,14 @@ public interface NumericExpression extends Elemental {
 					: func.apply(in1, in2);});
 	}
 	
-	static public <T> T getSkipNull(Supplier<T> sup) {
+	public static <T> T getSkipNull(Supplier<T> sup) {
 		return Elemental.getSkipNull(sup);
 	}
 	
-	default public Method getMethod(
+	@SuppressWarnings("removal")
+    public default Method getMethod(
 			Class<?> clazz, java.lang.String name, Class<?>... parameterTypes) {
-		return Elemental.getMethod(clazz, name, parameterTypes);
+		return DebugElement.getMethod(clazz, name, parameterTypes);
 	}
 	
 	
@@ -156,7 +156,7 @@ public interface NumericExpression extends Elemental {
 	/**
 	 * @return non-null
 	 */
-	default public Set<? extends PathVariablePlaceholder> 
+	public default Set<? extends PathVariablePlaceholder> 
 	getDirectPathVariablePlaceholders() {
 		return this instanceof ConditionElement
 				? ((ConditionElement) this).getDirectPathVariablePlaceholders()
@@ -166,7 +166,7 @@ public interface NumericExpression extends Elemental {
 	/**
 	 * @return @NotNull
 	 */
-	default public Set<Version<?>> getDirectVariableReferences() {
+	public default Set<Version<?>> getDirectVariableReferences() {
 		return this instanceof ConditionElement
 				? ((ConditionElement) this).getDirectVariableReferences()
 				: Collections.emptySet();
@@ -179,7 +179,8 @@ public interface NumericExpression extends Elemental {
 	 */
 	public PlatformType getType();
 	
-	default public Number<?> getOne() {
+	@SuppressWarnings("removal")
+    public default Number<?> getOne() {
 		PlatformType t = getType();
 		if (t instanceof PointerType) t = ((PointerType) t).getType();
 		if (t instanceof DataType) switch ((DataType) t) {
@@ -195,7 +196,8 @@ public interface NumericExpression extends Elemental {
 	 * @return Common zero of this and {@code ae2}. 
 	 * 	Or null if {@code ae2} is null or both this and {@code ae2} are in unsupported types.
 	 */
-	default public Number<?> getOne(NumericExpression ne2) {
+	@SuppressWarnings("removal")
+    public default Number<?> getOne(NumericExpression ne2) {
 		if (ne2 == null) return getOne();
 		
 		final Number<?> ONE = getOne(), ONE2 = ne2.getOne();
@@ -206,7 +208,8 @@ public interface NumericExpression extends Elemental {
 		return DebugElement.throwTodoException("unsupported one?");
 	}
 
-	default public Number<?> getZero() {
+	@SuppressWarnings("removal")
+    public default Number<?> getZero() {
 		final PlatformType t = getType();
 		if (t instanceof PointerType) return Int.ZERO;
 		if (t instanceof DataType) switch ((DataType) t) {
@@ -222,7 +225,8 @@ public interface NumericExpression extends Elemental {
 	 * @return Common zero of this and {@code ae2}. 
 	 * 	Or null if {@code ae2} is null or both this and {@code ae2} are in unsupported types.
 	 */
-	default public Number<?> getZero(NumericExpression ne2) {
+	@SuppressWarnings("removal")
+    public default Number<?> getZero(NumericExpression ne2) {
 		if (ne2 == null) return getZero();
 		
 		final Number<?> ZERO = getZero(), ZERO2 = ne2.getZero();
@@ -233,14 +237,16 @@ public interface NumericExpression extends Elemental {
 		return DebugElement.throwTodoException("unsupported zero?");
 	}
 	
-	default public Number<?> getPositiveInfinity() {
+	@SuppressWarnings("removal")
+    public default Number<?> getPositiveInfinity() {
 		final PlatformType t = getType();
 		return t instanceof PlatformType 
 				? ((PlatformType) t).getPositiveInfinity()
 				: DebugElement.throwTodoException("non-numeric type");
 	}
 	
-	default public Number<?> getNegativeInfinity() {
+	@SuppressWarnings("removal")
+    public default Number<?> getNegativeInfinity() {
 		final PlatformType t = getType();
 		return t instanceof PlatformType 
 				? ((PlatformType) t).getNegativeInfinity()
@@ -249,33 +255,32 @@ public interface NumericExpression extends Elemental {
 	
 	
 	
-	default public boolean isBounded() {
+	public default boolean isBounded() {
 		return getType().isPlatformBounded();
 	}
 	
 
 	
-	default public Boolean isOne() {
+	public default Boolean isOne() {
 		return getType().isNumeric()
-				? getSkipNull(()-> equals(getOne()))
-				: false;
+				&& getSkipNull(()-> equals(getOne()));
 	}
 	
-	default public Boolean isZero() {
+	public default Boolean isZero() {
 		if (this instanceof ConditionElement) {
 			final ConditionElement ce = (ConditionElement) this;
 			if (ce.hasPositiveGuards() || ce.hasNegativeGuards()) return false;
 		}
 		return getType().isNumeric()
-				? getSkipNull(()-> equals(getZero()))
-				: false;
+				&& getSkipNull(()-> equals(getZero()));
 	}
 	
 	/**
 	 * TODO: detect structural traversal?
 	 * @return isPositiveInfinity() || (!isLessThan(getZero()) && !isZero())
 	 */
-	default public Boolean isPositive() {
+	@SuppressWarnings("removal")
+    public default Boolean isPositive() {
 		try {
 			if (this instanceof ConditionElement) {
 				final ConditionElement ce = (ConditionElement) this;
@@ -309,37 +314,37 @@ public interface NumericExpression extends Elemental {
 	 * @return isPositive() || isZero()
 	 */
 	@SuppressWarnings("unchecked")
-	default public Boolean isPositiveOrZero() {
+	public default Boolean isPositiveOrZero() {
 		return trySkipNullException(
 				getMethod(NumericExpression.class, "isPositiveOrZero"),
 				()-> ((ConditionElement) this).hasPositiveOrZeroGuards() ? true : null,
 				()-> toNonSelfConstant().isPositiveOrZero(),
-				()-> isZero() ? true : null,	// isZero() is faster
-				()-> isPositive() ? true : null);
+				()-> Boolean.TRUE.equals(isZero()) ? true : null,	// isZero() is faster
+				()-> Boolean.TRUE.equals(isPositive()) ? true : null);
 	}
 	
 	/**
 	 * @return getPositiveInfinity() != null && !(isNegative() || isZero() || ...)
 	 */
 	@SuppressWarnings("unchecked")
-	default public Boolean isPositiveInfinity() throws ReenterException {
+	public default Boolean isPositiveInfinity() throws ReenterException {
 		if (getPositiveInfinity() == null) return false;	// non-supporting type
 		return trySkipNullException(
 				getMethod(NumericExpression.class, "isPositiveInfinity"),
 				()-> isBounded() ? false : null,
 				()-> ((ConditionElement) this).hasPositiveGuards() ? false : null,
 				()-> ((ConditionElement) this).hasNegativeGuards() ? false : null,
-				()-> isZero() ? false : null,	// isZero() is faster
-				()-> isNegative() ? false : null,
+				()-> Boolean.TRUE.equals(isZero()) ? false : null,	// isZero() is faster
+				()-> Boolean.TRUE.equals(isNegative()) ? false : null,
 				()-> toNonSelfConstant().isPositiveInfinity(),
-				()-> isNegativeInfinity() ? false : null);
+				()-> Boolean.TRUE.equals(isNegativeInfinity()) ? false : null);
 	}
 
 	/**
 	 * @return isNegativeInfinity() || !isPositiveOrZero()
 	 */
 	@SuppressWarnings("unchecked")
-	default public Boolean isNegative() 
+	public default Boolean isNegative() 
 			throws ReenterException {
 		return trySkipNullException(
 				getMethod(NumericExpression.class, "isNegative"),
@@ -347,14 +352,14 @@ public interface NumericExpression extends Elemental {
 				()-> ((ConditionElement) this).hasNegativeGuards() ? true : null,
 				()-> toNonSelfConstant().isNegative(),
 				()-> !isPositiveOrZero(),
-				()-> isNegativeInfinity() ? true : null);
+				()-> Boolean.TRUE.equals(isNegativeInfinity()) ? true : null);
 	}
 		
 	/**
 	 * @return getNegativeInfinity() != null && !(isPositive() || isZero() || ...)
 	 */
 	@SuppressWarnings("unchecked")
-	default public Boolean isNegativeInfinity() 
+	public default Boolean isNegativeInfinity() 
 			throws ReenterException {
 		if (getNegativeInfinity() == null) return false;	// non-supporting type
 		return trySkipNullException(
@@ -362,11 +367,11 @@ public interface NumericExpression extends Elemental {
 				()-> isBounded() ? false : null,
 				()-> ((ConditionElement) this).hasPositiveOrZeroGuards() ? false : null,
 				()-> ((ConditionElement) this).hasNegativeGuards() ? false : null,
-				()-> isZero() ? false : null,		// isZero() is faster
-				()-> isPositive() ? false : null,
+				()-> Boolean.TRUE.equals(isZero()) ? false : null,		// isZero() is faster
+				()-> Boolean.TRUE.equals(isPositive()) ? false : null,
 				()-> toNonSelfConstant().isNegativeInfinity(),
 				// main return
-				()-> isPositiveInfinity() ? false : null);
+				()-> Boolean.TRUE.equals(isPositiveInfinity()) ? false : null);
 	}
 	
 	/**
@@ -375,33 +380,33 @@ public interface NumericExpression extends Elemental {
 	 * @param ne2
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	default public Boolean isLessThan(NumericExpression ne2) 
+	@SuppressWarnings({ "unchecked" })
+	public default Boolean isLessThan(NumericExpression ne2) 
 			throws ReenterException {
-		if (ne2 == null) return DebugElement.throwNullArgumentException("numeric expression");
+		if (ne2 == null) return Elemental.throwNullArgumentException("numeric expression");
 		return trySkipNullException(
 				getMethod(NumericExpression.class, "isLessThan", NumericExpression.class), 
 				()-> toNonSelfConstant().isLessThan(ne2),
-				()-> applyConst(con-> isLessThan(con), ()-> ne2.toNonSelfConstant()),
-				()-> isPositiveInfinity() ? false : null,
-				()-> isNegativeInfinity() ? !ne2.isNegativeInfinity() : null,
+				()-> applyConst(this::isLessThan, ne2::toNonSelfConstant),
+				()-> Boolean.TRUE.equals(isPositiveInfinity()) ? false : null,
+				()-> Boolean.TRUE.equals(isNegativeInfinity()) ? !ne2.isNegativeInfinity() : null,
 				// main but not completed returns
-				()-> isNegative() && (ne2.isZero() || ne2.isPositive()) ? true : null,	// - < 0+
-				()-> isZero() && ne2.isPositive() ? true : null);						// 0 < +
+				()-> Boolean.TRUE.equals(isNegative()) && (ne2.isZero() || ne2.isPositive()) ? true : null, // - < 0+
+				()-> isZero() && ne2.isPositive() ? true : null);                                           // 0 < +
 	}
 
 	/**
 	 * @param ne2
 	 * @return equals(ae2) || isLessThan(ae2)
 	 */
-	@SuppressWarnings("unchecked")
-	default public Boolean isLessEqual(NumericExpression ne2) 
+	@SuppressWarnings({ "unchecked" })
+	public default Boolean isLessEqual(NumericExpression ne2) 
 			throws ReenterException {
-		if (ne2 == null) return DebugElement.throwNullArgumentException("numeric expression");
+		if (ne2 == null) return Elemental.throwNullArgumentException("numeric expression");
 		return trySkipNullException(
 				getMethod(NumericExpression.class, "isLessEqual", NumericExpression.class),
 				()-> toNonSelfConstant().isLessEqual(ne2),
-				()-> applyConst(con-> isLessEqual(con), ()-> ne2.toNonSelfConstant()),
+				()-> applyConst(this::isLessEqual, ne2::toNonSelfConstant),
 				()-> equals(ne2) || isLessThan(ne2),	// equals(ae2) is faster, in case of !equals(ae2)
 				()-> isLessThan(ne2));
 	}
@@ -414,36 +419,36 @@ public interface NumericExpression extends Elemental {
 	 * 	tran = 314159265.0 is objectly non-equal but logically equal
 	 */
 	@SuppressWarnings({ "unchecked" })
-	default public Boolean equals(NumericExpression ne2) 
+	public default Boolean equals(NumericExpression ne2) 
 			throws ReenterException {
-		if (ne2 == null) return DebugElement.throwNullArgumentException("numeric expression");
+		if (ne2 == null) return Elemental.throwNullArgumentException("numeric expression");
 		return trySkipNullException(
 				getMethod(NumericExpression.class, "equals", NumericExpression.class),
 				// lhs ::= rhs -> lhs == rhs
 				()-> toNonSelfConstant().equals(ne2),
-				()-> applyConst(con-> equals(con), ()-> ne2.toNonSelfConstant()),
+				()-> applyConst(this::equals, ne2::toNonSelfConstant),
 				// breaking cycle of isPositiveInfinity()
-				()-> ne2.isPositiveInfinity() ? isPositiveInfinity() : null,
+				()-> Boolean.TRUE.equals(ne2.isPositiveInfinity()) ? isPositiveInfinity() : null,
 				// breaking cycle of isNegativeInfinity()
-				()-> ne2.isNegativeInfinity() ? isNegativeInfinity() : null,
+				()-> Boolean.TRUE.equals(ne2.isNegativeInfinity()) ? isNegativeInfinity() : null,
 				// main return - equal-ness by 3rd party logic
 				()-> equalsLogically(ne2));
 	}
 	
-	default public Boolean equalsLogically(NumericExpression ne2) {
+	public default Boolean equalsLogically(NumericExpression ne2) {
 		return equals((Object) ne2) ? true : null;
 	}
 	
 	
 	@SuppressWarnings("unchecked")
-	default public Expression negate() 
+	public default Expression negate() 
 			throws ReenterException, UnsupportedOperationException {
 		final NumericExpression result = trySkipNullException(
 				getMethod(NumericExpression.class, "negate"),
-				()-> isZero() ? this : null,
-				()-> applyConst(con-> (NumericExpression) con.negate(), ()-> (NumericExpression) toNonSelfConstant()),
-				()-> isPositiveInfinity() ? getNegativeInfinity() : null,
-				()-> isNegativeInfinity() ? getPositiveInfinity() : null);
+				()-> Boolean.TRUE.equals(isZero()) ? this : null,
+				()-> applyConst(con-> (NumericExpression) con.negate(), ()-> toNonSelfConstant()),
+				()-> Boolean.TRUE.equals(isPositiveInfinity()) ? getNegativeInfinity() : null,
+				()-> Boolean.TRUE.equals(isNegativeInfinity()) ? getPositiveInfinity() : null);
 		return result instanceof Expression 
 				? (Expression) result 
 				: (result == null
@@ -451,13 +456,13 @@ public interface NumericExpression extends Elemental {
 				: SystemElement.throwUnsupportedNegation());
 	}
 
-	default public Proposition equal(NumericExpression ne2) {
+	public default Proposition equal(NumericExpression ne2) {
 		return this instanceof Expression && ne2 instanceof Expression
 				? Equality.from((Expression) this, (Expression) ne2)
 				: from(OrderRelation.Operator.Equal, this, ne2);
 	}
 	
-	default public Proposition lessThan(NumericExpression ne2) {
+	public default Proposition lessThan(NumericExpression ne2) {
 		return this instanceof Expression && ne2 instanceof Expression
 				? OrderRelation.from(
 						OrderRelation.Operator.LessThan, (Expression) this, (Expression) ne2, null)
@@ -465,7 +470,7 @@ public interface NumericExpression extends Elemental {
 						OrderRelation.Operator.LessThan, this, ne2);
 	}
 	
-	default public Proposition lessEqual(NumericExpression ne2) {
+	public default Proposition lessEqual(NumericExpression ne2) {
 		return this instanceof Expression && ne2 instanceof Expression
 				? OrderRelation.from(
 						OrderRelation.Operator.LessEqual, (Expression) this, (Expression) ne2, null)
@@ -489,8 +494,8 @@ public interface NumericExpression extends Elemental {
 //		return result;
 //	}
 	
-	@SuppressWarnings("unchecked")
-	default public <T> T trySkipNullException(Method callee, Supplier<T>... tries) {
+	@SuppressWarnings({ "unchecked", "removal" })
+	public default <T> T trySkipNullException(Method callee, Supplier<T>... tries) {
 		try {
 			return ((SystemElement) this).trySkipNullException(
 					callee, 
@@ -501,7 +506,7 @@ public interface NumericExpression extends Elemental {
 		} catch (ClassCastException e) {
 			return DebugElement.throwTodoException(e);
 		} catch (Exception e) {
-			return DebugElement.throwUnhandledException(e);
+			return Elemental.throwUnhandledException(e);
 		}
 	}
 	
@@ -513,7 +518,7 @@ public interface NumericExpression extends Elemental {
 	 * @throws Exception 
 	 */
 	@SuppressWarnings("unchecked")
-	default public <T> T trySkipNullException(Supplier<T>... tries) 
+	public default <T> T trySkipNullException(Supplier<T>... tries) 
 			throws Exception {
 		return this instanceof SystemElement
 				? ((SystemElement) this).trySkipNullException(
@@ -545,7 +550,7 @@ public interface NumericExpression extends Elemental {
 
 
 	@SuppressWarnings("unchecked")
-	default public <T> T trySkipNullClassCastException(Supplier<T>... tries) 
+	public default <T> T trySkipNullClassCastException(Supplier<T>... tries) 
 			throws Exception {
 		return this instanceof SystemElement
 				? ((SystemElement) this).trySkipNullException(
@@ -554,20 +559,22 @@ public interface NumericExpression extends Elemental {
 //		return test(JavaUtil.NULL_CLASS_CAST_EXCEPTION_CLASS, tries);
 	}
 	
-	default public <T> T throwUnsupportedException() {
+	@SuppressWarnings("removal")
+    public default <T> T throwUnsupportedException() {
 		return DebugElement.throwTodoException("unsupportred numeric expression");
 	}
 	
 	
 	
-	default public Expression toExpression() {
+	@SuppressWarnings("removal")
+    public default Expression toExpression() {
 		if (this instanceof Expression) return (Expression) this;
 		else return DebugElement.throwTodoException("inconvertible numeric expression");
 	}
 	
-	static public List<? extends Expression> toExpressionList(
+	public static List<? extends Expression> toExpressionList(
 			List<? extends NumericExpression> neList) {
-		if (neList == null) DebugElement.throwNullArgumentException("numeric expression");
+		if (neList == null) Elemental.throwNullArgumentException("numeric expression");
 
 		final List<Expression> eargs = new ArrayList<>();
 		for (NumericExpression ne : neList) eargs.add(ne.toExpression());
@@ -576,7 +583,8 @@ public interface NumericExpression extends Elemental {
 	
 	
 	
-	default public NumericExpression toConstant() {
+	@SuppressWarnings("removal")
+    public default NumericExpression toConstant() {
 		if (this instanceof SystemElement) {
 			final Elemental elec = ((SystemElement) this).toConstant();
 			// elec == this => (method)-toConstant().(method)-(method) cycle;
@@ -590,7 +598,7 @@ public interface NumericExpression extends Elemental {
 		return null;
 	}
 	
-	default public NumericExpression toNonSelfConstant() {
+	public default NumericExpression toNonSelfConstant() {
 		final NumericExpression con = toConstant();
 		return con == this ? null : con;
 	}
@@ -600,20 +608,20 @@ public interface NumericExpression extends Elemental {
 	/**
 	 * @return constant string of some unary numeric expressions, i.e., numbers
 	 */
-	@SuppressWarnings("unchecked")
-	default public java.lang.String toNonEmptyString() {
+	@SuppressWarnings({ "unchecked" })
+	public default java.lang.String toNonEmptyString() {
 		try {
 			return trySkipNullException(
-					()-> isZero() ? "0" : null,
-					()-> isPositiveInfinity() ? "+oo" : null,
-					()-> isNegativeInfinity() ? "-oo" : null,
+					()-> Boolean.TRUE.equals(isZero()) ? "0" : null,
+					()-> Boolean.TRUE.equals(isPositiveInfinity()) ? "+oo" : null,
+					()-> Boolean.TRUE.equals(isNegativeInfinity()) ? "-oo" : null,
 					()-> toNonSelfConstant().toString()
 					);
 			
 		} catch (ReenterException e) {
 			throw e;
 		} catch (Exception e) {
-			return DebugElement.throwUnhandledException(e);
+			return Elemental.throwUnhandledException(e);
 		}
 	}
 	

@@ -18,11 +18,13 @@ import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IfStatement;
+import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.SwitchCase;
 import org.eclipse.jdt.core.dom.SwitchStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
+import org.eclipse.jdt.core.dom.Assignment.Operator;
 import org.eclipse.jdt.core.dom.IASTBinaryExpression;
 import org.eclipse.jdt.core.dom.IASTCompoundStatement;
 import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
@@ -803,22 +805,20 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 	public static Proposition fromRecursively(org.eclipse.jdt.core.dom.Expression exp, final ASTAddressable rtAddr, VODCondGen condGen) {
 		assert exp != null;
 		
-		// boolean (binary) enum
-		if (exp instanceof IASTIdExpression) return fromRecursively(
-				(IASTIdExpression) exp);
-		// Like IASTIdExpression, the parsing of IASTLiteralExpression has no side-effects.
-		else if (exp instanceof IASTLiteralExpression) return fromRecursively(
-				(IASTLiteralExpression) exp);
-		else if (exp instanceof IASTUnaryExpression) return fromRecursively(
-				(IASTUnaryExpression) exp, rtAddr, condGen);
-		else if (exp instanceof IASTBinaryExpression) return fromRecursively(
-				(IASTBinaryExpression) exp, rtAddr, condGen);
-		else return throwTodoException("unsupported expression");
+		return throwTodoException("unsupported expression " + exp + ", " + rtAddr + ", " + condGen);
 	}
 
 	
 	
-	private static Proposition fromRecursively(IASTIdExpression exp) {
+	/**
+	 * boolean (binary) enum
+	 * 
+	 * @param exp
+	 * @param rtAddr
+	 * @param condGen
+	 * @return
+	 */
+	public static Proposition fromRecursively(IASTIdExpression exp, final ASTAddressable rtAddr, VODCondGen condGen) {
 		IBinding idBind = ASTUtil.getNameOf(exp).resolveBinding();
 		if (idBind instanceof IEnumerator) {
 			IEnumerator idEnum = (IEnumerator) idBind;
@@ -830,7 +830,15 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 	
 
 	
-	private static Proposition fromRecursively(IASTLiteralExpression exp) {
+	/**
+	 * Like IASTIdExpression, the parsing of IASTLiteralExpression has no side-effects.
+	 * 
+	 * @param exp
+	 * @param rtAddr
+	 * @param condGen
+	 * @return
+	 */
+	public static Proposition fromRecursively(IASTLiteralExpression exp, final ASTAddressable rtAddr, VODCondGen condGen) {
 		switch (exp.getKind()) {
 		// True
 		case IASTLiteralExpression.lk_true:		return PureTrue;
@@ -842,7 +850,7 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 	
 	
 	
-	private static Proposition fromRecursively(IASTUnaryExpression exp, final ASTAddressable rtAddr, VODCondGen condGen) {
+	public static Proposition fromRecursively(IASTUnaryExpression exp, final ASTAddressable rtAddr, VODCondGen condGen) {
 		int unaryOp = exp.getOperator();
 		org.eclipse.jdt.core.dom.Expression unaryOprd = exp.getOperand();
 		Expression eOprd = Expression.fromRecursively(unaryOprd, rtAddr, condGen);
@@ -875,12 +883,12 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 	
 	
 	
-	private static Proposition fromRecursively(
-			IASTBinaryExpression exp, final ASTAddressable rtAddr, VODCondGen condGen) 
+	public static Proposition fromRecursively(
+	        InfixExpression exp, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
-		Expression lhs = Expression.fromRecursively(exp.getOperand1(), rtAddr, condGen), 
-				rhs = Expression.fromRecursively(exp.getOperand2(), rtAddr, condGen);
-		int binaryOp = exp.getOperator();
+		Expression lhs = Expression.fromRecursively(exp.getLeftHandSide(), rtAddr, condGen);
+		Expression rhs = Expression.fromRecursively(exp.getRightHandSide(), rtAddr, condGen);
+		InfixExpression.Operator binaryOp = exp.getOperator();
 //		Function scope = Function.getFunctionScopeOf(binary, condGen);
 		
 		/* =, ==, /=, -=, %=, *=, +=, 
@@ -891,19 +899,17 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 		if (prop != null) return prop;
 		
 		Proposition lhsProp = lhs.toProposition();
-		Supplier<Proposition> rhsProp = ()-> rhs.toProposition();
-		switch (binaryOp) {
+		Supplier<Proposition> rhsProp = rhs::toProposition;
 		// && 
-		case IASTBinaryExpression.op_logicalAnd:	return lhsProp.and(rhsProp);
+		if (binaryOp == InfixExpression.Operator.CONDITIONAL_AND) return lhsProp.and(rhsProp);
 		// ||
-		case IASTBinaryExpression.op_logicalOr:		return lhsProp.or(rhsProp);
-		}
-		return prop;
+		if (binaryOp == InfixExpression.Operator.CONDITIONAL_OR) return lhsProp.or(rhsProp);
+		return returnTodoException("unsupported binary expression " + exp);
 	}
 	
 	
 	
-	private static Proposition fromRecursively(IASTCompoundStatement compound, final ASTAddressable rtAddr, VODCondGen condGen) {
+	public static Proposition fromRecursively(IASTCompoundStatement compound, final ASTAddressable rtAddr, VODCondGen condGen) {
 		assert compound != null;
 		Proposition prop = null;
 		for (Statement stat : compound.getStatements()) {
