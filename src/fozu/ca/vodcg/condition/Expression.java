@@ -230,8 +230,8 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 		else if (exp instanceof IASTUnaryExpression) 
 			e = fromRecursively((IASTUnaryExpression) exp, rtAddr, condGen);
 		
-		else if (exp instanceof IASTBinaryExpression) 
-			e = fromRecursively((IASTBinaryExpression) exp, rtAddr, condGen);
+		else if (exp instanceof org.eclipse.jdt.core.dom.Assignment) 
+			e = fromRecursively((org.eclipse.jdt.core.dom.Assignment) exp, rtAddr, condGen);
 		
 //		else if (exp instanceof IASTArraySubscriptExpression) 
 //			e = ArrayPointer.fromRecursively((IASTArraySubscriptExpression) exp, rtAddr, condGen);
@@ -440,7 +440,7 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 		
 
 	private static Expression fromRecursively(
-			IASTBinaryExpression binary, final ASTAddressable rtAddr, VODCondGen condGen) 
+	        org.eclipse.jdt.core.dom.Assignment binary, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
 		final Expression lhs = fromRecursively(binary.getOperand1(), rtAddr, condGen), 
 				rhs = fromRecursively(binary.getOperand2(), rtAddr, condGen);
