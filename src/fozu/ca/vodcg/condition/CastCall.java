@@ -3,6 +3,7 @@ package fozu.ca.vodcg.condition;
 import java.util.EnumMap;
 import java.util.Map;
 
+import org.eclipse.jdt.core.dom.CastExpression;
 import org.eclipse.jdt.core.dom.IASTCastExpression;
 import org.eclipse.jdt.core.dom.IASTDeclSpecifier;
 import org.eclipse.jdt.core.dom.IASTNamedTypeSpecifier;
@@ -38,38 +39,31 @@ extends Relation implements ArithmeticExpression	// TODO:, FunctionalRelation
 		
 		
 		static private Operator from(
-				final IASTCastExpression cast, final ASTAddressable dynaAddr, final VODCondGen condGen) {
+				final CastExpression cast, final ASTAddressable dynaAddr, final VODCondGen condGen) {
 			if (cast == null) throwNullArgumentException("cast expression");
 			
 			PlatformType ct = null;
 			Expression operand = null;
-			switch (cast.getOperator()) {
-//			case IASTCastExpression.op_last: 				
-			case IASTCastExpression.op_cast:
-				final IASTTypeId type = cast.getTypeId();
-				final org.eclipse.jdt.core.dom.Expression oprd = cast.getOperand();
-				
-				operand = Expression.fromRecursively(oprd, dynaAddr, condGen);
-				if (operand == null) 
-					throwTodoException("unsupported cast operand");
-				
-				final IASTDeclSpecifier decl = type.getDeclSpecifier();
-				if (decl instanceof IASTSimpleDeclSpecifier)
-					// for primitive type cast
-					ct = DataType.from((IASTSimpleDeclSpecifier) decl);
-				else if (decl instanceof IASTNamedTypeSpecifier) {
-					// for pointer cast
-					ct = DataType.from(((IASTNamedTypeSpecifier) decl).getName());
-					if (ct instanceof DataType) 
-						ct = PointerType.from((DataType) ct); 
-				}
-				else throwTodoException("unsupported cast type");
-				for (@SuppressWarnings("unused") IASTPointerOperator p : type.getAbstractDeclarator().getPointerOperators())
-					ct = PointerType.from(ct); 
-				break;
-				
-			default:
+			final IASTTypeId type = cast.getTypeId();
+			final org.eclipse.jdt.core.dom.Expression oprd = cast.getOperand();
+			
+			operand = Expression.fromRecursively(oprd, dynaAddr, condGen);
+			if (operand == null) 
+			    throwTodoException("unsupported cast operand");
+			
+			final IASTDeclSpecifier decl = type.getDeclSpecifier();
+			if (decl instanceof IASTSimpleDeclSpecifier)
+			    // for primitive type cast
+			    ct = DataType.from((IASTSimpleDeclSpecifier) decl);
+			else if (decl instanceof IASTNamedTypeSpecifier) {
+			    // for pointer cast
+			    ct = DataType.from(((IASTNamedTypeSpecifier) decl).getName());
+			    if (ct instanceof DataType) 
+			        ct = PointerType.from((DataType) ct); 
 			}
+			else throwTodoException("unsupported cast type");
+			for (@SuppressWarnings("unused") IASTPointerOperator p : type.getAbstractDeclarator().getPointerOperators())
+			    ct = PointerType.from(ct); 
 			
 			return ct != null
 					? from(ct, operand)
@@ -162,7 +156,7 @@ extends Relation implements ArithmeticExpression	// TODO:, FunctionalRelation
 	 * @param cast
 	 * @param condGen
 	 */
-	public CastCall(IASTCastExpression cast, final ASTAddressable rtAddr, VODCondGen condGen) {
+	public CastCall(CastExpression cast, final ASTAddressable rtAddr, VODCondGen condGen) {
 		super(Operator.from(cast, rtAddr, condGen), rtAddr, condGen, false);	// can't invoke non-static getOp() in the constructor
 
 		setOnlyOperand(((Operator) getOp()).getOperand());

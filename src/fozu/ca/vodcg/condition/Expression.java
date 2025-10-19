@@ -16,6 +16,7 @@ import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.CastExpression;
 import org.eclipse.jdt.core.dom.IASTArraySubscriptExpression;
 import org.eclipse.jdt.core.dom.IASTBinaryExpression;
 import org.eclipse.jdt.core.dom.IASTCastExpression;
@@ -248,8 +249,8 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 					fromRecursively(cexp.getPositiveResultExpression(), rtAddr, condGen),
 					fromRecursively(cexp.getNegativeResultExpression(), rtAddr, condGen));
 			
-		} else if (exp instanceof IASTCastExpression) {
-			e = new CastCall((IASTCastExpression) exp, rtAddr, condGen);
+		} else if (exp instanceof CastExpression) {
+			e = new CastCall((CastExpression) exp, rtAddr, condGen);
 			
 		} else if (exp instanceof IASTFieldReference) 
 			e = fromRecursively((IASTFieldReference) exp, rtAddr, condGen);
