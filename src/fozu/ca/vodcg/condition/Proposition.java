@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.dom.SwitchCase;
 import org.eclipse.jdt.core.dom.SwitchStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
 import org.eclipse.jdt.core.dom.Assignment.Operator;
+import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.IASTBinaryExpression;
 import org.eclipse.jdt.core.dom.IASTCompoundStatement;
 import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
@@ -769,8 +770,8 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 					(org.eclipse.jdt.core.dom.Expression) node, rtAddr, condGen);
 			else if (node instanceof ExpressionStatement) prop = fromRecursively(
 					((ExpressionStatement) node).getExpression(), rtAddr, condGen);
-			else if (node instanceof IASTCompoundStatement) prop = fromRecursively(
-					(IASTCompoundStatement) node, rtAddr, condGen);
+			else if (node instanceof Block) prop = fromRecursively(
+					(Block) node, rtAddr, condGen);
 			else if (node instanceof ForStatement) prop = Forall.from((ForStatement) node, rtAddr, condGen);
 //			else returnTodoException("Assignment/non-expressional proposition?");
 		
@@ -909,13 +910,15 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 	
 	
 	
-	public static Proposition fromRecursively(IASTCompoundStatement compound, final ASTAddressable rtAddr, VODCondGen condGen) {
-		assert compound != null;
+	@SuppressWarnings("unchecked")
+    public static Proposition fromRecursively(Block block, final ASTAddressable rtAddr, VODCondGen condGen) {
+		assert block != null;
 		Proposition prop = null;
-		for (Statement stat : compound.getStatements()) {
-			final Proposition statProp = fromRecursively(stat, rtAddr, condGen), prop_ = prop;
+		for (Statement stat : (List<Statement>) block.statements()) {
+			final Proposition statProp = fromRecursively(stat, rtAddr, condGen);
+			final Proposition prevProp = prop;
 			if (statProp == null) throwNullArgumentException("statement proposition");
-			prop = prop == null ? statProp : statProp.iff(()-> prop_);
+			prop = prop == null ? statProp : statProp.iff(()-> prevProp);
 		}
 		return prop;
 	}
