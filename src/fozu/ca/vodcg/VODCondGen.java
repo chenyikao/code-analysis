@@ -20,7 +20,10 @@ import org.eclipse.jdt.core.dom.IASTDeclaration;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.index.IIndex;
 import org.eclipse.jdt.core.index.IIndexBinding;
@@ -827,11 +830,13 @@ implements Comparator<ForStatement> {
 	 * 
 	 * @param ov - observed variable, OV
 	 * @return
+	 * @throws JavaModelException 
 	 */
-	public MethodDeclaration getMainFunctionDefinitionOf(Name ov) {
+	public MethodDeclaration getMainFunctionDefinitionOf(Name ov) throws JavaModelException {
 		// searching OV's parent translation unit 
 		// MethodDeclaration extends IASTDeclaration
-		for (IASTDeclaration decl : ov.getTranslationUnit().getDeclarations())
+		for (MethodDeclaration decl : ASTUtil.findAllMainMethods(
+		        ((ICompilationUnit) ((CompilationUnit) ov.getRoot()).getJavaElement()).getJavaProject()))
 			if  (isMainFunction(decl)) return (MethodDeclaration)decl;
 		
 		// TODO: searching OV's sibling translation units in the parent folder

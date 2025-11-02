@@ -1,6 +1,7 @@
 package fozu.ca.vodcg.util;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.IASTDeclaration;
 import org.eclipse.jdt.core.dom.IASTDeclarationStatement;
 import org.eclipse.jdt.core.dom.IASTDeclarator;
@@ -26,6 +28,8 @@ import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.IASTSimpleDeclaration;
 import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.IASTUnaryExpression;
 import org.eclipse.jdt.core.dom.InfixExpression;
 
@@ -144,7 +148,7 @@ public final class ASTLoopUtil {
 		IASTInitializerClause ib = LOOP_INITIAL_BOUND_CACHE.get(loop);
 		if (ib != null) return ib;
 		
-		ib = getCanonicalInitializerOf(loop);
+		ib = getCanonicalInitializersOf(loop);
 //		if (ASTLValueComputer.isUnaryAssignment(ib)) Debug.throwTodoException("unsupported bound?");
 		if (ASTAssignableComputer.isBinaryAssignment(ib)) ib = ((Assignment) ib).getOperand2();
 		else DebugElement.throwTodoException("unsupported bound");
@@ -176,34 +180,29 @@ public final class ASTLoopUtil {
 	 * @param loop
 	 * @return
 	 */
-	public static IASTInitializerClause getCanonicalInitializerOf(ForStatement loop) {
-		if (isNonCanonical(loop)) return null;
-		
-		IASTInitializerClause iz = null;
-		final Statement is = loop.getInitializerStatement();
-		if (is instanceof IASTDeclarationStatement) {
-//				IASTDeclarator idr = LOOP_INITIAL_DECL_CACHE.get(loop);
+    @SuppressWarnings({ "removal", "unchecked" })
+    public static VariableDeclarationExpression getCanonicalInitializersOf(ForStatement loop) {
+        if (isNonCanonical(loop)) return null;
+//				TODO: IASTDeclarator idr = LOOP_INITIAL_DECL_CACHE.get(loop);
 //				if (idr == null) {
 //					LOOP_INITIAL_DECL_CACHE.put(declStat, idr = ((IASTSimpleDeclaration) idn).getDeclarators()[0]);
 //				}
-			final IASTDeclaration idn = ((IASTDeclarationStatement) is).getDeclaration();
-			if (idn instanceof IASTSimpleDeclaration) {
-				final Name itn = ASTUtil.getNameOf(getSingleIteratorOf(loop, Fragment.initializers));
-				for (IASTDeclarator id : ((IASTSimpleDeclaration) idn).getDeclarators()) 
-					if (ASTUtil.equals(itn, id.getName(), true)) {
-						final IASTInitializer i = id.getInitializer();
-						if (i instanceof IASTEqualsInitializer) 
-							iz = ((IASTEqualsInitializer) i).getInitializerClause();
-					}
-			}
-			
-		} else if (is instanceof IASTExpressionStatement) {
-			iz = ((IASTExpressionStatement) is).getExpression();
-			
-		} // TODO: else if ...
+        
+		for (final org.eclipse.jdt.core.dom.Expression iz : (List<org.eclipse.jdt.core.dom.Expression>) loop.initializers()) {
+		    if (iz instanceof VariableDeclarationExpression) {
+		        return (VariableDeclarationExpression) iz;
+		        
+		    } else {
+		        /*
+		         * The list should consist of either a list of so called statement expressions (JLS2, 14.8), 
+		         * or a single VariableDeclarationExpression. Otherwise, the for statement would have no Java source equivalent.
+		         */
+		        setNonCanonical(loop);
+		        return DebugElement.throwTodoException("list of so called statement expressions (JLS2, 14.8)");
+		    }
+		}
 		
-		if (iz == null) setNonCanonical(loop);
-		return iz;
+        return null;
 	}
 
 	/**	<pre>

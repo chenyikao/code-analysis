@@ -18,13 +18,22 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.jdt.core.CCorePlugin;
+import org.eclipse.jdt.core.Flags;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
+import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTGenericVisitor;
 import org.eclipse.jdt.core.dom.ASTNameCollector;
 import org.eclipse.jdt.core.dom.ASTSignatureUtil;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.DOMException;
 import org.eclipse.jdt.core.dom.EScopeKind;
 import org.eclipse.jdt.core.dom.ArrayAccess;
@@ -95,7 +104,7 @@ public final class ASTUtil extends DebugElement {
 			prime * (prime * (prime * IASTNameOwner.r_declaration 
 					+ IASTNameOwner.r_definition) + IASTNameOwner.r_reference) + IASTNameOwner.r_unclear;
 	
-	static final String MAIN_FUNCTION_NAME = "main";
+	static final String MAIN_METHOD_NAME = "main";
 	
 	public static final List<Class<? extends Exception>> DEFAULT_EXCEPTION = Arrays.asList(Exception.class);
 	public static final List<Class<? extends Exception>> AST_EXCEPTION = Arrays.asList(ASTException.class);
@@ -240,13 +249,42 @@ public final class ASTUtil extends DebugElement {
 	}
 
 
+	
 
 	/**
 	 * @param func
 	 * @return
 	 */
 	public static boolean isMainFunction(MethodDeclaration func) {
-		return func.getDeclarator().getName().toString().equals(MAIN_FUNCTION_NAME);
+		return func.getDeclarator().getName().toString().equals(MAIN_METHOD_NAME);
+	}
+	
+	public static boolean isMainMethod(IMethod method) throws JavaModelException {
+	    // Check name
+	    if (!MAIN_METHOD_NAME.equals(method.getElementName())) {
+	        return false;
+	    }
+	    
+	    // Check static and public
+	    int flags = method.getFlags();
+	    if (!Flags.isStatic(flags) || !Flags.isPublic(flags)) {
+	        return false;
+	    }
+	    
+	    // Check return type is void
+	    if (!"V".equals(method.getReturnType())) {
+	        return false;
+	    }
+	    
+	    // Check single String array parameter
+	    String[] paramTypes = method.getParameterTypes();
+	    if (paramTypes.length != 1) {
+	        return false;
+	    }
+	    
+	    // Check for String[] - signature is "[QString;"
+	    String paramSig = paramTypes[0];
+	    return "[QString;".equals(paramSig) || "[Qjava.lang.String;".equals(paramSig);
 	}
 	
 	public static boolean isGround(MethodDeclaration func) {
@@ -800,6 +838,31 @@ public final class ASTUtil extends DebugElement {
 		return count;
 	}
 	
+	public static List<MethodDeclaration> findAllMainMethods(IJavaProject project) 
+	        throws JavaModelException {
+	    List<MethodDeclaration> mainMethods = new ArrayList<>();
+	    
+	    // Search all packages
+	    for (IPackageFragment pkg : project.getPackageFragments()) {
+	        if (pkg.getKind() == IPackageFragmentRoot.K_SOURCE) {
+	            for (ICompilationUnit cu : pkg.getCompilationUnits()) {
+	                for (org.eclipse.jdt.core.IType type : cu.getAllTypes()) {
+	                    for (IMethod method : type.getMethods()) {
+	                        if (isMainMethod(method)) {
+	                            MethodDeclaration decl = getMethodDeclarationFromIMethod(method);
+	                            if (decl != null) {
+	                                mainMethods.add(decl);
+	                            }
+	                        }
+	                    }
+	                }
+	            }
+	        }
+	    }
+	    
+	    return mainMethods;
+	}
+	
 	/**
 	 * @param descend
 	 * @param ancestor - a descendant-inclusive ancestor
@@ -922,6 +985,43 @@ public final class ASTUtil extends DebugElement {
 //		}
 //		return DebugElement.throwTodoException("unsupported copy");
 //	}
+	
+	public static MethodDeclaration getMethodDeclarationFromIMethod(IMethod method) 
+	        throws JavaModelException {
+	    ICompilationUnit icu = method.getCompilationUnit();
+	    if (icu == null) {
+	        return null;
+	    }
+	    
+	    // Parse the compilation unit to get AST
+	    ASTParser parser = ASTParser.newParser(AST.JLS_Latest);
+	    parser.setSource(icu);
+	    parser.setResolveBindings(true);
+	    parser.setKind(ASTParser.K_COMPILATION_UNIT);
+	    
+	    CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+	    
+	    // Find the method in the AST
+	    IMethod targetMethod = method;
+	    final MethodDeclaration[] result = new MethodDeclaration[1];
+	    
+	    cu.accept(new ASTVisitor() {
+	        @Override
+	        public boolean visit(MethodDeclaration node) {
+	            IMethodBinding binding = node.resolveBinding();
+	            if (binding != null) {
+	                IMethod iMethod = (IMethod) binding.getJavaElement();
+	                if (iMethod != null && iMethod.equals(targetMethod)) {
+	                    result[0] = node;
+	                    return false;
+	                }
+	            }
+	            return true;
+	        }
+	    });
+	    
+	    return result[0];
+	}
 	
 	/**
 	 * @param fName - the name of function to search for

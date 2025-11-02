@@ -12,12 +12,15 @@ import java.util.function.Supplier;
 import org.eclipse.jdt.core.dom.IASTBinaryExpression;
 import org.eclipse.jdt.core.dom.IASTDeclarator;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IASTFunctionCallExpression;
 import org.eclipse.jdt.core.dom.IASTInitializerList;
 import org.eclipse.jdt.core.dom.IASTName;
 import org.eclipse.jdt.core.dom.IASTNode;
 import org.eclipse.jdt.core.dom.IASTUnaryExpression;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
 
@@ -33,6 +36,12 @@ import fozu.ca.vodcg.condition.VariablePlaceholder;
 import fozu.ca.vodcg.util.ASTAssignableComputer;
 import fozu.ca.vodcg.util.ASTLoopUtil;
 import fozu.ca.vodcg.util.ASTUtil;
+import fozu.ca.vodcg.util.IASTDeclaration;
+import fozu.ca.vodcg.util.IASTDeclarationStatement;
+import fozu.ca.vodcg.util.IASTEqualsInitializer;
+import fozu.ca.vodcg.util.IASTInitializer;
+import fozu.ca.vodcg.util.IASTSimpleDeclaration;
+import fozu.ca.vodcg.util.ASTLoopUtil.Fragment;
 
 /**
  * @author Kao, Chen-yi
@@ -61,9 +70,27 @@ public class Assignment extends SystemElement {
 
 
 
-	public static Assignment from(ForStatement loop, final ASTAddressable dynaAddr, VODCondGen condGen) {
+	@SuppressWarnings("unchecked")
+    public static List<Assignment> from(ForStatement loop, final ASTAddressable dynaAddr, VODCondGen condGen) {
 		if (loop == null) throwNullArgumentException("loop");
-		return new Assignment(ASTLoopUtil.getCanonicalInitializerOf(loop), dynaAddr, condGen);
+		
+		final List<Assignment> asms = new ArrayList<>();  // TODO: cache asms
+		
+		final VariableDeclarationExpression izs = ASTLoopUtil.getCanonicalInitializersOf(loop);
+        for (final VariableDeclarationFragment vdf : (List<VariableDeclarationFragment>) izs.fragments()) {
+//            final IASTDeclaration idn = ((IASTDeclarationStatement) iz).getDeclaration();
+//            if (idn instanceof IASTSimpleDeclaration) {
+//                final Name itn = ASTUtil.getNameOf(getSingleIteratorOf(loop, Fragment.initializers));
+//                for (IASTDeclarator id : ((IASTSimpleDeclaration) idn).getDeclarators()) 
+//                    if (ASTUtil.equals(itn, id.getName(), true)) {
+//                        final IASTInitializer i = id.getInitializer();
+//                        if (i instanceof IASTEqualsInitializer) 
+//                            izs = ((IASTEqualsInitializer) i).getInitializerClause();
+//                    }
+//            }
+            asms.add(new Assignment(vdf, dynaAddr, condGen));
+        }
+		return asms;
 	}
 	
 	public static Assignment from(VariableDeclaration init, final ASTAddressable dynaAddr, VODCondGen condGen) {
