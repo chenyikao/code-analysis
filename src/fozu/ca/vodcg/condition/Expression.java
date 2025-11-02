@@ -20,7 +20,7 @@ import org.eclipse.jdt.core.dom.CastExpression;
 import org.eclipse.jdt.core.dom.IASTArraySubscriptExpression;
 import org.eclipse.jdt.core.dom.IASTBinaryExpression;
 import org.eclipse.jdt.core.dom.IASTCastExpression;
-import org.eclipse.jdt.core.dom.IASTConditionalExpression;
+import org.eclipse.jdt.core.dom.ConditionalExpression;
 import org.eclipse.jdt.core.dom.IASTFieldReference;
 import org.eclipse.jdt.core.dom.IASTFileLocation;
 import org.eclipse.jdt.core.dom.IASTFunctionCallExpression;
@@ -242,12 +242,12 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 		else if (exp instanceof IASTFunctionCallExpression) 
 			e = FunctionCall.fromRecursively((IASTFunctionCallExpression) exp, (Supplier<Proposition>) null, rtAddr, condGen);
 			
-		else if (exp instanceof IASTConditionalExpression) {
-			IASTConditionalExpression cexp = (IASTConditionalExpression) exp;
+		else if (exp instanceof ConditionalExpression) {
+			ConditionalExpression cexp = (ConditionalExpression) exp;
 			e = ConditionalExpression.from(
-					Proposition.fromRecursively((ASTNode) cexp.getLogicalConditionExpression(), rtAddr, condGen), 
-					fromRecursively(cexp.getPositiveResultExpression(), rtAddr, condGen),
-					fromRecursively(cexp.getNegativeResultExpression(), rtAddr, condGen));
+					Proposition.fromRecursively((ASTNode) cexp.getExpression(), rtAddr, condGen), 
+					fromRecursively(cexp.getThenExpression(), rtAddr, condGen),
+					fromRecursively(cexp.getElseExpression(), rtAddr, condGen));
 			
 		} else if (exp instanceof CastExpression) {
 			e = new CastCall((CastExpression) exp, rtAddr, condGen);
