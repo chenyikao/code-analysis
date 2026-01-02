@@ -36,7 +36,7 @@ import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
 import org.eclipse.jdt.core.dom.IASTFileLocation;
 import org.eclipse.jdt.core.dom.IASTInitializer;
 import org.eclipse.jdt.core.dom.IASTInitializerClause;
-import org.eclipse.jdt.core.dom.IASTNameOwner;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.IASTSimpleDeclSpecifier;
 import org.eclipse.jdt.core.dom.IASTSimpleDeclaration;
 import org.eclipse.jdt.core.dom.IBinding;
@@ -268,9 +268,9 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 //	private static final Method 
 //	METHOD_SET_PATH_VARIABLE_DELEGATE = Elemental.getMethod(Assignable.class, "setPathVariableDelegate");
 
-	private IVariableBinding bindingView;
+	private IBinding bindingView;
 	private Name nameView;
-//	private IASTNameOwner nameOwnerView;
+	private VariableDeclaration variableDeclarationView;
 	private org.eclipse.jdt.core.dom.Expression expView;
 	private Assignment firstAssignmentView;
 
@@ -299,47 +299,47 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		super(null, condGen);
 		
 		assert var != null;
-		init(var, null, null, null);
+		init(var, null, null);
 	}
 
 	/**
-	 * L-value comes from an assignment as an IASTNameOwner in either an IASTDeclarator or an SimpleName.
+	 * L-value comes from an assignment as a SimpleName in either a VariableDeclaration or an Expression.
 	 * 
 	 * @param name
 	 * @param bind - pre-cached name (variable) binding if there is one.
-	 * @param owner - pre-cached name owner if there is one.
+	 * @param variableDeclaration - pre-cached variable declaration if there is one.
 	 * @param condGen 
 	 */
 	protected Assignable(
-			Name name, IBinding bind, /*IASTNameOwner owner,*/ final ASTAddressable rtAddr, VODCondGen condGen) {
+			Name name, IBinding bind, /*VariableDeclaration variableDeclaration,*/ final ASTAddressable rtAddr, VODCondGen condGen) {
 		super(rtAddr, condGen);
 		
-//		assert name != null && owner == name.getParent();
+//		assert name != null && variableDeclaration == name.getParent();
 //		if (name.isDefinition()) VAR_DEFINITION_CACHE.put
-		init(bind == null ? name.resolveBinding() : bind, name, owner, rtAddr);
+		init(bind == null ? (IVariableBinding) name.resolveBinding() : bind, name, /*variableDeclaration,*/ rtAddr);
 		
-		if (owner instanceof IASTDeclarator) 
-			expView = null;
-		
-		else if (owner instanceof SimpleName) 
-			expView = owner;
-		
-		else if (owner instanceof FieldAccess) 
-			expView = ((FieldAccess) owner).getFieldOwner();
-			
-		else if (owner instanceof org.eclipse.jdt.core.dom.Expression)
-			expView = (org.eclipse.jdt.core.dom.Expression) owner;
-		
-		else throwIllegalNameException(name);
+//		if (variableDeclaration instanceof IASTDeclarator) 
+//			expView = null;
+//		
+//		else if (variableDeclaration instanceof SimpleName) 
+//			expView = variableDeclaration;
+//		
+//		else if (variableDeclaration instanceof FieldAccess) 
+//			expView = ((FieldAccess) variableDeclaration).getFieldOwner();
+//			
+//		else if (variableDeclaration instanceof org.eclipse.jdt.core.dom.Expression)
+//			expView = (org.eclipse.jdt.core.dom.Expression) variableDeclaration;
+//		
+//		else throwIllegalNameException(name);
 	}
 
-	private void init(final IVariableBinding bind, final Name name, /*final IASTNameOwner nameOwner,*/ 
+	private void init(final IBinding bind, final Name name, /*final VariableDeclaration variableDeclaration,*/ 
 			final ASTAddressable rtAddr) {
 //		if (name != null && name.getFileLocation() != null && rtAddr != null) throwTodoException("inconsistent addresses");
 		
 		bindingView = bind;
 		nameView = name;
-//		nameOwnerView = nameOwner;
+//		variableDeclarationView = variableDeclaration;
 		firstAssignmentView = null;
 		
 		final VODCondGen cg = getCondGen();
@@ -366,12 +366,12 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	 * @param asnName
 	 * @param asnBind - the pre-cached L-value must be a writable binding: a variable or a function, 
 	 * if available
-	 * @param asnNameOwner
+	 * @param asnVariableDeclaration
 	 * @param condGen 
 	 * @return
 	 */
 	private static Assignable<?> fromCache(Name asnName, 
-			IBinding asnBind, IASTNameOwner asnNameOwner, final ASTAddressable rtAddr, VODCondGen condGen) 
+			IBinding asnBind, VariableDeclaration asnVariableDeclaration, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
 		if (asnBind == null) throwNullArgumentException("binding");
 		
@@ -383,17 +383,17 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		else asn = varBindLvs.get(asnName);
 		if (asn != null) return asn;
 		
-		if (asnName != null && asnNameOwner == null) {
+		if (asnName != null && asnVariableDeclaration == null) {
 			ASTNode varNameParent = asnName.getParent();
-			if (varNameParent instanceof IASTNameOwner) 
-				asnNameOwner = (IASTNameOwner) varNameParent;
+			if (varNameParent instanceof VariableDeclaration) 
+				asnVariableDeclaration = (VariableDeclaration) varNameParent;
 		}
 		
 		varBindLvs.put(asnName, asn = asnBind instanceof IMethodBinding 
-				? new FunctionAssignable(asnName, (IMethodBinding) asnBind, asnNameOwner, rtAddr, condGen) 
+				? new FunctionAssignable(asnName, (IMethodBinding) asnBind, /*asnVariableDeclaration,*/ rtAddr, condGen) 
 				: (asnName == null 
 						? new Assignable<>((IVariableBinding) asnBind, condGen) 
-						: new Assignable<>(asnName, asnBind, asnNameOwner, rtAddr, condGen)));
+						: new Assignable<>(asnName, (IVariableBinding) asnBind, /*asnVariableDeclaration,*/ rtAddr, condGen)));
 		final Assignable<?> asn_ = asn;
 		return get(()-> asn_.toFunctional(),
 				()-> asn_);
@@ -410,19 +410,19 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 
 //	/**
 //	 * @param name
-//	 * @param nameOwner - pre-cached name owner if there is one.
+//	 * @param variableDeclaration - pre-cached variable declaration if there is one.
 //	 * @param condGen 
 //	 * @return
 //	 */
 //	public static Assignable<?> from(
-//			Name name, IASTNameOwner nameOwner, final ASTAddressable rtAddr, VODCondGen condGen) 
+//			Name name, VariableDeclaration variableDeclaration, final ASTAddressable rtAddr, VODCondGen condGen) 
 //					throws ASTException {
 //		if (name == null) throwNullArgumentException("AST name");
 //		
 //		IBinding lvBind = name.resolveBinding();
 //		// L-value must be a assignable binding: a variable or a function 
 //		return isAssignableBinding(lvBind) 
-//				? fromCache(name, lvBind, nameOwner, rtAddr, condGen) : null ;
+//				? fromCache(name, lvBind, variableDeclaration, rtAddr, condGen) : null ;
 //	}
 	
 	/**
@@ -435,33 +435,33 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		return from(varName, null, rtAddr, condGen);
 	}
 	
-//	/**
-//	 * @param nameOwner
-//	 * @param condGen 
-//	 * @return
-//	 */
-//	public static Assignable<?> from(IASTNameOwner nameOwner, final ASTAddressable rtAddr, VODCondGen condGen) {
-//		return nameOwner != null 
-//				? from(ASTUtil.getNameOf(nameOwner), nameOwner, rtAddr, condGen) 
-//				: throwNullArgumentException("AST name owner");
-//	}
+	/**
+	 * @param svDeclaration
+	 * @param condGen 
+	 * @return
+	 */
+	public static Assignable<?> from(SingleVariableDeclaration svDeclaration, final ASTAddressable rtAddr, VODCondGen condGen) {
+		return svDeclaration != null 
+				? from(ASTUtil.getNameOf(svDeclaration), svDeclaration, rtAddr, condGen) 
+				: throwNullArgumentException("AST variable declaration");
+	}
 	
 //	/**
 //	 * @param lvBind - the pre-cached L-value must be a assignable binding: 
 //	 * 	a variable or a function, 
 //	 * if available
 //	 * @param lvName
-//	 * @param lvNameOwner
+//	 * @param lvVariableDeclaration
 //	 * @param condGen
 //	 * @return
 //	 */
 //	public static Assignable<?> from(IBinding lvBind, 
-//			Name lvName, IASTNameOwner lvNameOwner, final ASTAddressable rtAddr, VODCondGen condGen) {
+//			Name lvName, VariableDeclaration lvVariableDeclaration, final ASTAddressable rtAddr, VODCondGen condGen) {
 //		if (lvName == null) throwNullArgumentException("name");
 //		
 //		if (lvBind == null) return from(lvName, rtAddr, condGen);
 //		return isAssignableBinding(lvBind) 
-//				? fromCache(lvName, lvBind, lvNameOwner, rtAddr, condGen) : null ;
+//				? fromCache(lvName, lvBind, lvVariableDeclaration, rtAddr, condGen) : null ;
 //	}
 	
 //	public static Assignable<?> from(
@@ -469,7 +469,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 //					throws ASTException {
 //		if (clause == null) throwNullArgumentException("clause");
 //		
-//		final IASTNameOwner no = ASTAssignableComputer.getVariableNameOwnerOf(clause);
+//		final VariableDeclaration no = ASTAssignableComputer.getVariableDeclarationOf(clause);
 //		if (no != null) return from(no, rtAddr, condGen);
 //		
 //		final Name name = ASTAssignableComputer.getVariableNameOf(clause);
@@ -759,7 +759,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	
 //	public IASTDeclarator getDeclarator() {
 //		return isDeclarator() ? 
-//				(IASTDeclarator) nameOwnerView : null;
+//				(IASTDeclarator) variableDeclarationView : null;
 //	}
 
 	public org.eclipse.jdt.core.dom.Expression getExpressionView() {
@@ -775,9 +775,9 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		return getNonNull(()-> getASTName().toString());
 	}
 	
-//	public IASTNameOwner getNameOwner() {
-//		return nameOwnerView;
-//	}
+	public VariableDeclaration getVariableDeclaration() {
+		return variableDeclarationView;
+	}
 	
 	@Override
 	public PlatformType getType() {
@@ -1401,7 +1401,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	
 	public ASTNode getTopNode() {
 		if (expView != null) return expView; 
-//		if (nameOwnerView != null) return (ASTNode) nameOwnerView;
+//		if (variableDeclarationView != null) return (ASTNode) variableDeclarationView;
 		return throwTodoException("null top node");
 	}
 
@@ -1419,8 +1419,8 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 //	 * @return
 //	 */
 //	public IASTInitializerClause getFirstClause() {
-//		if (nameOwnerView instanceof IASTDeclarator) {
-//			IASTInitializer init = ((IASTDeclarator) nameOwnerView).getInitializer();
+//		if (variableDeclarationView instanceof IASTDeclarator) {
+//			IASTInitializer init = ((IASTDeclarator) variableDeclarationView).getInitializer();
 //			if (init instanceof IASTEqualsInitializer) {
 //				isAssigned = true;
 //				return ((IASTEqualsInitializer) init).getInitializerClause();
@@ -1905,22 +1905,22 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		return false;
 	}
 
-	public boolean isUnsigned() throws IncomparableException {
-		final IASTDeclarator decl = getDeclarator();
-		if (decl == null) {
-			final Assignable<PV> pre = previous();
-			return pre != null && pre.isUnsigned();
-		}
-		
-		@SuppressWarnings("unchecked")
-		final IASTSimpleDeclaration sd = (IASTSimpleDeclaration) ASTUtil.getAncestorOfAs(
-				nameView, new Class[] {IASTSimpleDeclaration.class}, false);	
-		if (sd == null) return false;	// throwTodoException("unsupported declaration");
-		
-		final IASTDeclSpecifier ds = sd.getDeclSpecifier();
-		return ds instanceof IASTSimpleDeclSpecifier
-				&& ((IASTSimpleDeclSpecifier) ds).isUnsigned();
-	}
+//	public boolean isUnsigned() throws IncomparableException {
+//		final VariableDeclaration decl = getVariableDeclaration();
+//		if (decl == null) {
+//			final Assignable<PV> pre = previous();
+//			return pre != null && pre.isUnsigned();
+//		}
+//		
+//		@SuppressWarnings("unchecked")
+//		final IASTSimpleDeclaration sd = (IASTSimpleDeclaration) ASTUtil.getAncestorOfAs(
+//				nameView, new Class[] {IASTSimpleDeclaration.class}, false);	
+//		if (sd == null) return false;	// throwTodoException("unsupported declaration");
+//		
+//		final IASTDeclSpecifier ds = sd.getDeclSpecifier();
+//		return ds instanceof IASTSimpleDeclSpecifier
+//				&& ((IASTSimpleDeclSpecifier) ds).isUnsigned();
+//	}
 
 	/**
 	 * @return true <em>only if</em> in the pattern of self-assigning variable x = x op ... or 
@@ -2461,7 +2461,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	 * 	an array pointer with arguments
 	 */
 	public boolean isArray() {
-		return nameOwnerView instanceof ArrayType 
+		return variableDeclarationView instanceof ArrayType 
 				|| tests(()-> 
 		getEnclosingArraySubscriptExpression()
 		.getArrayExpression().contains(nameView));
@@ -2533,10 +2533,10 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 				&& !ep.getType().isPrimitive();
 	}
 
-	@Override
-	public boolean isDeclarator() {
-		return nameOwnerView instanceof IASTDeclarator;
-	}
+//	@Override
+//	public boolean isDeclarator() {
+//		return variableDeclarationView instanceof IASTDeclarator;
+//	}
 	
 	public Boolean isDirectlyFunctional() {
 		return isFunctional(true);
@@ -2639,8 +2639,8 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean isParameter() {
-		return getNameOwner() instanceof IASTDeclarator 
-				&& ASTUtil.getAncestorOfAsUnless(getASTName(), 
+		return getVariableDeclaration() != null 
+				&& ASTUtil.getAncestorOfAsUnless(getVariableDeclaration(), 
 						new Class[]{SingleVariableDeclaration.class},
 						ASTUtil.AST_FUNCTION_DEFINITION, 
 						false) != null;

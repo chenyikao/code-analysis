@@ -12,7 +12,9 @@ import java.util.Set;
 import org.eclipse.jdt.core.dom.IASTDeclarator;
 import org.eclipse.jdt.core.dom.IASTFunctionDeclarator;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.IFunction;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.condition.ArithmeticExpression;
@@ -37,9 +39,9 @@ public class FunctionAssignable extends Assignable<FunctionalPathVariable> {
 	private FunctionCall<?> call = null;
 	
 	protected FunctionAssignable(
-			Name name, IFunction bind, IASTNameOwner owner, final ASTAddressable rtAddr, VODCondGen condGen) 
+			Name name, IMethodBinding bind, /*VariableDeclaration variableDeclaration,*/ final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
-		super(name, bind, owner, rtAddr, condGen);
+		super(name, bind, /*variableDeclaration,*/ rtAddr, condGen);
 	}
 	
 	
@@ -193,8 +195,8 @@ public class FunctionAssignable extends Assignable<FunctionalPathVariable> {
 	
 	@SuppressWarnings("unchecked")
 	public boolean isDeclaration() {
-		return getNameOwner() instanceof IASTDeclarator 
-				&& ASTUtil.getAncestorOfAsUnless(getASTName(), 
+		return getVariableDeclaration() != null 
+				&& ASTUtil.getAncestorOfAsUnless(getVariableDeclaration(), 
 						new Class[]{IASTFunctionDeclarator.class},
 						ASTUtil.AST_FUNCTION_DEFINITION, 
 						false) != null;

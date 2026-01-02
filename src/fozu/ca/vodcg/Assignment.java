@@ -365,7 +365,7 @@ public class Assignment extends SystemElement {
 		final VODCondGen cg = getCondGen();
 		
 		if (asmDcl != null) {
-			asds.add(Assignable.from(((IASTDeclarator) asmDcl.getParent()).getName(), null, cg));
+			asds.add(Assignable.from(asmDcl.getName(), null, cg));
 			asns.addAll(Assignable.fromOf(asmDcl.getInitializerClause(), null, cg));
 		}
 		

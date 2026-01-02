@@ -3,8 +3,8 @@
  */
 package fozu.ca.vodcg;
 
-import org.eclipse.cdt.core.dom.ast.IASTNode;
-import org.eclipse.cdt.core.dom.ast.IBinding;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.cdt.core.dom.ast.IProblemBinding;
 
 import fozu.ca.vodcg.util.ASTUtil;
@@ -17,7 +17,7 @@ public class ASTException extends IllegalArgumentException {
 
 	private static final long serialVersionUID = 1L;
 	
-	public ASTException(IASTNode node) {
+	public ASTException(ASTNode node) {
 		super("unsupported AST node " + ASTUtil.toStringOf(node));
 	}
 	

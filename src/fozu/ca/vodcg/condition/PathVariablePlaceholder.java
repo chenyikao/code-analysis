@@ -20,6 +20,7 @@ import org.eclipse.jdt.core.dom.IASTDeclarator;
 import org.eclipse.jdt.core.dom.IASTFileLocation;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.IASTNameOwner;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.IBinding;
@@ -279,14 +280,14 @@ implements Comparable<PathVariablePlaceholder>, Comparator<PathVariablePlacehold
 //	}
 
 	/**
-	 * @param declarator
+	 * @param svDeclaration
 	 * @param condGen
 	 * @return
 	 */
-	public static PathVariablePlaceholder from(IASTDeclarator declarator, final ASTAddressable rtAddr, VODCondGen condGen) 
+	public static PathVariablePlaceholder from(SingleVariableDeclaration svDeclaration, final ASTAddressable rtAddr, VODCondGen condGen) 
 		throws ASTException, IncomparableException, 
 		UncertainPlaceholderException, NoSuchVersionException {
-		return from(Assignable.from(declarator, rtAddr, condGen));
+		return from(Assignable.from(svDeclaration, rtAddr, condGen));
 	}
 	
 	/**

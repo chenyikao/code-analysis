@@ -11,9 +11,14 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.Type;
+
+import org.eclipse.jdt.core.dom.PrimitiveType;
 
 import fozu.ca.DebugElement;
 import fozu.ca.condition.SerialFormat;
+import fozu.ca.vodcg.ASTException;
+import fozu.ca.vodcg.SystemElement;
 import fozu.ca.vodcg.condition.ConditionElement;
 import fozu.ca.vodcg.condition.Expression;
 import fozu.ca.vodcg.util.ASTUtil;
@@ -100,39 +105,36 @@ public enum DataType implements PlatformType {
 		return null;
 	}
 	
-//	public static PlatformType from(final IASTSimpleDeclSpecifier decl) 
-//			throws ASTException {
-//		if (decl == null) SystemElement.throwNullArgumentException("declaration specifier");
-//		
-//		final int dt = decl.getType();
-//		switch (dt) {
-//		case IASTSimpleDeclSpecifier.t_bool:			return Bool;
-//		case IASTSimpleDeclSpecifier.t_char:
-//		case IASTSimpleDeclSpecifier.t_char16_t:
-//		case IASTSimpleDeclSpecifier.t_char32_t:
-//		case IASTSimpleDeclSpecifier.t_wchar_t:			return Char;
-//		case IASTSimpleDeclSpecifier.t_int:
-//		case IASTSimpleDeclSpecifier.t_int128:			return Int;
-//		case IASTSimpleDeclSpecifier.t_double:
-//		case IASTSimpleDeclSpecifier.t_float:
-//		case IASTSimpleDeclSpecifier.t_float128:
-//		case IASTSimpleDeclSpecifier.t_decimal32:
-//		case IASTSimpleDeclSpecifier.t_decimal64:
-//		case IASTSimpleDeclSpecifier.t_decimal128:		return Real;
-//		case IASTSimpleDeclSpecifier.t_void:			return Void;
-//		case IASTSimpleDeclSpecifier.t_unspecified:
-//			ASTUtil.throwASTException(decl);
-//			
-//		case IASTSimpleDeclSpecifier.t_auto:
-//		case IASTSimpleDeclSpecifier.t_decltype:
-//		case IASTSimpleDeclSpecifier.t_decltype_auto:
-//		case IASTSimpleDeclSpecifier.t_typeof:
-//		default:
-//			SystemElement.throwTodoException("Unsupported type: " + dt);
-//		}
-//
-//		return null;
-//	}
+	public static PlatformType from(final Type type) 
+			throws ASTException {
+		if (type == null) SystemElement.throwNullArgumentException("declaration type");
+		
+		if (type.isPrimitiveType()) {
+			// for primitive type cast
+			final PrimitiveType.Code code = ((PrimitiveType) type).getPrimitiveTypeCode();
+			if (PrimitiveType.BOOLEAN.equals(code)) return Bool;
+			if (PrimitiveType.CHAR.equals(code)) return Char;
+			if (PrimitiveType.BYTE.equals(code) || PrimitiveType.INT.equals(code) || PrimitiveType.LONG.equals(code) || PrimitiveType.SHORT.equals(code)) return Int;
+			if (PrimitiveType.DOUBLE.equals(code) || PrimitiveType.FLOAT.equals(code)) return Real;
+			if (PrimitiveType.VOID.equals(code)) return Void;
+			SystemElement.throwTodoException("Unsupported type: " + code);
+			
+		} else if (type.isArrayType()) {
+		    // for array cast
+			SystemElement.throwTodoException("array type");
+			
+		} else {
+			// for pointer cast
+		    return DataType.from(type.resolveBinding());
+//		    if (pt instanceof DataType) 
+//		        pt = PointerType.from((DataType) pt); 
+//		    else throwTodoException("unsupported cast type");
+		}
+//		for (@SuppressWarnings("unused") IASTPointerOperator p : type.getAbstractDeclarator().getPointerOperators())
+//		    pt = PointerType.from(pt); 
+
+		return null;
+	}
 	
 //	public DataType fromJavaType(javaType) throws NonSupportedTypeException {	// TODO: NonSupportedType
 //		return;

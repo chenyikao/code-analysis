@@ -24,7 +24,7 @@ import fozu.ca.vodcg.parallel.ThreadPrivatizable;
  * @author Kao, Chen-yi
  *
  */
-@SuppressWarnings("removal")
+@SuppressWarnings("deprecation")
 public interface VersionEnumerable<S extends Referenceable> 
 extends ASTAddressable, AssignableElement, ThreadPrivatizable {
 

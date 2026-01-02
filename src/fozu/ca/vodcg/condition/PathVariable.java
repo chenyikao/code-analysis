@@ -19,6 +19,9 @@ import org.eclipse.jdt.core.dom.IASTDeclarator;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
+import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 
@@ -128,20 +131,21 @@ public class PathVariable extends Variable {
 //	}
 
 	/**
-	 * @param declarator
+	 * @param svDeclaration
 	 * @param rtAddr 
 	 * @param condGen
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static PathVariable from(IASTDeclarator declarator, final ASTAddressable rtAddr, VODCondGen condGen) {
+	public static PathVariable from(SingleVariableDeclaration svDeclaration, final ASTAddressable rtAddr, VODCondGen condGen) {
 		try {
-		final Assignable<? extends PathVariable> asn = Assignable.from(declarator, rtAddr, condGen);
-		return (declarator instanceof ArrayType) 
-				? FunctionalPathVariable.from(
-						(ArrayType) declarator, (Assignable<FunctionalPathVariable>) asn, (PathVariable) null)
-				: from((Assignable<PathVariable>) asn);
-				
+			final Assignable<? extends PathVariable> asn = Assignable.from(svDeclaration, rtAddr, condGen);
+			final Type t = svDeclaration.getType();
+			return (t instanceof ArrayType) 
+					? FunctionalPathVariable.from(
+							(ArrayType) t, (Assignable<FunctionalPathVariable>) asn, (PathVariable) null)
+					: from((Assignable<PathVariable>) asn);
+			
 		} catch (ClassCastException e) {
 			return throwTodoException(e);
 		}

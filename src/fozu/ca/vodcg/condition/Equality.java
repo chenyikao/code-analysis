@@ -87,37 +87,37 @@ implements AssignableExpression {
 					Expression.fromRecursively(rhs, rtAddr, condGen));
 	}
 	
-	static public Proposition from(IASTEqualsInitializer init, final ASTAddressable rtAddr, VODCondGen condGen) {
-		if (init == null) throwNullArgumentException("initializer");
-		
-//		this(Function.getFunctionScopeOf(init, condGen), condGen);
-		try {
-			final IASTInitializerClause ic = init.getInitializerClause();
-			final Assignable<?> lhsAsn = Assignable.from((IASTDeclarator) init.getParent(), rtAddr, condGen);
-			if (ic instanceof IASTInitializerList) {
-				Proposition e = null;
-				@SuppressWarnings("unchecked")
-				final ConstArrayDeclaration lhs = (ConstArrayDeclaration) ConstArrayDeclaration.from((Assignable<PathVariable>) lhsAsn);
-				int i = 0;
-				for (IASTInitializerClause lic : ((IASTInitializerList) ic).getClauses()) {
-					final Expression rhs = Expression.fromRecursively(lic, rtAddr, condGen);
-					final Equality eq = fromAssignment(lhs.getAssigned(i++, rhs), rhs);
-					e = e == null ? eq : e.and(eq);
-				}
-				return e;
-				
-			} else return fromAssignment(
-					PathVariablePlaceholder.from(lhsAsn), Expression.fromRecursively(ic, rtAddr, condGen));
-		
-		} catch (Exception e) {
-			return throwTodoException(e);
-		}
-		
-//		org.eclipse.jdt.core.dom.Expression asgOprd = asg.getOperand();
-//		Expression operand = Expression.from(asgOprd, sideEffect);
-//		if (operand instanceof PathVariable) 
-//			((PathVariable) operand).reversion(LValue.from(asgOprd), scope);
-	}
+//	static public Proposition from(IASTEqualsInitializer init, final ASTAddressable rtAddr, VODCondGen condGen) {
+//		if (init == null) throwNullArgumentException("initializer");
+//		
+////		this(Function.getFunctionScopeOf(init, condGen), condGen);
+//		try {
+//			final IASTInitializerClause ic = init.getInitializerClause();
+//			final Assignable<?> lhsAsn = Assignable.from((IASTDeclarator) init.getParent(), rtAddr, condGen);
+//			if (ic instanceof IASTInitializerList) {
+//				Proposition e = null;
+//				@SuppressWarnings("unchecked")
+//				final ConstArrayDeclaration lhs = (ConstArrayDeclaration) ConstArrayDeclaration.from((Assignable<PathVariable>) lhsAsn);
+//				int i = 0;
+//				for (IASTInitializerClause lic : ((IASTInitializerList) ic).getClauses()) {
+//					final Expression rhs = Expression.fromRecursively(lic, rtAddr, condGen);
+//					final Equality eq = fromAssignment(lhs.getAssigned(i++, rhs), rhs);
+//					e = e == null ? eq : e.and(eq);
+//				}
+//				return e;
+//				
+//			} else return fromAssignment(
+//					PathVariablePlaceholder.from(lhsAsn), Expression.fromRecursively(ic, rtAddr, condGen));
+//		
+//		} catch (Exception e) {
+//			return throwTodoException(e);
+//		}
+//		
+////		org.eclipse.jdt.core.dom.Expression asgOprd = asg.getOperand();
+////		Expression operand = Expression.from(asgOprd, sideEffect);
+////		if (operand instanceof PathVariable) 
+////			((PathVariable) operand).reversion(LValue.from(asgOprd), scope);
+//	}
 	
 //	public static Proposition from(ArithmeticExpression lhs, ArithmeticExpression rhs) {
 //		if (lhs == null) throwNullArgumentException("lhs");

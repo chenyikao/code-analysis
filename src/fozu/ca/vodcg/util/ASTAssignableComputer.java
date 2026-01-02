@@ -338,29 +338,30 @@ public final class ASTAssignableComputer {
 	
 	public static boolean isDirectlyAssignedIn(
 			Name lValue, VariableDeclarationFragment init) {
-		@SuppressWarnings("unchecked")
-		final IASTDeclarator decl = (IASTDeclarator) ASTUtil.getAncestorOfAs(
-				lValue, new Class[] {IASTDeclarator.class}, false);
-		return decl != null 
-				&& decl.getName() == lValue 
-				&& decl.getInitializer() == init;
+//		final IASTDeclarator decl = (IASTDeclarator) ASTUtil.getAncestorOfAs(
+//				lValue, new Class[] {IASTDeclarator.class}, false);
+//		return decl != null 
+//				&& decl.getName() == lValue 
+//				&& decl.getInitializer() == init;
+		return init != null 
+				&& init.getName() == lValue;
 	}
 	
-	/**
-	 * TODO: checking if pointer + name = l-value
-	 * @param lValue
-	 * @param init
-	 * 
-	 * @return
-	 */
-	public static boolean isDirectlyAssignedIn(
-			Expression lValue, VariableDeclarationFragment init) {
-		if (init == null || lValue == null) return false;
-		
-		IASTDeclarator decl = (IASTDeclarator) init.getParent();
-//		decl.getPointerOperators();
-		return ASTUtil.equals(decl.getName(), ASTUtil.getNameOf(lValue));	// node-location-aware
-	}
+//	/**
+//	 * TODO: checking if pointer + name = l-value
+//	 * @param lValue
+//	 * @param init
+//	 * 
+//	 * @return
+//	 */
+//	public static boolean isDirectlyAssignedIn(
+//			Expression lValue, VariableDeclarationFragment init) {
+//		if (init == null || lValue == null) return false;
+//		
+//		IASTDeclarator decl = (IASTDeclarator) init.getParent();
+////		decl.getPointerOperators();
+//		return ASTUtil.equals(decl.getName(), ASTUtil.getNameOf(lValue));	// node-location-aware
+//	}
 
 //	/**
 //	 * Meaning in the right hand side of binary assignment or subject of unary assignment.
