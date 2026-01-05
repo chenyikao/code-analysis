@@ -4,6 +4,7 @@
 package fozu.ca.vodcg.condition;
 
 import org.eclipse.cdt.core.dom.ast.IASTForStatement;
+import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.Statement;
 
 import fozu.ca.Elemental;
@@ -125,15 +126,15 @@ implements NumericExpression {
 	
 	public static Proposition fromIteratorAfter(
 			Statement loop, final ASTAddressable rtAddr, VODCondGen condGen) {
-		if (loop instanceof IASTForStatement) return fromIteratorOf(
-				(IASTForStatement) loop, false, true, rtAddr, condGen);
+		if (loop instanceof ForStatement) return fromIteratorOf(
+				(ForStatement) loop, false, true, rtAddr, condGen);
 //		if (loop instanceof IASTWhileStatement)
 //			return computeIndexOf((IASTWhileStatement) loop, asn, cg);
 		return throwTodoException("unsupported loop");
 	}
 	
 	public static Proposition fromIteratorBefore(
-			IASTForStatement loop, final ASTAddressable rtAddr, VODCondGen condGen) {
+			ForStatement loop, final ASTAddressable rtAddr, VODCondGen condGen) {
 		return fromIteratorOf(loop, true, false, rtAddr, condGen);
 	}
 	
@@ -144,8 +145,8 @@ implements NumericExpression {
 	 */
 	public static Proposition fromIteratorOf(
 			final Statement loop, final ASTAddressable rtAddr, final VODCondGen condGen) {
-		if (loop instanceof IASTForStatement) return fromIteratorOf(
-				(IASTForStatement) loop, false, false, rtAddr, condGen);
+		if (loop instanceof ForStatement) return fromIteratorOf(
+				(ForStatement) loop, false, false, rtAddr, condGen);
 //		if (loop instanceof IASTWhileStatement)
 //			return computeIndexOf((IASTWhileStatement) loop, asn, cg);
 		return throwTodoException("unsupported loop");
@@ -158,7 +159,7 @@ implements NumericExpression {
 	 * @param condGen
 	 * @return
 	 */
-	private static Proposition fromIteratorOf(IASTForStatement loop, 
+	private static Proposition fromIteratorOf(ForStatement loop, 
 			boolean isBefore, boolean isAfter, final ASTAddressable rtAddr, VODCondGen condGen) {
 		assert !(isBefore && isAfter);	// isBefore xor isAfter
 		
