@@ -40,6 +40,7 @@ import org.eclipse.jdt.core.dom.ArrayAccess;
 import org.eclipse.jdt.core.dom.ChildListPropertyDescriptor;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.SwitchCase;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.Comment;
 import org.eclipse.jdt.core.dom.DoStatement;
 import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
@@ -151,7 +152,7 @@ public final class ASTUtil extends DebugElement {
 			ArrayAccess.class};
 	@SuppressWarnings("unchecked")
 	public static final Class<ASTNode>[] 				AST_ASSIGNMENT_TYPES = new Class[] {
-			IASTUnaryExpression.class, Assignment.class, IASTEqualsInitializer.class};
+			IASTUnaryExpression.class, Assignment.class, VariableDeclaration.class};
 
 	
 	

@@ -1435,7 +1435,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	 * An assignment includes both assigning or assigned Lv's.
 	 * 
 	 * @return The direct assignment as an (equals) initializer in a declarator 
-	 * 	({@link IASTEqualsInitializer}) or initializer clause in more complex expression
+	 * 	({@link VariableDeclaration}) or initializer clause in more complex expression
 	 * 	({@link IASTInitializerClause}).
 	 */
 	public Assignment getFirstAssignment() {
@@ -1444,8 +1444,8 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		IASTInitializerClause clause = getFirstClause();
 		while (clause != null) try {
 			final ASTNode cp = clause.getParent();
-			if (cp instanceof IASTEqualsInitializer) 
-				firstAssignmentView = Assignment.from((IASTEqualsInitializer) cp, cacheRuntimeAddress(), getCondGen());
+			if (cp instanceof VariableDeclaration) 
+				firstAssignmentView = Assignment.from((VariableDeclaration) cp, cacheRuntimeAddress(), getCondGen());
 			else if (clause instanceof MethodInvocation 
 					&& isCallByReference()) {
 				// declared array - isArray() && isPointer()

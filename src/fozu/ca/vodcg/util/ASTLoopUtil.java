@@ -36,6 +36,7 @@ import org.eclipse.jdt.core.dom.InfixExpression;
 import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.ASTAddressable;
+import fozu.ca.vodcg.SystemElement;
 import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.condition.ArithmeticExpression;
 import fozu.ca.vodcg.condition.Expression;
@@ -522,23 +523,31 @@ public final class ASTLoopUtil {
 
 
 
+	@SuppressWarnings("unchecked")
 	public static boolean isInitializedConstantly(ForStatement loop) {
+		if (loop == null) SystemElement.throwNullArgumentException("loop");
+		
 		//	for (init-expr; test-expr; incr-expr) structured-block
-		final Statement init = loop.getInitializerStatement();
-		 
-		/* 		init-expr 	One of the following:
-		 * 					var = lb
-		 */
-		if (init instanceof IASTExpressionStatement) {
-			final org.eclipse.jdt.core.dom.Expression initExp = ((IASTExpressionStatement) init).getExpression();
-			if (ASTAssignableComputer.isPlainBinaryAssignment(initExp))
-				return ASTAssignableComputer.isConstantAssignment((Assignment) initExp);
+		for (org.eclipse.jdt.core.dom.Expression init : (List<org.eclipse.jdt.core.dom.Expression>) loop.initializers()) {
+			/* 		init-expr 	One of the following:
+			 * 					var = lb
+			 */
+			if (init instanceof VariableDeclarationExpression) {
+				for (VariableDeclarationFragment initFrag : (List<VariableDeclarationFragment>) ((VariableDeclarationExpression) init).fragments()) {
+					final org.eclipse.jdt.core.dom.Expression initExp = ((VariableDeclarationFragment) initFrag).getInitializer();
+					if (ASTAssignableComputer.isPlainBinaryAssignment(initExp))
+						return ASTAssignableComputer.isConstantAssignment((Assignment) initExp);
+				}
+			} else {
+				
+			}
+			
+			/* 					TODO: integer-type var = lb
+			 * 					TODO: random-access-iterator-type var = lb
+			 * 					TODO: pointer-type var = lb
+			 */ 
 		}
-
-		/* 					TODO: integer-type var = lb
-		 * 					TODO: random-access-iterator-type var = lb
-		 * 					TODO: pointer-type var = lb
-		 */ 
+		 
 		return false;
 	}
 	

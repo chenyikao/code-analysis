@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.SwitchCase;
 import org.eclipse.jdt.core.dom.SwitchStatement;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.WhileStatement;
 import org.eclipse.jdt.core.dom.Assignment.Operator;
 import org.eclipse.jdt.core.dom.Block;
@@ -763,9 +764,9 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 		else {
 //			if (asm != null) rtAddr = asm.cacheRuntimeAddress();
 
-			if (node instanceof IASTEqualsInitializer) prop = fromRecursively(
+			if (node instanceof VariableDeclaration) prop = fromRecursively(
 					// IASTDeclarator goes here to avoid re-parsing its initializer clause
-					(IASTEqualsInitializer) node, rtAddr, condGen);
+					(VariableDeclaration) node, rtAddr, condGen);
 			else if (node instanceof org.eclipse.jdt.core.dom.Expression) prop = fromRecursively(
 					(org.eclipse.jdt.core.dom.Expression) node, rtAddr, condGen);
 			else if (node instanceof ExpressionStatement) prop = fromRecursively(
@@ -797,7 +798,7 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 	
 	
 	
-	private static Proposition fromRecursively(IASTEqualsInitializer init, final ASTAddressable rtAddr, VODCondGen condGen) {
+	private static Proposition fromRecursively(VariableDeclaration init, final ASTAddressable rtAddr, VODCondGen condGen) {
 		return Equality.from(init, rtAddr, condGen);
 	}
 	
