@@ -37,6 +37,7 @@ import org.eclipse.jdt.core.dom.IEnumeration;
 import org.eclipse.jdt.core.dom.IEnumerator;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import fozu.ca.Elemental;
@@ -241,8 +242,8 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 //		else if (exp instanceof IASTArraySubscriptExpression) 
 //			e = ArrayPointer.fromRecursively((IASTArraySubscriptExpression) exp, rtAddr, condGen);
 			
-		else if (exp instanceof IASTFunctionCallExpression) 
-			e = FunctionCall.fromRecursively((IASTFunctionCallExpression) exp, (Supplier<Proposition>) null, rtAddr, condGen);
+		else if (exp instanceof MethodInvocation) 
+			e = FunctionCall.fromRecursively((MethodInvocation) exp, (Supplier<Proposition>) null, rtAddr, condGen);
 			
 		else if (exp instanceof ConditionalExpression) {
 			ConditionalExpression cexp = (ConditionalExpression) exp;

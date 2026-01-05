@@ -8,6 +8,7 @@ import java.util.List;
 import org.eclipse.jdt.core.dom.ASTNameCollector;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.IASTDeclarator;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.Expression;
@@ -125,7 +126,7 @@ public final class ASTAssignableComputer {
 				lValue, ASTUtil.AST_FUNCTION_CALL_EXPRESSION);
 		if (ancestors != null) {
 			int grandAncestorIndex = ancestors.size() - 1;
-			if (ancestors.get(grandAncestorIndex) instanceof IASTFunctionCallExpression)
+			if (ancestors.get(grandAncestorIndex) instanceof MethodInvocation)
 				// excluding IASTFunctionCallExpression and lValue itself
 				for (int i = grandAncestorIndex - 1; i > 0; i--) {
 					ASTNode ancestor = ancestors.get(i);

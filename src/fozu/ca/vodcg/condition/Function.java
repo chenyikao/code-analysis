@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.dom.IASTStandardFunctionDeclarator;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IFunction;
 import org.eclipse.jdt.core.dom.IParameter;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 
 import fozu.ca.DuoKeyMap;
 import fozu.ca.Elemental;
@@ -269,7 +270,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	}
 	
 	public static Function from(
-			IASTFunctionCallExpression call, final ASTAddressable rtAddr, VODCondGen condGen) 
+			MethodInvocation call, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
 		if (call == null || condGen == null) return null;
 		final IBinding bind = ASTUtil.getNameOf(

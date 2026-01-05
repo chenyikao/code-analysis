@@ -20,6 +20,7 @@ import org.eclipse.jdt.core.dom.IASTInitializerList;
 import org.eclipse.jdt.core.dom.IASTName;
 import org.eclipse.jdt.core.dom.IASTNode;
 import org.eclipse.jdt.core.dom.IASTUnaryExpression;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
@@ -129,7 +130,7 @@ public class Assignment extends SystemElement {
 	 * @return
 	 */
 	static public Assignment from(
-			final IASTFunctionCallExpression call, final Assignable<?> arg, final VODCondGen condGen) 
+			final MethodInvocation call, final Assignable<?> arg, final VODCondGen condGen) 
 			throws UncertainPlaceholderException {
 		if (call == null) throwNullArgumentException("function call expression");
 		if (arg == null) throwNullArgumentException("function call argument");
@@ -255,9 +256,9 @@ public class Assignment extends SystemElement {
 	}
 	
 	public FunctionCall<?> getCallAssigner() throws ASTException {
-		return asmAsm instanceof IASTFunctionCallExpression
+		return asmAsm instanceof MethodInvocation
 				? FunctionCall.fromRecursively(
-						(IASTFunctionCallExpression) asmAsm, (Supplier<Proposition>) null, cacheRuntimeAddress(), getCondGen())
+						(MethodInvocation) asmAsm, (Supplier<Proposition>) null, cacheRuntimeAddress(), getCondGen())
 				: null;
 	}
 
@@ -399,9 +400,9 @@ public class Assignment extends SystemElement {
 		}
 		
 		// non-AST function call assignment
-		else if (asmAsm instanceof IASTFunctionCallExpression) {
+		else if (asmAsm instanceof MethodInvocation) {
 			final org.eclipse.jdt.core.dom.Assignment[] args = 
-					((IASTFunctionCallExpression) asmAsm).getArguments();
+					((MethodInvocation) asmAsm).getArguments();
 			if (args != null) for (org.eclipse.jdt.core.dom.Assignment arg : args) {
 				final Assignable<?> argAsn = Assignable.from(arg, null, cg);
 				if (argAsn == null) continue;
@@ -485,7 +486,7 @@ public class Assignment extends SystemElement {
 
 	
 	public boolean isFunctionCall() {
-		return asmAsm instanceof IASTFunctionCallExpression;
+		return asmAsm instanceof MethodInvocation;
 	}
 	
 	/**

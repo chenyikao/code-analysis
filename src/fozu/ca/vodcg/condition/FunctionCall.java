@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.IASTFunctionCallExpression;
 import org.eclipse.jdt.core.dom.IASTInitializerClause;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 
 import fozu.ca.DuoKeyMap;
 import fozu.ca.condition.SerialFormat;
@@ -436,7 +437,7 @@ extends Reference<F> implements ArithmeticExpression {
 	
 	@SuppressWarnings("removal")
 	public static FunctionCall<? extends Function> fromRecursively(
-			IASTFunctionCallExpression exp, Supplier<Proposition> sideEffect, final ASTAddressable rtAddr, 
+			MethodInvocation exp, Supplier<Proposition> sideEffect, final ASTAddressable rtAddr, 
 			VODCondGen condGen) 
 					throws ASTException {
 		if (exp == null) throwNullArgumentException("expression");
