@@ -27,6 +27,7 @@ import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.WhileStatement;
 import org.eclipse.jdt.core.dom.Assignment.Operator;
 import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.BooleanLiteral;
 import org.eclipse.jdt.core.dom.IASTBinaryExpression;
 import org.eclipse.jdt.core.dom.IASTCompoundStatement;
 import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
@@ -833,21 +834,18 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 
 	
 	/**
-	 * Like IASTIdExpression, the parsing of IASTLiteralExpression has no side-effects.
+	 * The parsing of BooleanLiteral has no side-effects.
 	 * 
-	 * @param exp
+	 * @param lit
 	 * @param rtAddr
 	 * @param condGen
 	 * @return
 	 */
-	public static Proposition fromRecursively(IASTLiteralExpression exp, final ASTAddressable rtAddr, VODCondGen condGen) {
-		switch (exp.getKind()) {
-		// True
-		case IASTLiteralExpression.lk_true:		return PureTrue;
-		// False
-		case IASTLiteralExpression.lk_false:	return PureFalse;
-		}
-		return null;
+	public static Proposition fromRecursively(BooleanLiteral lit, final ASTAddressable rtAddr, VODCondGen condGen) {
+		if (lit == null) return null;
+
+		if (lit.booleanValue()) return PureTrue;
+		else return PureFalse;
 	}
 	
 	

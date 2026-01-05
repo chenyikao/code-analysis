@@ -16,7 +16,9 @@ import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.BooleanLiteral;
 import org.eclipse.jdt.core.dom.CastExpression;
+import org.eclipse.jdt.core.dom.CharacterLiteral;
 import org.eclipse.jdt.core.dom.IASTArraySubscriptExpression;
 import org.eclipse.jdt.core.dom.IASTBinaryExpression;
 import org.eclipse.jdt.core.dom.IASTCastExpression;
@@ -39,7 +41,11 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.NullLiteral;
+import org.eclipse.jdt.core.dom.NumberLiteral;
+import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
+import org.eclipse.jdt.core.dom.TypeLiteral;
 
 import fozu.ca.Elemental;
 import fozu.ca.MultiPartitionable;
@@ -225,67 +231,93 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 		if (e == null) {
 //		EXPRESSION_LOCK.add(clause);
 			
-		if (exp instanceof Name) 
-			e = fromRecursively((Name) exp, rtAddr, condGen);
-		
-		else if (exp instanceof IASTTypeIdExpression) 
-			e = fromRecursively((IASTTypeIdExpression) exp, condGen);
-		
-		else if (exp instanceof IASTLiteralExpression) 
-			e = fromRecursively((IASTLiteralExpression) exp, condGen);
-		
-		else if (exp instanceof IASTUnaryExpression) 
-			e = fromRecursively((IASTUnaryExpression) exp, rtAddr, condGen);
-		
-		else if (exp instanceof org.eclipse.jdt.core.dom.Assignment) 
-			e = fromRecursively((org.eclipse.jdt.core.dom.Assignment) exp, rtAddr, condGen);
-		
+			switch (exp.getNodeType()) {
+			case ASTNode.MODULE_QUALIFIED_NAME: 
+			case ASTNode.QUALIFIED_NAME: 
+			case ASTNode.SIMPLE_NAME: 
+				e = fromRecursively((Name) exp, rtAddr, condGen);
+				break;
+				
+			case ASTNode.NORMAL_ANNOTATION: 
+				e = fromRecursively((IASTTypeIdExpression) exp, condGen);
+				break;
+				
+			case ASTNode.BOOLEAN_LITERAL: 
+				e = Proposition.fromRecursively((BooleanLiteral) exp, rtAddr, condGen);
+				break;
+			case ASTNode.CHARACTER_LITERAL: 
+			case ASTNode.NULL_LITERAL: 
+			case ASTNode.NUMBER_LITERAL: 
+			case ASTNode.STRING_LITERAL: 
+			case ASTNode.TYPE_LITERAL: 
+				
+			case ASTNode.PREFIX_EXPRESSION: 
+				e = fromRecursively((IASTUnaryExpression) exp, rtAddr, condGen);
+				break;
+				
+			case ASTNode.ASSIGNMENT: 
+				e = fromRecursively((org.eclipse.jdt.core.dom.Assignment) exp, rtAddr, condGen);
+				break;
+				
 //		else if (exp instanceof IASTArraySubscriptExpression) 
 //			e = ArrayPointer.fromRecursively((IASTArraySubscriptExpression) exp, rtAddr, condGen);
-			
-		else if (exp instanceof MethodInvocation) 
-			e = FunctionCall.fromRecursively((MethodInvocation) exp, (Supplier<Proposition>) null, rtAddr, condGen);
-			
-		else if (exp instanceof ConditionalExpression) {
-			ConditionalExpression cexp = (ConditionalExpression) exp;
-			e = ConditionalExpression.from(
-					Proposition.fromRecursively((ASTNode) cexp.getExpression(), rtAddr, condGen), 
-					fromRecursively(cexp.getThenExpression(), rtAddr, condGen),
-					fromRecursively(cexp.getElseExpression(), rtAddr, condGen));
-			
-		} else if (exp instanceof CastExpression) {
-			e = new CastCall((CastExpression) exp, rtAddr, condGen);
-			
-		} else if (exp instanceof FieldAccess) 
-			e = fromRecursively((FieldAccess) exp, rtAddr, condGen);
-		
-		// TODO: else if (general case for other kinds of expression)...
+				
+			case ASTNode.METHOD_INVOCATION: 
+			case ASTNode.CONSTRUCTOR_INVOCATION: 
+				e = FunctionCall.fromRecursively((MethodInvocation) exp, (Supplier<Proposition>) null, rtAddr, condGen);
+				break;
+			case ASTNode.SUPER_METHOD_INVOCATION: 
+			case ASTNode.SUPER_CONSTRUCTOR_INVOCATION: 
+				e = FunctionCall.fromRecursively((SuperMethodInvocation) exp, (Supplier<Proposition>) null, rtAddr, condGen);
+				break;
+				
+			case ASTNode.CONDITIONAL_EXPRESSION:
+				ConditionalExpression cexp = (ConditionalExpression) exp;
+				e = ConditionalExpression.from(
+						Proposition.fromRecursively((ASTNode) cexp.getExpression(), rtAddr, condGen), 
+						fromRecursively(cexp.getThenExpression(), rtAddr, condGen),
+						fromRecursively(cexp.getElseExpression(), rtAddr, condGen));
+				break;
+					
+			case ASTNode.CAST_EXPRESSION:
+				e = new CastCall((CastExpression) exp, rtAddr, condGen);
+				break;
+					
+			case ASTNode.FIELD_ACCESS: 
+				e = fromRecursively((FieldAccess) exp, rtAddr, condGen);
+				break;
+			case ASTNode.SUPER_FIELD_ACCESS: 
+				e = fromRecursively((SuperFieldAccess) exp, rtAddr, condGen);
+				break;
+				
+				// TODO: else if (general case for other kinds of expression)...
 //		for (ASTNode child : exp.getChildren()) if (child instanceof org.eclipse.jdt.core.dom.Expression) return ...;
-		
-		if (e == null) {
+			}
+			
+			if (e == null) {
 //			throwTodoException(
 //					"Unsupported clause: " + ASTUtil.toStringOf(clause) 
 //					+ " at " + ASTUtil.toLocationOf(clause));
-
-			// for propositional expression, i.e., j++
-			e = debugCallDepth(null, ()-> 
-			Proposition.fromRecursivelyWithoutBranching(clause, null, condGen)); 
-		}
-		
-		if (e != null) {
-			cache(exp, e);
+				
+				// for propositional expression, i.e., j++
+				e = debugCallDepth(null, ()-> 
+				Proposition.fromRecursivelyWithoutBranching(clause, null, condGen)); 
+			}
 			
-			// for both propositional and non-propositional expressions
+			if (e != null) {
+				cache(exp, e);
+				
+				// for both propositional and non-propositional expressions
 //			if (sideEffect != null) e.andSideEffect(sideEffect);
-			
+				
 //			if (!e.initiatesParentTraverse()) {
 //				e.initiateParentTraverse();
 //				e.addSideEffect(Proposition.fromParentBranchCondition(
 //						clause, null, condGen));
 //				e.stopParentTraverse();
 //			}
-		}
-
+			}
+			
 //		EXPRESSION_LOCK.remove(clause);
 		}	//	end of: e == null
 		
@@ -360,36 +392,91 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 
 	
 	
+	/**
+	 * The parsing of NumberLiteral has no side-effects.
+	 * 
+	 * @param lit
+	 * @param condGen
+	 * @return
+	 */
 	private static Expression fromRecursively(
-			final IASTLiteralExpression lit, final VODCondGen condGen) {
+			final NumberLiteral lit, final VODCondGen condGen) {
 		assert lit != null;
-		final char[] value = lit.getValue();
+		final String value = lit.getToken();
 		final String addr = ASTUtil.toLineLocationOf(lit.getFileLocation());
-		switch (lit.getKind()) {
-		// Like IASTIdExpression, the parsing of IASTLiteralExpression has no side-effects.
+
 		// integer
-		case IASTLiteralExpression.lk_integer_constant:	
-			return Int.from(value, addr); 
+		Expression exp = Int.from(value, addr);
+		if (exp != null) return exp; 
+
 		// float
-		case IASTLiteralExpression.lk_float_constant:	
-			return Real.from(value, addr); 
+		exp = Real.from(value, addr); 
+		return exp;
+	}
+			
+	
+	
+	/**
+	 * The parsing of CharacterLiteral has no side-effects.
+	 * 
+	 * @param lit
+	 * @param condGen
+	 * @return
+	 */
+	private static Expression fromRecursively(
+			final CharacterLiteral lit, final VODCondGen condGen) {
 		// char
-		case IASTLiteralExpression.lk_char_constant:	
-			return Char.from(value); 
+		return Char.from(lit.charValue()); 
+	}
+	
+	
+	
+	/**
+	 * The parsing of StringLiteral has no side-effects.
+	 * 
+	 * @param lit
+	 * @param condGen
+	 * @return
+	 */
+	private static Expression fromRecursively(
+			final StringLiteral lit, final VODCondGen condGen) {
 		// string: excluding quotation marks (bounding "'s or ''s)
-		case IASTLiteralExpression.lk_string_literal:
-//			final String ls = lit.toString();
+		final String value = lit.getEscapedValue();
 //			return fozu.ca.vodcg.condition.data.String.from(
 //					ls.substring(1, ls.length() - 1).replaceAll("\\\\n", "\n"), condGen);
-			return fozu.ca.vodcg.condition.data.String.from(
-					Arrays.copyOfRange(value, 1, value.length - 1), condGen); 
+		return fozu.ca.vodcg.condition.data.String.from(value, condGen); 
+	}
+	
+	
+	
+	/**
+	 * The parsing of NullLiteral has no side-effects.
+	 * 
+	 * @param lit
+	 * @param condGen
+	 * @return
+	 */
+	private static Expression fromRecursively(
+			final NullLiteral lit, final VODCondGen condGen) {
 		// TODO: void?
-		case IASTLiteralExpression.lk_nullptr:
 		// TODO: this
-		case IASTLiteralExpression.lk_this:				
-			throwTodoException("unsupported literal");
-		}
-		return null;
+		return throwTodoException("unsupported literal");
+	}
+	
+	
+	
+	/**
+	 * The parsing of TypeLiteral has no side-effects.
+	 * 
+	 * @param lit
+	 * @param condGen
+	 * @return
+	 */
+	private static Expression fromRecursively(
+			final TypeLiteral lit, final VODCondGen condGen) {
+		// TODO: void?
+		// TODO: this
+		return throwTodoException("unsupported literal");
 	}
 	
 	

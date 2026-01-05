@@ -566,8 +566,8 @@ public final class ASTLoopUtil {
 		 * 					var relational-op b
 		 * 					b relational-op var
 		 */
-		return rel.getOperand1() instanceof IASTLiteralExpression 
-				^ rel.getOperand2() instanceof IASTLiteralExpression;
+		return ASTUtil.isConstant(rel.getLeftHandSide()) 
+				&& ASTUtil.isConstant(rel.getRightHandSide());
 	}
 
 	

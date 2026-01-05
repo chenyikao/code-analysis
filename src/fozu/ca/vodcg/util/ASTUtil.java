@@ -310,15 +310,23 @@ public final class ASTUtil extends DebugElement {
 	 */
 	public static boolean isConstant(Expression exp) {
 		if (exp == null) return true;
-		if (exp instanceof IASTLiteralExpression) return isConstant((IASTLiteralExpression) exp);
+		
+		switch (exp.getNodeType()) {
+		case ASTNode.BOOLEAN_LITERAL:
+		case ASTNode.CHARACTER_LITERAL:
+		case ASTNode.NULL_LITERAL:
+		case ASTNode.NUMBER_LITERAL:
+		case ASTNode.STRING_LITERAL:
+		case ASTNode.TYPE_LITERAL:
+			return true;
+		default:
+			return false;
+		}
+	
 		if (exp instanceof IASTUnaryExpression) return isConstant((IASTUnaryExpression) exp);
 		if (exp instanceof Assignment) return isConstant((Assignment) exp);
 		DebugElement.throwTodoException(toStringOf(exp));
 		return false;
-	}
-	
-	public static boolean isConstant(IASTLiteralExpression exp) {
-		return true;
 	}
 	
 	public static boolean isConstant(IASTUnaryExpression exp) {
