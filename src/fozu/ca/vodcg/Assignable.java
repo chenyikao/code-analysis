@@ -55,6 +55,7 @@ import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 import org.eclipse.jdt.core.dom.WhileStatement;
 
 import fozu.ca.Addressable;
@@ -1365,8 +1366,8 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 //				()-> getPathVariableDelegate().getSideEffect().toString().length(), 0);
 //	}
 
-	public IASTFileLocation getFileLocation() {
-		return nameView != null ? nameView.getFileLocation() : null;
+	public StructuralPropertyDescriptor getFileLocation() {
+		return nameView != null ? nameView.getLocationInParent() : null;
 	}
 
 	@Override
@@ -1379,7 +1380,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	 */
 	@Override
 	public String getShortAddress() {
-		final IASTFileLocation loc = getFileLocation();
+		final StructuralPropertyDescriptor loc = getFileLocation();
 		if (loc == null) return get(()-> cacheRuntimeAddress().getShortAddress(),
 				()-> throwNullArgumentException("dynamic address"));
 		try {

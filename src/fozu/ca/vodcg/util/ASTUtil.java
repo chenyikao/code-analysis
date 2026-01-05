@@ -72,6 +72,7 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.IParameter;
 import org.eclipse.jdt.core.dom.IProblemBinding;
 import org.eclipse.jdt.core.dom.IType;
+import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.index.IIndex;
 import org.eclipse.jdt.core.index.IIndexBinding;
 import org.eclipse.jdt.core.index.IIndexManager;
@@ -337,13 +338,7 @@ public final class ASTUtil extends DebugElement {
 	public static boolean isGlobal(Name name) {
 		if (name == null) throwNullArgumentException("variable name");
 		
-		final IBinding bind = getBindingOf(name);
-		try {
-			return bind.getScope().getKind().equals(EScopeKind.eGlobal);
-			
-		} catch (DOMException e) {
-			return throwASTException(bind, e);
-		}
+		return Modifier.isPublic(getBindingOf(name).getModifiers());
 //		IASTTranslationUnit varTu = var.getTranslationUnit();	// needs Name to retrieve its host TU
 //		return getAncestorOfAs(varTu.getDeclarationsInAST(var.resolveBinding())[0], IASTDeclarationStatement.class)
 //				.getParent() == varTu;
@@ -771,9 +766,9 @@ public final class ASTUtil extends DebugElement {
 	public static ASTNode getParentOf(final Annotation descend) {
 		if (descend == null) throwNullArgumentException("descendant");
 		
-		final IASTFileLocation l = descend.getFileLocation();
+		final StructuralPropertyDescriptor loc = descend.getLocationInParent();
 		return descend.getTranslationUnit().getNodeSelector(null).findEnclosingNode(
-				l.getNodeOffset() - 1, l.getNodeLength() + 1);
+				loc.getNodeOffset() - 1, loc.getNodeLength() + 1);
 	}
 	
 	public static Statement getParentBranchOf(ASTNode descend) {
@@ -1274,7 +1269,7 @@ public final class ASTUtil extends DebugElement {
 //		else return ast.getNodeSelector(tuPath.toString()).findFirstContainedName(offset, length);
 	}
 
-	public static Name getNameFrom(IASTFileLocation loc, boolean refreshesIndex) {
+	public static Name getNameFrom(StructuralPropertyDescriptor loc, boolean refreshesIndex) {
 		return getNameFrom(
 				new Path(loc.getFileName()), 
 				loc.getNodeOffset(), loc.getNodeLength(), refreshesIndex);
@@ -1454,9 +1449,7 @@ public final class ASTUtil extends DebugElement {
 		
 		String str = "";
 		for (ASTNode node : nodes) 
-			str += ((node instanceof IASTFileLocation 
-					? toStringOf((IASTFileLocation) node)
-					: node.toString()) + "\n");
+			str += (toStringOf(node.getLocationInParent()) + node.toString() + "\n");
 		return str;
 	}
 	
@@ -1465,18 +1458,18 @@ public final class ASTUtil extends DebugElement {
 //		return location.toString();
 //	}
 	
-//	public static String toStringOf(IASTFileLocation location) {
-//		if (location == null) return "(null)";
-//		
-//		String fName = location.getFileName(), 
-//				fnFolders[] = fName.split("/");
-//		fName = "";
-//		for (String fd : fnFolders) 
-//			fName = fd + (fName.isEmpty() ? "" : (" @ " + fName));
-//		return "at line " + location.getStartingLineNumber() + 
-//				" (~" + location.getNodeOffset() + 
-//				")\nof file " + fName;
-//	}
+	public static String toStringOf(StructuralPropertyDescriptor location) {
+		if (location == null) return "(null)";
+		
+		String fName = location.getFileName(), 
+				fnFolders[] = fName.split("/");
+		fName = "";
+		for (String fd : fnFolders) 
+			fName = fd + (fName.isEmpty() ? "" : (" @ " + fName));
+		return "at line " + location.getStartingLineNumber() + 
+				" (~" + location.getNodeOffset() + 
+				")\nof file " + fName;
+	}
 	
 	public static String toStringOf(ASTNode node) {
 	    if (node == null) return SystemElement.throwNullArgumentException("node");
@@ -1493,7 +1486,7 @@ public final class ASTUtil extends DebugElement {
 	public static String toLocationOf(ASTNode node) {
 		if (node == null) return SystemElement.throwNullArgumentException("node");
 		
-		IASTFileLocation loc = node.getFileLocation();
+		StructuralPropertyDescriptor loc = node.getLocationInParent();
 		if (loc == null) return SystemElement.throwNullArgumentException("location");
 		return loc.getStartingLineNumber() + "@" + loc;
 	}
@@ -1538,7 +1531,7 @@ public final class ASTUtil extends DebugElement {
 	 * @param l2
 	 * @return
 	 */
-	public static boolean equals(IASTFileLocation l1, IASTFileLocation l2) {
+	public static boolean equals(StructuralPropertyDescriptor l1, StructuralPropertyDescriptor l2) {
 		if (l1 == l2) return true;
 		if (l1 == null || l2 == null) return false;
 		

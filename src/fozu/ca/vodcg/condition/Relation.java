@@ -20,6 +20,7 @@ import java.util.function.Supplier;
 
 import org.eclipse.cdt.core.dom.ast.IASTFileLocation;
 import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import fozu.ca.Elemental;
 import fozu.ca.MappableList;
@@ -383,7 +384,7 @@ implements Cloneable, MultiPartitionable, Comparator<MultiPartitionable.Key> {
 	
 	
 	@Override
-	public IASTFileLocation getFileLocation() {
+	public StructuralPropertyDescriptor getFileLocation() {
 		if (!enters(METHOD_GET_FILE_LOCATION)) {
 			enter(METHOD_GET_FILE_LOCATION);
 			
@@ -391,7 +392,7 @@ implements Cloneable, MultiPartitionable, Comparator<MultiPartitionable.Key> {
 				if (oprd == null) throwNullArgumentException("operand");
 				if (oprd == this) continue;	// bypassing special relation
 				
-				IASTFileLocation loc = oprd.getFileLocation();
+				StructuralPropertyDescriptor loc = oprd.getFileLocation();
 				if (loc != null) return loc;
 			}
 			

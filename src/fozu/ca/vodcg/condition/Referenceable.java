@@ -9,6 +9,7 @@ import org.eclipse.cdt.core.dom.ast.IBinding;
 import org.eclipse.cdt.core.index.IIndexName;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import fozu.ca.condition.SerialFormat;
 import fozu.ca.vodcg.Assignable;
@@ -340,7 +341,7 @@ implements ASTAddressable {
 	public String toFullString() {
 		if (cName == null) return name;
 		else {
-			IASTFileLocation cLoc = cName.getFileLocation();
+			StructuralPropertyDescriptor cLoc = cName.getLocationInParent();
 			return name + ":" + cLoc.getStartingLineNumber() + "@" + cLoc.getFileName();
 		}
 	}

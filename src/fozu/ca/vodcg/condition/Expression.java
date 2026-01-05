@@ -37,6 +37,7 @@ import org.eclipse.jdt.core.dom.IEnumeration;
 import org.eclipse.jdt.core.dom.IEnumerator;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import fozu.ca.Elemental;
 import fozu.ca.MultiPartitionable;
@@ -520,7 +521,7 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 	
 	
 	private static Expression from(
-			ITypeBinding typeBinding, IASTFileLocation addr) {
+			ITypeBinding typeBinding, StructuralPropertyDescriptor addr) {
 		assert typeBinding != null;
 		return ASTUtil.isBinary(typeBinding)
 				? Proposition.from(typeBinding)
@@ -546,7 +547,7 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 	 * For debugging information transmission.
 	 * @return
 	 */
-	public IASTFileLocation getFileLocation() {
+	public StructuralPropertyDescriptor getFileLocation() {
 		return throwTodoException("unknown location");
 	}
 	

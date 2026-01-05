@@ -17,6 +17,7 @@ import org.eclipse.jdt.core.dom.IASTNodeLocation;
 import org.eclipse.jdt.core.dom.IASTNodeSelector;
 import org.eclipse.jdt.core.dom.IASTPreprocessorPragmaStatement;
 import org.eclipse.jdt.core.dom.IASTTranslationUnit;
+import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 import org.eclipse.cdt.core.index.IIndexName;
 import org.eclipse.core.runtime.CoreException;
 
@@ -50,6 +51,7 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 
 
 
+	@SuppressWarnings("removal")
 	public ASTRuntimeLocationComputer(VODCondGen condGen) {
 		if (condGen == null) DebugElement.throwNullArgumentException("VOD condition generator");
 //		this.projectIndex = projIndex;
@@ -175,6 +177,7 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 	/**
 	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 	 */
+	@SuppressWarnings("removal")
 	@Override
 	public int compare(ASTNode subject, ASTNode target) {
 		try {
@@ -187,7 +190,7 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 		}
 	}
 
-	public int compare(IASTFileLocation loc1, IASTFileLocation loc2) {
+	public int compare(StructuralPropertyDescriptor loc1, StructuralPropertyDescriptor loc2) {
 		if (loc1 == null || loc2 == null) throwIncomparableException("null file location");
 		
 		final String name1 = loc1.getFileName(), name2 = loc2.getFileName();
@@ -256,13 +259,14 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 	 * @param node2
 	 * @return
 	 */
+	@SuppressWarnings("removal")
 	public static int compareLocally(final ASTNode node1, final ASTNode node2) 
 			throws IllegalArgumentException {
 		if (node1 == node2) return 0; 
 		if (node1 == null || node2 == null) 
 			throwIncomparableException("Incomparable null node(s)!");
 		
-		final IASTFileLocation fl1 = node1.getFileLocation(), fl2 = node2.getFileLocation();
+		final StructuralPropertyDescriptor fl1 = node1.getLocationInParent(), fl2 = node2.getLocationInParent();
 		if (fl1 == null || fl2 == null) 
 			throwIncomparableException("Incomparable null file location(s)!");
 		else if (!fl1.getFileName().equals(fl2.getFileName())) 
@@ -406,6 +410,7 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 	 * @return the last descendant (direct biggest small sibling) node of {@code me} in AST.
 	 * 	Or the parent node of {@code me} if {@code me} is already the smallest sibling.
 	 */
+	@SuppressWarnings("removal")
 	public ASTNode previousOf(final ASTNode me, final boolean includesPragma) {
 		if (me == null) DebugElement.throwInvalidityException("me");
 
@@ -450,6 +455,7 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 	 * @param CondGen 
 	 * @return
 	 */
+	@SuppressWarnings("removal")
 	public IASTPreprocessorPragmaStatement previousPragmaOfAfter(
 			final ASTNode me, ASTNode pre, IASTTranslationUnit tu) {
 		if (me == null) DebugElement.throwInvalidityException("me");

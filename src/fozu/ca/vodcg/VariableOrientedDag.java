@@ -20,6 +20,7 @@ import org.eclipse.cdt.core.index.IIndex;
 import org.eclipse.cdt.core.index.IndexFilter;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import fozu.ca.vodcg.condition.Proposition;
 import fozu.ca.vodcg.util.ASTRuntimeLocationComputer;
@@ -175,7 +176,7 @@ implements Comparable<VariableOrientedDag> {
 				// caller is defined (or caller is called) in the other translation units
 				if (callerCalleeBind instanceof IFunction) 
 					for (IName callerCalleeName : index.findReferences(callerCalleeBind)) try {
-						final IASTFileLocation callerCalleeLoc = callerCalleeName.getFileLocation();
+						final StructuralPropertyDescriptor callerCalleeLoc = callerCalleeName.getFileLocation();
 						final VariableOrientedDag callerTail = from(
 								ASTUtil.getNameFrom(
 										new Path(callerCalleeLoc.getFileName()), 
@@ -312,7 +313,7 @@ implements Comparable<VariableOrientedDag> {
 	/**
 	 * @return the file location of callee
 	 */
-	public IASTFileLocation getCalleeFileLocation() {
+	public StructuralPropertyDescriptor getCalleeFileLocation() {
 		return callee.getFileLocation();
 	}
 	
@@ -321,7 +322,7 @@ implements Comparable<VariableOrientedDag> {
 	 * 	where arguments go prior to their function call.
 	 */
 	public int getCalleeCompletedLocation() {
-		final IASTFileLocation loc = callee.getBinding() instanceof IFunction 
+		final StructuralPropertyDescriptor loc = callee.getBinding() instanceof IFunction 
 				? ASTUtil.getAncestorOfAsUnless(callee.getTopNode(), 
 						ASTUtil.AST_FUNCTION_CALL_EXPRESSION,
 						ASTUtil.AST_STATEMENT_TYPE,

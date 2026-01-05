@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.IASTNameOwner;
 import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IVariable;
 
@@ -769,7 +770,7 @@ implements Comparable<PathVariablePlaceholder>, Comparator<PathVariablePlacehold
 	
 	
 	@Override
-	public IASTFileLocation getFileLocation() {
+	public StructuralPropertyDescriptor getFileLocation() {
 		return getAssignable().getFileLocation();
 	}
 	
