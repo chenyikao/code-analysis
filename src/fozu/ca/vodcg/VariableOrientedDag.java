@@ -20,6 +20,7 @@ import org.eclipse.cdt.core.index.IIndex;
 import org.eclipse.cdt.core.index.IndexFilter;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import fozu.ca.vodcg.condition.Proposition;
@@ -62,7 +63,7 @@ implements Comparable<VariableOrientedDag> {
 	 * while the AST way can.
 	 */
 	// head function doing the accessing - caller (of assignable)
-	private IASTFunctionDefinition caller;		
+	private MethodDeclaration caller;		
 	private Proposition calleeCond;
 	private Assignable<?> callee;		
 	
@@ -293,7 +294,7 @@ implements Comparable<VariableOrientedDag> {
 	/**
 	 * @return the caller function
 	 */
-	public IASTFunctionDefinition getCaller() {
+	public MethodDeclaration getCaller() {
 		return caller;
 	}
 
@@ -406,8 +407,7 @@ implements Comparable<VariableOrientedDag> {
 		if (vod2 == null) throwInvalidityException("Incomparable null path");
 		if (vod2 == this) return 0;
 		
-		final IASTFunctionDefinition func1 = getCaller(), 
-				func2 = vod2.getCaller();
+		final MethodDeclaration func1 = getCaller(), func2 = vod2.getCaller();
 		
 		// compare(null, main/func2) < 0;
 		final Integer cag = 

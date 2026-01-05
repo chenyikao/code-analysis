@@ -25,7 +25,9 @@ import org.eclipse.jdt.core.dom.IASTStandardFunctionDeclarator;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IFunction;
 import org.eclipse.jdt.core.dom.IParameter;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 
 import fozu.ca.DuoKeyMap;
 import fozu.ca.Elemental;
@@ -214,7 +216,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	 * @param condGen
 	 */
 	private Function(IName cName, IFunction cBinding, 
-			IASTFunctionDefinition definition, final ASTAddressable rtAddr, VODCondGen condGen) {
+			MethodDeclaration definition, final ASTAddressable rtAddr, VODCondGen condGen) {
 		super(cName, cBinding, rtAddr, condGen);
 		
 		assert cName != null && cBinding != null && definition != null; 
@@ -264,7 +266,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	}
 
 	public static Function from(
-			IASTFunctionDefinition definition, final ASTAddressable rtAddr, VODCondGen condGen) {
+			MethodDeclaration definition, final ASTAddressable rtAddr, VODCondGen condGen) {
 		if (definition == null || condGen == null) return null;
 		return from(ASTUtil.getNameOf(definition), definition, rtAddr, condGen);
 	}
@@ -301,7 +303,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	}
 	
 	public static Function from(
-			IName cName, IASTFunctionDefinition definition, final ASTAddressable rtAddr, VODCondGen condGen) {
+			IName cName, MethodDeclaration definition, final ASTAddressable rtAddr, VODCondGen condGen) {
 		return from(cName, null, definition, rtAddr, condGen);
 	}
 	
@@ -312,7 +314,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	}
 	
 	public static Function from(
-			IFunction cBinding, IASTFunctionDefinition definition, final ASTAddressable rtAddr, VODCondGen condGen) 
+			IFunction cBinding, MethodDeclaration definition, final ASTAddressable rtAddr, VODCondGen condGen) 
 			throws ASTException {
 		return from(ASTUtil.getNameOf(definition), cBinding, definition, rtAddr, condGen);
 	}
@@ -342,7 +344,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	 * @return
 	 */
 	private static Function from(IName cName, IFunction fBinding, 
-			IASTFunctionDefinition definition, final ASTAddressable rtAddr, VODCondGen condGen) 
+			MethodDeclaration definition, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
 //		C_FUNCTIONS.clear();
 		Function f = C_FUNCTIONS.get(fBinding);
@@ -579,24 +581,21 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	 * 
 	 * @param f
 	 */
-	private void setParameters(IASTFunctionDefinition f) {
+	@SuppressWarnings("unchecked")
+	private void setParameters(MethodDeclaration f) {
 		initParameters();
 		
 		assert f != null;
-		final IASTFunctionDeclarator fd = f.getDeclarator();
-		if (fd instanceof IASTStandardFunctionDeclarator) {
-			final IASTParameterDeclaration[] fParams = 
-					((IASTStandardFunctionDeclarator) fd).getParameters();
-			if (fParams != null) for (IASTParameterDeclaration fp : fParams) try {
-				final VariablePlaceholder<?> p = PathVariablePlaceholder.from(
-						fp.getDeclarator(), getRuntimeAddress(), getCondGen());
-				if (p == null) throwTodoException("Null parameter!");
-				addParameter(p);
-				
-			} catch (UncertainPlaceholderException | ASTException 
-					| IncomparableException | NoSuchVersionException e) {
-				throwTodoException(e);
-			}
+		final List<SingleVariableDeclaration> fParams = (List<SingleVariableDeclaration>) f.parameters();
+		if (fParams != null) for (IASTParameterDeclaration fp : fParams) try {
+			final VariablePlaceholder<?> p = PathVariablePlaceholder.from(
+					fp.getDeclarator(), getRuntimeAddress(), getCondGen());
+			if (p == null) throwTodoException("Null parameter!");
+			addParameter(p);
+			
+		} catch (UncertainPlaceholderException | ASTException 
+				| IncomparableException | NoSuchVersionException e) {
+			throwTodoException(e);
 		}
 	}
 	

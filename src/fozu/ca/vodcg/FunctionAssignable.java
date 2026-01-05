@@ -15,6 +15,7 @@ import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.IFunction;
 import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.condition.ArithmeticExpression;
@@ -197,7 +198,7 @@ public class FunctionAssignable extends Assignable<FunctionalPathVariable> {
 	public boolean isDeclaration() {
 		return getVariableDeclaration() != null 
 				&& ASTUtil.getAncestorOfAsUnless(getVariableDeclaration(), 
-						new Class[]{IASTFunctionDeclarator.class},
+						new Class[]{MethodDeclaration.class},
 						ASTUtil.AST_FUNCTION_DEFINITION, 
 						false) != null;
 	}

@@ -17,6 +17,7 @@ import org.eclipse.jdt.core.dom.IASTNodeLocation;
 import org.eclipse.jdt.core.dom.IASTNodeSelector;
 import org.eclipse.jdt.core.dom.IASTPreprocessorPragmaStatement;
 import org.eclipse.jdt.core.dom.IASTTranslationUnit;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 import org.eclipse.cdt.core.index.IIndexName;
 import org.eclipse.core.runtime.CoreException;
@@ -229,9 +230,9 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 					leaf2.getFileLocation().getNodeOffset(); 
 			
 		} else {
-			return VariableOrientedDag.from(((IASTFunctionDefinition)rootFunc1).getDeclarator().getName(), null, condGen)
+			return VariableOrientedDag.from(((MethodDeclaration)rootFunc1).getDeclarator().getName(), null, condGen)
 					.getCalleeCompletedLocation() - 
-					VariableOrientedDag.from(((IASTFunctionDefinition)rootFunc2).getDeclarator().getName(), null, condGen)
+					VariableOrientedDag.from(((MethodDeclaration)rootFunc2).getDeclarator().getName(), null, condGen)
 					.getCalleeCompletedLocation();
 		}
 	}
@@ -272,7 +273,7 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 		else if (!fl1.getFileName().equals(fl2.getFileName())) 
 			throwIncomparableException("Incomparable different files!");
 		else {	// file1 == file2
-			final IASTFunctionDefinition func1 = ASTUtil.getWritingFunctionDefinitionOf(node1),
+			final MethodDeclaration func1 = ASTUtil.getWritingFunctionDefinitionOf(node1),
 					func2 = ASTUtil.getWritingFunctionDefinitionOf(node2);
 			if (func1 != func2) {	// declaration != main_function
 				if (func1 == null) return -1;	// including condGen.isMainFunction(func2)

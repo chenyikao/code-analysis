@@ -32,6 +32,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.IASTUnaryExpression;
 import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
@@ -414,7 +415,7 @@ public final class ASTLoopUtil {
 		return (ForStatement) ASTUtil.getAncestorOfAsUnless(
 				node, 
 				new Class[] {ForStatement.class},
-				new Class[] {IASTFunctionDefinition.class}, 
+				new Class[] {MethodDeclaration.class}, 
 				false);
 	}
 	
