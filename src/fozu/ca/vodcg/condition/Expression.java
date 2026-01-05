@@ -38,6 +38,7 @@ import org.eclipse.jdt.core.dom.IEnumerator;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import fozu.ca.Elemental;
@@ -224,8 +225,8 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 		if (e == null) {
 //		EXPRESSION_LOCK.add(clause);
 			
-		if (exp instanceof IASTIdExpression) 
-			e = fromRecursively((IASTIdExpression) exp, rtAddr, condGen);
+		if (exp instanceof Name) 
+			e = fromRecursively((Name) exp, rtAddr, condGen);
 		
 		else if (exp instanceof IASTTypeIdExpression) 
 			e = fromRecursively((IASTTypeIdExpression) exp, condGen);
@@ -294,19 +295,18 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 	
 	
 	private static Expression fromRecursively(
-			final IASTIdExpression idExp, final ASTAddressable rtAddr, final VODCondGen condGen) 
+			final Name name, final ASTAddressable rtAddr, final VODCondGen condGen) 
 					throws ASTException {
-		final IASTName name = idExp.getName();
-		final IBinding idBind = ASTUtil.getBindingOf(name);
+		final IBinding nameBind = ASTUtil.getBindingOf(name);
 		
 		// Non-boolean (non-binary) enum
-		if (idBind instanceof IEnumerator) 
-			return from((IEnumerator) idBind, idExp.getFileLocation());
+		if (nameBind instanceof IEnumerator) 
+			return from((IEnumerator) nameBind, name.getFileLocation());
 	
 		// ID TODO: or other side-effect suitable's
-		final Expression e = PathVariablePlaceholder.from(idBind, name, idExp, rtAddr, condGen);
+		final Expression e = PathVariablePlaceholder.from(nameBind, name, name, rtAddr, condGen);
 		if (e == null) throwTodoException("unsupported ID: " 
-		+ ASTUtil.toStringOf(idExp) + " bound to " + idBind);
+		+ ASTUtil.toStringOf(name) + " bound to " + nameBind);
 //		else if (!e.enters(METHOD_FROM_RECURSIVELY)) {	// letting the entering one complete the side-effect
 //			e.enter(METHOD_FROM_RECURSIVELY);
 //			e.andSideEffect();

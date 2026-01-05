@@ -820,7 +820,7 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 	 * @param condGen
 	 * @return
 	 */
-	public static Proposition fromRecursively(IASTIdExpression exp, final ASTAddressable rtAddr, VODCondGen condGen) {
+	public static Proposition fromRecursively(Name exp, final ASTAddressable rtAddr, VODCondGen condGen) {
 		IBinding idBind = ASTUtil.getNameOf(exp).resolveBinding();
 		if (idBind instanceof IEnumerator) {
 			IEnumerator idEnum = (IEnumerator) idBind;

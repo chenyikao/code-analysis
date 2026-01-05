@@ -19,10 +19,13 @@ import org.eclipse.jdt.core.dom.IASTIdExpression;
 import org.eclipse.jdt.core.dom.IASTInitializerClause;
 import org.eclipse.jdt.core.dom.IASTLiteralExpression;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.PostfixExpression;
+import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.IASTNameOwner;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ArrayAccess;
 import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.IASTUnaryExpression;
 import org.eclipse.jdt.core.dom.ArrayType;
@@ -58,9 +61,8 @@ public final class ASTAssignableComputer {
 	public static Expression getDependentOnBy(Expression exp, Expression lValue) {
 		if (exp != null) {
 			if (ASTUtil.equals(exp, lValue)) return lValue;
-			if (exp instanceof IASTIdExpression && lValue instanceof IASTIdExpression 
-				&& ASTUtil.equals(((IASTIdExpression) exp).getName(), 
-						((IASTIdExpression) lValue).getName(), true))
+			if (exp instanceof Name && lValue instanceof Name 
+				&& ASTUtil.equals((Name) exp, (Name) lValue, true))
 				return lValue;
 			return getDependentOnBy(exp.getChildren(), lValue);
 		}
@@ -138,20 +140,20 @@ public final class ASTAssignableComputer {
 		return null;
 	}
 
-	public static IASTIdExpression getIdExpressionOf(Name name) {
-		if (name == null) DebugElement.throwNullArgumentException("name");
-		return Elemental.getSkipException(()-> ASTUtil.getAncestorOfAsUnless(
-				name, 
-				ASTUtil.AST_ID_EXPRESSION, 
-				ASTUtil.AST_EXPRESSION, 
-				false));	
-	}
-	
-	public static Expression getNonIdExpressionOf(Name name) {
-		if (name == null) DebugElement.throwNullArgumentException("name");
-		return Elemental.getNonNullSupplier(
-				()-> (Expression) getIdExpressionOf(name).getParent());	
-	}
+//	public static IASTIdExpression getIdExpressionOf(Name name) {
+//		if (name == null) DebugElement.throwNullArgumentException("name");
+//		return Elemental.getSkipException(()-> ASTUtil.getAncestorOfAsUnless(
+//				name, 
+//				ASTUtil.AST_ID_EXPRESSION, 
+//				ASTUtil.AST_EXPRESSION, 
+//				false));	
+//	}
+//	
+//	public static Expression getNonIdExpressionOf(Name name) {
+//		if (name == null) DebugElement.throwNullArgumentException("name");
+//		return Elemental.getNonNullSupplier(
+//				()-> (Expression) getIdExpressionOf(name).getParent());	
+//	}
 	
 
 
@@ -159,37 +161,50 @@ public final class ASTAssignableComputer {
 	 * Currently supporting l-value type expression: {@link IASTIdExpression} and 
 	 * pointer in {@link IASTUnaryExpression}.
 	 * 
-	 * @param clause
+	 * @param exp
 	 * @return
 	 */
-	public static Name getVariableNameOf(
-			final IASTInitializerClause clause) {
+	@SuppressWarnings("removal")
+	public static Name getVariableNameOf(final Expression exp) {
 //			throws ASTException {
-		if (clause == null) return null;
+		if (exp == null) return null;
 		
-		if (clause instanceof IASTIdExpression) {
-			return ((IASTIdExpression) clause).getName();
+		switch (exp.getNodeType()) {
+		case ASTNode.MODULE_QUALIFIED_NAME:
+		case ASTNode.QUALIFIED_NAME:
+		case ASTNode.SIMPLE_NAME:
+			return (Name) exp;
 //			final Name vName = ((IASTIdExpression) clause).getName();
 //			final IBinding vBind = vName.resolveBinding();
 //			if (vBind instanceof IVariable) return vName;
 //			if (vBind instanceof IProblemBinding) 
 //				throw new ASTException((IProblemBinding) vBind, null);
-		}
-		else if (clause instanceof IASTLiteralExpression) 
+			
+		case ASTNode.BOOLEAN_LITERAL: 
+		case ASTNode.CHARACTER_LITERAL: 
+		case ASTNode.NULL_LITERAL: 
+		case ASTNode.NUMBER_LITERAL: 
+		case ASTNode.STRING_LITERAL: 
+		case ASTNode.TYPE_LITERAL: 
 			return null;
-		
-		else if (clause instanceof IASTUnaryExpression) 
-			return getVariableNameOf(((IASTUnaryExpression) clause).getOperand());
-		
-		return DebugElement.throwTodoException("unsupported expression");
+			
+		case ASTNode.PREFIX_EXPRESSION: 
+			return getVariableNameOf(((PrefixExpression) exp).getOperand());
+			
+		case ASTNode.POSTFIX_EXPRESSION: 
+			return getVariableNameOf(((PostfixExpression) exp).getOperand());
+				
+		default:
+			return DebugElement.throwTodoException("unsupported expression");
+		}
 	}
 	
 	/**
 	 * @param exp
 	 * @return
 	 */
-	public static IASTNameOwner getVariableNameOwnerOf(
-			final IASTIdExpression exp) 
+	public static VariableDeclaration getVariableNameOwnerOf(
+			final Name exp) 
 					throws ASTException {
 		return (exp != null && getVariableNameOf(exp) != null) ? exp : null;
 	}
@@ -280,6 +295,7 @@ public final class ASTAssignableComputer {
 //		return asn.isAssignment(exp);
 //	}
 	
+	@SuppressWarnings("removal")
 	public static boolean isAssignedIn(Expression assignedExp, IASTInitializerClause clause) {
 		if (!isAssignment(clause)) return false; 
 		if (clause == assignedExp) return true;
@@ -322,23 +338,19 @@ public final class ASTAssignableComputer {
 	
 	/**
 	 * @param lValue
-	 * @param clause
+	 * @param exp
 	 * @return
 	 */
-	public static boolean isDirectlyAssignedIn(
-			Name lValue, IASTInitializerClause clause) {
+	public static boolean isDirectlyAssignedIn(Name lValue, Expression exp) {
 		// A unary assignment has only one operand containing the given l-value
-		if (isUnaryAssignment(clause)) return true; 
+		if (isUnaryAssignment(exp)) return true; 
 		
-		// usually IASTIdExpression in lhs of a direct (non-function-call) assignment
-		final IASTIdExpression idExp = getIdExpressionOf(lValue);
-		assert lValue != null;
-		// idExp == null -> not a classical AST ID, e.g. a parameter declaration
-		return idExp != null && isBinaryAssignedIn(idExp, clause);
+		// usually lhs of a direct (non-function-call) assignment
+		// lValue == null -> not a classical AST ID, e.g. a parameter declaration
+		return lValue != null && isBinaryAssignedIn(lValue, exp);
 	}
 	
-	public static boolean isDirectlyAssignedIn(
-			Name lValue, VariableDeclarationFragment init) {
+	public static boolean isDirectlyAssignedIn(Name lValue, VariableDeclaration init) {
 //		final IASTDeclarator decl = (IASTDeclarator) ASTUtil.getAncestorOfAs(
 //				lValue, new Class[] {IASTDeclarator.class}, false);
 //		return decl != null 
@@ -417,8 +429,8 @@ public final class ASTAssignableComputer {
 	 * @param asgn
 	 * @return true if {@code asgn} is assigned in {@code init}.
 	 */
-	public static boolean isBinaryAssignedIn(
-			Expression asgn, VariableDeclarationFragment init) {
+	@SuppressWarnings("removal")
+	public static boolean isBinaryAssignedIn(Name asgn, VariableDeclaration init) {
 		if (asgn == null) DebugElement.throwNullArgumentException("assignable");
 		return isDirectlyAssignedIn(asgn, init);
 	}
@@ -429,8 +441,8 @@ public final class ASTAssignableComputer {
 	 * @return true if {@code lValue} is assigned in {@code clause}.
 	 * 	Excluding non-assigned arguments of some assigned arrays, such as some <code>clause</code> of array[<code>lValue</code>] = ...
 	 */
-	public static boolean isBinaryAssignedIn(
-			Expression lValue, Assignment clause) {
+	@SuppressWarnings("removal")
+	public static boolean isBinaryAssignedIn(Expression lValue, Assignment clause) {
 		if (lValue == null) DebugElement.throwNullArgumentException("l-value");
 //		if (!isBinaryAssignment(clause)) return false;
 		
@@ -451,22 +463,18 @@ public final class ASTAssignableComputer {
 //				&& isBinaryAssigning(var);
 //	}
 	
-	public static boolean isBinaryAssigning(IASTIdExpression id) {
-		return isBinaryAssigningIn(id, null);
-	}
-	
 	public static boolean isBinaryAssigning(Name name) {
-		return isBinaryAssigning(getIdExpressionOf(name));
+		return isBinaryAssigningIn(name, null);
 	}
 
-	public static boolean isBinaryAssigningIn(Expression exp, IASTInitializerClause clause) {
+	public static boolean isBinaryAssigningIn(Expression exp, Expression exp2) {
 		ASTNode expParent = exp;
 //		final boolean isnLv = !exp.isLValue();
 		while (expParent != null) {
 			expParent = expParent.getParent();
 			if (isAbbreviatedBinaryAssignment(expParent) 
 					|| (isPlainBinaryAssignment(expParent) && !isLValueOf(exp, (InfixExpression) expParent))) 
-				if (clause == null || clause == expParent) return true;
+				if (exp2 == null || exp2 == expParent) return true;
 		}
 		return false;
 	}
@@ -517,6 +525,7 @@ public final class ASTAssignableComputer {
 		return isPlainBinaryAssignment(exp) && ASTUtil.isConstant(exp.getOperand2());
 	}
 
+	@SuppressWarnings("removal")
 	public static boolean isLValueOf(Expression exp, InfixExpression binary) {
 		if (binary == null) DebugElement.throwNullArgumentException("binary");
 		return binary.getOperand1().contains(exp);
@@ -590,7 +599,7 @@ public final class ASTAssignableComputer {
 	public static boolean isIdExpressionWithNameOf(ASTNode exp, Name name) {
 		if (exp == null || name == null) return false;
 		
-		return exp instanceof IASTIdExpression && ((IASTIdExpression) exp).getName().equals(name);
+		return exp instanceof Name && ((Name) exp).equals(name);
 	}
 	
 	
