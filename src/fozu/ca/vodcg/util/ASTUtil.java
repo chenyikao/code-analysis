@@ -27,6 +27,8 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.PostfixExpression;
+import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.AST;
@@ -117,9 +119,9 @@ public final class ASTUtil extends DebugElement {
 	@SuppressWarnings("unchecked")
 	public static final Class<Comment>[] 			AST_COMMENT = new Class[] {
 			Comment.class};
-	@SuppressWarnings("unchecked")
-	public static final Class<IASTInitializerClause>[] 	AST_INIT_CLAUSE_TYPE = new Class[] {
-			IASTInitializerClause.class};
+//	@SuppressWarnings("unchecked")
+//	public static final Class<IASTInitializerClause>[] 	AST_INIT_CLAUSE_TYPE = new Class[] {
+//			IASTInitializerClause.class};
 	@SuppressWarnings("unchecked")
 	public static final Class<Expression>[] 		AST_EXPRESSION = new Class[] {
 			Expression.class};
@@ -153,7 +155,7 @@ public final class ASTUtil extends DebugElement {
 			ArrayAccess.class};
 	@SuppressWarnings("unchecked")
 	public static final Class<ASTNode>[] 				AST_ASSIGNMENT_TYPES = new Class[] {
-			IASTUnaryExpression.class, Assignment.class, VariableDeclaration.class};
+			PrefixExpression.class, PostfixExpression.class, Assignment.class, VariableDeclaration.class};
 
 	
 	
@@ -674,10 +676,10 @@ public final class ASTUtil extends DebugElement {
 //		return (Ancestor) ancestor;
 	}
 	
-	public static IASTInitializerClause getAncestorClauseOf(
-			final ASTNode descend, final boolean includesDescend) {
-		return getAncestorOfAs(descend, ASTUtil.AST_INIT_CLAUSE_TYPE, includesDescend);
-	}
+//	public static IASTInitializerClause getAncestorClauseOf(
+//			final ASTNode descend, final boolean includesDescend) {
+//		return getAncestorOfAs(descend, ASTUtil.AST_INIT_CLAUSE_TYPE, includesDescend);
+//	}
 			
 	public static <Ancestor extends ASTNode> int getContinuousAncestorsCountOf(
 			ASTNode descend, Class<Ancestor> ancestorType) {

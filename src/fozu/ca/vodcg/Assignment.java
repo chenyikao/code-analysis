@@ -14,6 +14,7 @@ import org.eclipse.jdt.core.dom.IASTDeclarator;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
+import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IASTFunctionCallExpression;
 import org.eclipse.jdt.core.dom.IASTInitializerList;
@@ -196,17 +197,19 @@ public class Assignment extends SystemElement {
 		return asds;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public List<Expression> getAssigners() throws ASTException {
 		final List<Expression> les = new ArrayList<>();
-		final org.eclipse.jdt.core.dom.Assignment ic = getAssignerClause();
+		final org.eclipse.jdt.core.dom.Expression ac = getAssignerClause();
 		final VODCondGen cg = getCondGen();
 		final ASTAddressable da = cacheRuntimeAddress();
 		
-		if (ic instanceof IASTInitializerList) 
-			for (org.eclipse.jdt.core.dom.Assignment lic : ((IASTInitializerList) ic).getClauses()) 
-				les.add(Expression.fromRecursively(lic, da, cg));
+		if (ac instanceof ArrayInitializer) 
+			for (org.eclipse.jdt.core.dom.Expression aie : 
+				(List<org.eclipse.jdt.core.dom.Expression>) ((ArrayInitializer) ac).expressions()) 
+				les.add(Expression.fromRecursively(aie, da, cg));
 		
-		else les.add(Expression.fromRecursively(ic, da, cg));
+		else les.add(Expression.fromRecursively(ac, da, cg));
 //		try {
 //			les.add(((Equality) toEquality()).getAssigner());
 //		} catch (ClassCastException e) {

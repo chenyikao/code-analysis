@@ -123,18 +123,22 @@ public final class ASTAssignableComputer {
 	 * @param lValue - variable probably used in some parameter to find out
 	 * @return
 	 */
-	public static IASTInitializerClause getArgumentExpressionOf(Expression lValue) {
+	@SuppressWarnings("unchecked")
+	public static Expression getArgumentExpressionOf(Expression lValue) {
 		List<ASTNode> ancestors = ASTUtil.getAncestorsOfUntil(
 				lValue, ASTUtil.AST_FUNCTION_CALL_EXPRESSION);
 		if (ancestors != null) {
-			int grandAncestorIndex = ancestors.size() - 1;
-			if (ancestors.get(grandAncestorIndex) instanceof MethodInvocation)
-				// excluding IASTFunctionCallExpression and lValue itself
+			final int grandAncestorIndex = ancestors.size() - 1;
+			final ASTNode grandAncestor = ancestors.get(grandAncestorIndex);
+			if (grandAncestor instanceof MethodInvocation) {
+				final List<Expression> args = (List<Expression>) ((MethodInvocation) grandAncestor).arguments();
+				// excluding MethodInvocation and lValue itself
 				for (int i = grandAncestorIndex - 1; i > 0; i--) {
 					ASTNode ancestor = ancestors.get(i);
-					if (ancestor instanceof IASTInitializerClause) 
-						return (IASTInitializerClause) ancestor;
+					if (args.contains(ancestor)) 
+						return (Expression) ancestor;
 				}
+			}
 		}
 
 		return null;
@@ -246,20 +250,20 @@ public final class ASTAssignableComputer {
 
 
 
-	public static boolean isAssignment(IASTInitializerClause clause) {
-		return isUnaryAssignment(clause) || isBinaryAssignment(clause);
+	public static boolean isAssignment(Expression exp) {
+		return isUnaryAssignment(exp) || isBinaryAssignment(exp);
 	}
 
-	public static boolean isLikeAssignment(IASTInitializerClause clause) {
-		return clause instanceof IASTUnaryExpression 
-				&& isLikeAssignment((IASTUnaryExpression) clause);
-	}
-	
 	public static boolean isAssignment(IASTUnaryExpression exp) {
 		final Expression ubExp = ASTUtil.unbracket(exp);
 		return ubExp == exp 
 				? isUnbracketedAssignment(exp) 
 				: isAssignment(ubExp);
+	}
+	
+	public static boolean isLikeAssignment(Expression exp) {
+		return exp instanceof IASTUnaryExpression 
+				&& isLikeAssignment((IASTUnaryExpression) exp);
 	}
 	
 	public static boolean isLikeAssignment(IASTUnaryExpression exp) {
@@ -296,28 +300,32 @@ public final class ASTAssignableComputer {
 //	}
 	
 	@SuppressWarnings("removal")
-	public static boolean isAssignedIn(Expression assignedExp, IASTInitializerClause clause) {
-		if (!isAssignment(clause)) return false; 
-		if (clause == assignedExp) return true;
+	public static boolean isAssignedIn(Expression assignedExp, Expression exp) {
+		if (!isAssignment(exp)) return false; 
+		if (exp == assignedExp) return true;
 		
-		if (clause instanceof IASTUnaryExpression) 
-			return ((IASTUnaryExpression) clause).getOperand().contains(assignedExp);
-		if (clause instanceof InfixExpression) 
-			return ((InfixExpression) clause).getOperand1().contains(assignedExp);
-		
-		return DebugElement.throwTodoException("Unsupported clause?");
+		switch (exp.getNodeType()) {
+		case ASTNode.PREFIX_EXPRESSION:
+			return ((PrefixExpression) exp).getOperand().contains(assignedExp);
+		case ASTNode.POSTFIX_EXPRESSION:
+			return ((PostfixExpression) exp).getOperand().contains(assignedExp);
+		case ASTNode.INFIX_EXPRESSION: 
+			return ((InfixExpression) exp).getOperand1().contains(assignedExp);
+		default:
+			return DebugElement.throwTodoException("Unsupported expression?");
+		}
 	}
 	
 	/**
 	 * @param assignedName
-	 * @param clause
+	 * @param exp
 	 * @return
 	 */
-	public static boolean isAssignedIn(Name assignedName, IASTInitializerClause clause) {
+	public static boolean isAssignedIn(Name assignedName, Expression exp) {
 		// A unary assignment has only one operand containing the given l-value
-		return isUnaryAssignment(clause) 
+		return isUnaryAssignment(exp) 
 //				|| isBinaryAssigningOf(clause, name)
-				|| isAssignedIn(getNonIdExpressionOf(assignedName), clause);
+				|| isAssignedIn(getNonIdExpressionOf(assignedName), exp);
 	}
 	
 	public static boolean isAssigning(Name name) {
@@ -329,9 +337,9 @@ public final class ASTAssignableComputer {
 		return exp instanceof ArrayInitializer;
 	}
 	
-	public static boolean isAssigningIn(Expression assigningExp, IASTInitializerClause clause) {
+	public static boolean isAssigningIn(Expression assigningExp, Expression exp) {
 		return isUnaryAssignment(assigningExp) 
-				|| isBinaryAssigningIn(assigningExp, clause);
+				|| isBinaryAssigningIn(assigningExp, exp);
 	}
 
 	
@@ -398,27 +406,29 @@ public final class ASTAssignableComputer {
 	 * Expression.isLValue() -/-> Expression.getParent() is an assignment
 	 * 
 	 * @param lvExp - the subject variable/parameter reference in a valid l-value expression,
-	 * 	already bypassed IASTIdExpression 
+	 * 	already bypassed Name 
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	public static boolean isAssigned(Expression lvExp) {
 		if (lvExp == null) return false;
 		
-		// isLValue() does NOT guarantee all left hand side assignables are included!
-		if (lvExp.isLValue()) {
-			ASTNode lvAsg = lvExp;
-			while (true) {
-				lvAsg = ASTUtil.getAncestorOfAsUnless(lvAsg, ASTUtil.AST_ASSIGNMENT_TYPES,
-						new Class[] {Statement.class}, true);
-				if (lvAsg == null) break;
-
-				if (lvAsg instanceof VariableDeclarationFragment 
-						|| isAssignment((IASTInitializerClause) lvAsg)) return true;
-//				if (isAssignedTo(lvAsg instanceof VariableDeclarationFragment 
-//						? ((VariableDeclarationFragment) lvAsg).getInitializerClause() 
-//						: (IASTInitializerClause) lvAsg, 
-//						lvExp)) return true;
+		ASTNode lvAsg = lvExp;
+		while (true) {
+			lvAsg = ASTUtil.getAncestorOfAsUnless(lvAsg, ASTUtil.AST_ASSIGNMENT_TYPES,
+					new Class[] {Statement.class}, true);
+			if (lvAsg == null) break;
+			
+			if (lvAsg instanceof VariableDeclaration)
+				return isAssignedIn(lvExp, ((VariableDeclaration) lvAsg).getInitializer());
+			
+			switch (lvAsg.getNodeType()) {
+			case ASTNode.PREFIX_EXPRESSION:
+				return isAssignedIn(lvExp, ((PrefixExpression) lvAsg).getOperand());
+			case ASTNode.POSTFIX_EXPRESSION:
+				return isAssignedIn(lvExp, ((PostfixExpression) lvAsg).getOperand());
+			case ASTNode.ASSIGNMENT:
+				return isAssignedIn(lvExp, ((Assignment) lvAsg).getLeftHandSide());
 			}
 		}
 		return isPassedByRef(lvExp);
@@ -614,28 +624,26 @@ public final class ASTAssignableComputer {
 	 * <br>
 	 * 
 	 * @param arrayId
-	 * @param clause - the initializer clause or expression that refers the array at some (reference) address
+	 * @param exp - the initializer clause or expression that refers the array at some (reference) address
 	 * @return
 	 */
-	public static boolean isArrayReferenceIn(Expression lValue, IASTInitializerClause clause) {
+	public static boolean isArrayReferenceIn(Expression lValue, Expression exp) {
 //		TODO: if (clause instanceof IASTInitializerList)...
 //		TODO: if (clause instanceof IASTDesignatedInitializer)...
 //		TODO: if (clause instanceof ICPPASTInitializerList)...
 //		TODO: if (clause instanceof ICPPASTInitializerClause)...
 
-		if (clause instanceof Expression) {
-			// the reference has fewer levels of subscripts than the array's declared dimension.
-			if (((Expression) clause).getExpressionType() instanceof ArrayType) {
-				
-				// the reference expression (var ID) must start from the left-most IASTArraySubscriptExpression 
-				// or pointer expression and never be in the subscript arguments.
-				ASTNode lvOp = lValue;
-				while (lvOp != clause) {
-					if (lvOp == null) return false;	// arrayId may be null
-					lvOp = lvOp.getParent();
-				}
-				return true;
+		// the reference has fewer levels of subscripts than the array's declared dimension.
+		if (exp.getExpressionType() instanceof ArrayType) {
+			
+			// the reference expression (var ID) must start from the left-most IASTArraySubscriptExpression 
+			// or pointer expression and never be in the subscript arguments.
+			ASTNode lvOp = lValue;
+			while (lvOp != exp) {
+				if (lvOp == null) return false;	// arrayId may be null
+				lvOp = lvOp.getParent();
 			}
+			return true;
 		}
 		
 		return false;
@@ -654,7 +662,7 @@ public final class ASTAssignableComputer {
 	 */
 	public static boolean isPassedByRef(Expression lValue) {
 		// TODO: or indirectly used by a non-function pointer...
-		IASTInitializerClause varArg = getArgumentExpressionOf(lValue);
+		Expression varArg = getArgumentExpressionOf(lValue);
 		
 		if (varArg != null) {
 			// var (ID) must be at the top level of parameter (ID)

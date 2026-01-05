@@ -58,9 +58,9 @@ public final class ASTLoopUtil {
 
 	//	private static final Map<ForStatement, IASTDeclarator>	LOOP_INITIAL_DECL_CACHE 		= new HashMap<>();
 
-	private static final Map<ForStatement, Expression> 
+	private static final Map<ForStatement, org.eclipse.jdt.core.dom.Expression> 
 	LOOP_INITIAL_BOUND_CACHE 	= new HashMap<>();
-	private static final Map<ForStatement, Expression> 	
+	private static final Map<ForStatement, org.eclipse.jdt.core.dom.Expression> 	
 	LOOP_TEST_BOUND_CACHE 		= new HashMap<>();
 	private static final Map<ForStatement, Integer> 		
 	LOOP_TEST_OP_TO_VAR_CACHE 	= new HashMap<>();
@@ -109,7 +109,7 @@ public final class ASTLoopUtil {
 	 * @param loop
 	 * @return
 	 */
-	public static Expression getSingleIteratorOf(ForStatement loop, Fragment location) {
+	public static org.eclipse.jdt.core.dom.Expression getSingleIteratorOf(ForStatement loop, Fragment location) {
 	    org.eclipse.jdt.core.dom.Expression lie = loop.getExpression();
 		if (lie instanceof IASTUnaryExpression) lie = ((IASTUnaryExpression) lie).getOperand();
 		
@@ -144,15 +144,15 @@ public final class ASTLoopUtil {
 	}
 	
 	@SuppressWarnings("removal")
-    public static IASTInitializerClause getCanonicalInitialBoundOf(ForStatement loop) {
+    public static org.eclipse.jdt.core.dom.Expression getCanonicalInitialBoundOf(ForStatement loop) {
 		if (isNonCanonical(loop)) return null;
 		
-		IASTInitializerClause ib = LOOP_INITIAL_BOUND_CACHE.get(loop);
+		org.eclipse.jdt.core.dom.Expression ib = LOOP_INITIAL_BOUND_CACHE.get(loop);
 		if (ib != null) return ib;
 		
 		ib = getCanonicalInitializersOf(loop);
 //		if (ASTLValueComputer.isUnaryAssignment(ib)) Debug.throwTodoException("unsupported bound?");
-		if (ASTAssignableComputer.isBinaryAssignment(ib)) ib = ((Assignment) ib).getOperand2();
+		if (ASTAssignableComputer.isBinaryAssignment(ib)) ib = ((Assignment) ib).getRightHandSide();
 		else DebugElement.throwTodoException("unsupported bound");
 
 		if (ib != null) LOOP_INITIAL_BOUND_CACHE.put(loop, ib);

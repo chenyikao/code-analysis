@@ -781,8 +781,8 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 			
 			if (prop == null) {
 				// default (not top priority) handler
-				if (node instanceof IASTInitializerClause) {
-					e = Expression.fromRecursively((IASTInitializerClause) node, rtAddr, condGen);
+				if (node instanceof org.eclipse.jdt.core.dom.Expression) {
+					e = Expression.fromRecursively((org.eclipse.jdt.core.dom.Expression) node, rtAddr, condGen);
 					if (e != null) prop = e.toProposition();
 
 				} else returnTodoException("Unsupported node: " 
@@ -927,11 +927,11 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 
 	
 	public static Proposition fromRecursivelyWithoutBranching(
-			IASTInitializerClause clause, Assignment asm, VODCondGen condGen) 
+			org.eclipse.jdt.core.dom.Expression exp, Assignment asm, VODCondGen condGen) 
 					throws ASTException {
-		if (clause == null) return null;
+		if (exp == null) return null;
 		
-		return fromRecursivelyWithBranching(clause, asm, null, false, condGen);
+		return fromRecursivelyWithBranching(exp, asm, null, false, condGen);
 	}
 	
 

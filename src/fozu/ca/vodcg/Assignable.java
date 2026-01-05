@@ -1442,26 +1442,26 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	public Assignment getFirstAssignment() {
 		if (firstAssignmentView != null) return firstAssignmentView;
 		
-		IASTInitializerClause clause = getFirstClause();
-		while (clause != null) try {
-			final ASTNode cp = clause.getParent();
-			if (cp instanceof VariableDeclaration) 
-				firstAssignmentView = Assignment.from((VariableDeclaration) cp, cacheRuntimeAddress(), getCondGen());
-			else if (clause instanceof MethodInvocation 
+		org.eclipse.jdt.core.dom.Expression exp = getExpressionView();
+		while (exp != null) try {
+			final ASTNode ep = exp.getParent();
+			if (ep instanceof VariableDeclaration) 
+				firstAssignmentView = Assignment.from((VariableDeclaration) ep, cacheRuntimeAddress(), getCondGen());
+			else if (exp instanceof MethodInvocation 
 					&& isCallByReference()) {
 				// declared array - isArray() && isPointer()
-				firstAssignmentView = Assignment.from((MethodInvocation) clause, this, getCondGen());
+				firstAssignmentView = Assignment.from((MethodInvocation) exp, this, getCondGen());
 				break;
 			} else
 				// dereferenced array - !isArray() && isPointer()
-				firstAssignmentView = Assignment.from(clause, this, getCondGen());				
+				firstAssignmentView = Assignment.from(exp, this, getCondGen());				
 //			else if (isAssigned) 
 //				throwTodoException("unsupported assignment type?");
 			
 			if (firstAssignmentView != null) break;
 			
 			// traversing ancestor
-			clause = ASTUtil.getAncestorClauseOf(clause, false);
+			exp = ASTUtil.getAncestorClauseOf(exp, false);
 //			if (ASTLValueComputer.isAssigningOf(clause, nameView)
 //					|| ASTLValueComputer.isAssignedTo(clause, expView)) break;
 			
@@ -1811,7 +1811,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	public boolean isLikelyAssigned() {
 		if (tests(isAssigned) || isArray()) return true;
 		
-		IASTInitializerClause clause = getFirstClause();
+		org.eclipse.jdt.core.dom.Expression clause = getExpressionView();
 		// traversing ancestor
 		while (clause != null) {
 			if (ASTAssignableComputer.isLikeAssignment(clause)) return true;
@@ -2126,17 +2126,17 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	
 
 	
-	public Pointer getEnclosingPointer() {
-		IASTInitializerClause parent = getParentClause();
-		final ASTAddressable da = cacheRuntimeAddress();
-		while (parent != null) {
-			final Expression e = Expression.fromRecursively(parent, da, getCondGen());
-			if (e instanceof Pointer) return (Pointer) e;
-			else if (e instanceof PathVariablePlaceholder) return Pointer.from((PathVariablePlaceholder) e);
-			parent = ASTUtil.getAncestorClauseOf(parent, false);
-		}
-		return null;
-	}
+//	public Pointer getEnclosingPointer() {
+//		IASTInitializerClause parent = getParentClause();
+//		final ASTAddressable da = cacheRuntimeAddress();
+//		while (parent != null) {
+//			final Expression e = Expression.fromRecursively(parent, da, getCondGen());
+//			if (e instanceof Pointer) return (Pointer) e;
+//			else if (e instanceof PathVariablePlaceholder) return Pointer.from((PathVariablePlaceholder) e);
+//			parent = ASTUtil.getAncestorClauseOf(parent, false);
+//		}
+//		return null;
+//	}
 	
 	public Pointer getEnclosingArray() {
 		return ArrayPointer.fromEnclosing(this);
@@ -2168,18 +2168,18 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public Expression getEnclosingCallArgument() {
-		for (IASTInitializerClause arg : 
-			getEnclosingCallExpression().getArguments())	// never null
+		for (Expression arg : (List<Expression>) getEnclosingCallExpression().arguments())	// never null
 			if (arg.contains(nameView)) 
 				return Expression.fromRecursively(arg, getRuntimeAddress(), getCondGen());
 		return null;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public int getEnclosingCallArgumentIndex() {
 		int i = 0;
-		for (IASTInitializerClause arg : 
-			getEnclosingCallExpression().getArguments()) {	// never null
+		for (Expression arg : (List<Expression>) getEnclosingCallExpression().arguments()) {	// never null
 			if (arg.contains(nameView)) return i;
 			else i++;
 		}
@@ -2505,6 +2505,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		.getArgument().contains(nameView));
 	}
 	
+	@SuppressWarnings("unchecked")
 	public boolean isCallArgument() {
 		final ASTNode node = getTopNode();
 		final List<ASTNode> ancs = ASTUtil.getAncestorsOfUntil(node, null);
@@ -2512,10 +2513,9 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		
 		for (ASTNode anc : ancs) 
 			if (anc instanceof MethodInvocation) {
-				final IASTInitializerClause[] args = 
-						((MethodInvocation) anc).getArguments();
+				final List<Expression> args = ((MethodInvocation) anc).arguments();
 				if (args == null) return false;
-				for (IASTInitializerClause arg : args)
+				for (Expression arg : args)
 					if (arg.contains(node)) return true;
 			}
 		return false;

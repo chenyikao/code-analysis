@@ -305,8 +305,8 @@ extends Reference<F> implements ArithmeticExpression {
 			for (Object arg : args) {
 				if (arg instanceof Expression) 
 					this.args.add((Expression) arg);
-				else if (arg instanceof IASTInitializerClause) 
-					this.args.add(Expression.fromRecursively((IASTInitializerClause) arg, scope.cacheRuntimeAddress(), getCondGen()));
+//				else if (arg instanceof IASTInitializerClause) 
+//					this.args.add(Expression.fromRecursively((IASTInitializerClause) arg, scope.cacheRuntimeAddress(), getCondGen()));
 				else throwTodoException("unsupported arguments");
 				
 //				int index = 0;

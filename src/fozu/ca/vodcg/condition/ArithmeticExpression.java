@@ -116,7 +116,7 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 		ArithmeticExpression[] bounds = ASTLoopUtil.getBoundsOf(loop);
 		if (bounds != null) return bounds[wantsLowerBound ? 0 : 1];
 		
-		final IASTInitializerClause ib = 
+		final org.eclipse.jdt.core.dom.Expression ib = 
 				ASTLoopUtil.getCanonicalInitialBoundOf(loop);
 		final org.eclipse.jdt.core.dom.Expression tb = 
 				ASTLoopUtil.getCanonicalTestBoundOf(loop, condGen);
