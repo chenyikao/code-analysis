@@ -186,17 +186,17 @@ public final class ASTUtil extends DebugElement {
 
 	
 	
-	public static IIndex getIndex(boolean refreshesIndex) {
-		if (index == null || refreshesIndex)
-			try {
-				index = CCorePlugin.getIndexManager().getIndex(
-						CoreModel.getDefault().getCModel().getCProjects(), 
-						IIndexManager.ADD_DEPENDENCIES | IIndexManager.ADD_DEPENDENT);
-			} catch (CoreException e) {
-				DebugElement.throwTodoException("CDT exception", e);
-			}
-		return index;
-	}
+//	public static IIndex getIndex(boolean refreshesIndex) {
+//		if (index == null || refreshesIndex)
+//			try {
+//				index = CCorePlugin.getIndexManager().getIndex(
+//						CoreModel.getDefault().getCModel().getCProjects(), 
+//						IIndexManager.ADD_DEPENDENCIES | IIndexManager.ADD_DEPENDENT);
+//			} catch (CoreException e) {
+//				DebugElement.throwTodoException("CDT exception", e);
+//			}
+//		return index;
+//	}
 
 	public static CompilationUnit getAST(IPath cuPath) {
 		if (cuPath == null) return null;
@@ -224,29 +224,29 @@ public final class ASTUtil extends DebugElement {
 	
 
 	
-	public static List<Annotation> getPragmas(CompilationUnit cu) {
-		if (cu == null) return Collections.<Annotation>emptyList();
-		
-//		PRAGMA_CACHE.clear();
-		List<Annotation> ps = PRAGMA_CACHE.get(cu);
-		if (ps != null) return ps;
-		
-		ps = new ArrayList<>();
-		for (IASTPreprocessorStatement p : cu.getAllPreprocessorStatements())
-			// ps.getParent() returns IASTTranslationUnit
-			if (AST_PRAGMA[0].isInstance(p)) ps.add((Annotation) p); 
-		PRAGMA_CACHE.put(cu, ps);
-		return ps;
-	}
+//	public static List<Annotation> getPragmas(CompilationUnit cu) {
+//		if (cu == null) return Collections.<Annotation>emptyList();
+//		
+////		PRAGMA_CACHE.clear();
+//		List<Annotation> ps = PRAGMA_CACHE.get(cu);
+//		if (ps != null) return ps;
+//		
+//		ps = new ArrayList<>();
+//		for (IASTPreprocessorStatement p : cu.getAllPreprocessorStatements())
+//			// ps.getParent() returns IASTTranslationUnit
+//			if (AST_PRAGMA[0].isInstance(p)) ps.add((Annotation) p); 
+//		PRAGMA_CACHE.put(cu, ps);
+//		return ps;
+//	}
 	
-	/**
-	 * @param project
-	 */
-	public static void setSelectedProject(IProject project) {
-		ICProject cProj = CoreModel.getDefault().getCModel().getCProject(project.getName());
-		if (cProj == null) throw new IllegalArgumentException("ONLY supporting C/C++ projects!");
-		selectedProj = cProj;
-	}
+//	/**
+//	 * @param project
+//	 */
+//	public static void setSelectedProject(IProject project) {
+//		ICProject cProj = CoreModel.getDefault().getCModel().getCProject(project.getName());
+//		if (cProj == null) throw new IllegalArgumentException("ONLY supporting C/C++ projects!");
+//		selectedProj = cProj;
+//	}
 
 
 	
