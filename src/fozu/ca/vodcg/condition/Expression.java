@@ -21,6 +21,7 @@ import org.eclipse.jdt.core.dom.IASTArraySubscriptExpression;
 import org.eclipse.jdt.core.dom.IASTBinaryExpression;
 import org.eclipse.jdt.core.dom.IASTCastExpression;
 import org.eclipse.jdt.core.dom.ConditionalExpression;
+import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.IASTFieldReference;
 import org.eclipse.jdt.core.dom.IASTFileLocation;
 import org.eclipse.jdt.core.dom.IASTFunctionCallExpression;
@@ -252,8 +253,8 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 		} else if (exp instanceof CastExpression) {
 			e = new CastCall((CastExpression) exp, rtAddr, condGen);
 			
-		} else if (exp instanceof IASTFieldReference) 
-			e = fromRecursively((IASTFieldReference) exp, rtAddr, condGen);
+		} else if (exp instanceof FieldAccess) 
+			e = fromRecursively((FieldAccess) exp, rtAddr, condGen);
 		
 		// TODO: else if (general case for other kinds of expression)...
 //		for (ASTNode child : exp.getChildren()) if (child instanceof org.eclipse.jdt.core.dom.Expression) return ...;
@@ -331,7 +332,7 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 	
 	
 	private static Expression fromRecursively(
-			final IASTFieldReference refExp, final ASTAddressable rtAddr, final VODCondGen condGen) 
+			final FieldAccess refExp, final ASTAddressable rtAddr, final VODCondGen condGen) 
 					throws ASTException {
 		assert refExp != null;
 		final IASTName refName = refExp.getFieldName();
