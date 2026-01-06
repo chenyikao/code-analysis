@@ -588,7 +588,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 		
 		assert f != null;
 		final List<SingleVariableDeclaration> fParams = (List<SingleVariableDeclaration>) f.parameters();
-		if (fParams != null) for (IASTParameterDeclaration fp : fParams) try {
+		if (fParams != null) for (SingleVariableDeclaration fp : fParams) try {
 			final VariablePlaceholder<?> p = PathVariablePlaceholder.from(
 					fp.getDeclarator(), getRuntimeAddress(), getCondGen());
 			if (p == null) throwTodoException("Null parameter!");
