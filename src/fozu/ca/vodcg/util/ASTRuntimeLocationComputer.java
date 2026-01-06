@@ -287,24 +287,24 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 		if (no1 == no2) {
 			final IASTNodeLocation[] ls1 = node1.getNodeLocations(), ls2 = node2.getNodeLocations();
 			assert ls1 != null && ls2 != null;
-			for (IASTNodeLocation l1 : ls1)
-				for (IASTNodeLocation l2 : ls2)
-					if (l1 instanceof IASTMacroExpansionLocation && l2 instanceof IASTMacroExpansionLocation) 
-						return compareLocally((IASTMacroExpansionLocation) l1, (IASTMacroExpansionLocation) l2);
+//			for (IASTNodeLocation l1 : ls1)
+//				for (IASTNodeLocation l2 : ls2)
+//					if (l1 instanceof IASTMacroExpansionLocation && l2 instanceof IASTMacroExpansionLocation) 
+//						return compareLocally((IASTMacroExpansionLocation) l1, (IASTMacroExpansionLocation) l2);
 			DebugElement.throwTodoException("unsupported ambiguous nodes");
 		}
 		return no1 - no2;
 	}
 
-	public static int compareLocally(final IASTMacroExpansionLocation location1, final IASTMacroExpansionLocation location2) {
-		if (location1 == location2) return 0; 
-		if (location1 == null || location2 == null) 
-			throwIncomparableException("Incomparable null location(s)!");
-		
-		return location1.getExpansion() == location2.getExpansion()
-				? location1.getNodeOffset() - location2.getNodeOffset()
-				: throwIncomparableException("Locally incomparable macros");
-	}
+//	public static int compareLocally(final IASTMacroExpansionLocation location1, final IASTMacroExpansionLocation location2) {
+//		if (location1 == location2) return 0; 
+//		if (location1 == null || location2 == null) 
+//			throwIncomparableException("Incomparable null location(s)!");
+//		
+//		return location1.getExpansion() == location2.getExpansion()
+//				? location1.getNodeOffset() - location2.getNodeOffset()
+//				: throwIncomparableException("Locally incomparable macros");
+//	}
 	
 //	public static int compareLocally(final IASTNodeLocation[] locations1, final IASTNodeLocation[] locations2) {
 //		if (locations1 == locations2) return 0; 
