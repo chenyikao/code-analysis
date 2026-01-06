@@ -1274,7 +1274,7 @@ public final class ASTUtil extends DebugElement {
 	
 	
 	public static Name getNameFrom(IPath tuPath, int offset, int length, boolean refreshesIndex) {
-		IASTTranslationUnit ast = getAST(tuPath, refreshesIndex);
+		CompilationUnit ast = getAST(tuPath, refreshesIndex);
 		if (ast == null) return null;
 		else return ast.getNodeSelector(null).findFirstContainedName(offset, length);
 //		else return ast.getNodeSelector(tuPath.toString()).findFirstContainedName(offset, length);
