@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.eclipse.cdt.core.dom.ast.IASTFileLocation;
 import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.cdt.core.dom.ast.IBinding;
+import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.cdt.core.index.IIndexName;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Statement;

@@ -186,7 +186,7 @@ public final class ASTUtil extends DebugElement {
 
 	// TODO: caching all reusable utility method results
 
-	private static ICProject selectedProj = null;
+	private static IProject selectedProj = null;
 
 	private static IIndex index = null;
 

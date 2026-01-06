@@ -20,6 +20,7 @@ import org.eclipse.cdt.core.index.IIndex;
 import org.eclipse.cdt.core.index.IndexFilter;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
@@ -83,7 +84,7 @@ implements Comparable<VariableOrientedDag> {
 		
 		if (callee == null) throwNullArgumentException("callee");
 		
-		final IBinding calleeBind = callee.getBinding();
+		final IVariableBinding calleeBind = callee.getBinding();
 		if (calleeBind != null) {
 			if (!(calleeBind instanceof IVariable || calleeBind instanceof IFunction)) 
 				throwTodoException("unsupported callee");
@@ -168,42 +169,42 @@ implements Comparable<VariableOrientedDag> {
 //		} catch (InterruptedException e) {
 //			continue;
 //		}
-		final IIndex index = ASTUtil.getIndex(false);
-		try {
-			index.acquireReadLock();	// read-lock pattern on the IIndex
-			
-			final ASTAddressable rtAddr = callee.cacheRuntimeAddress();
-			for (IBinding callerCalleeBind : index.findBindings(
-					callerName.toCharArray(), false, IndexFilter.ALL, new NullProgressMonitor()))
-				// caller is defined (or caller is called) in the other translation units
-				if (callerCalleeBind instanceof IFunction) 
-					for (IName callerCalleeName : index.findReferences(callerCalleeBind)) try {
-						final StructuralPropertyDescriptor callerCalleeLoc = callerCalleeName.getFileLocation();
-						final VariableOrientedDag callerTail = from(
-								ASTUtil.getNameFrom(
-										new Path(callerCalleeLoc.getFileName()), 
-										callerCalleeLoc.getNodeOffset(), 
-										callerCalleeLoc.getNodeLength(), 
-										false), 
-								rtAddr,
-								condGen);
-						if (callerTail != null) vod.addValidTail(callerTail);
-						
-//							firstCalleePos = 
-//									fCallee1stWP.getHeadCompletedLocation();
-//							if (firstCalleePos < minPos) {
-//								minPos = firstCalleePos;
-//								firstWP = fCallee1stWP;
-//							}
-					} catch (IllegalArgumentException e) {	// including ASTException 
-						continue;
-					}
-			
-		} catch (Exception e) {
-			throwUnhandledException(e);
-		} finally {
-			index.releaseReadLock();
-		}
+//		final IIndex index = ASTUtil.getIndex(false);
+//		try {
+//			index.acquireReadLock();	// read-lock pattern on the IIndex
+//			
+//			final ASTAddressable rtAddr = callee.cacheRuntimeAddress();
+//			for (IBinding callerCalleeBind : index.findBindings(
+//					callerName.toCharArray(), false, IndexFilter.ALL, new NullProgressMonitor()))
+//				// caller is defined (or caller is called) in the other translation units
+//				if (callerCalleeBind instanceof IFunction) 
+//					for (IName callerCalleeName : index.findReferences(callerCalleeBind)) try {
+//						final StructuralPropertyDescriptor callerCalleeLoc = callerCalleeName.getFileLocation();
+//						final VariableOrientedDag callerTail = from(
+//								ASTUtil.getNameFrom(
+//										new Path(callerCalleeLoc.getFileName()), 
+//										callerCalleeLoc.getNodeOffset(), 
+//										callerCalleeLoc.getNodeLength(), 
+//										false), 
+//								rtAddr,
+//								condGen);
+//						if (callerTail != null) vod.addValidTail(callerTail);
+//						
+////							firstCalleePos = 
+////									fCallee1stWP.getHeadCompletedLocation();
+////							if (firstCalleePos < minPos) {
+////								minPos = firstCalleePos;
+////								firstWP = fCallee1stWP;
+////							}
+//					} catch (IllegalArgumentException e) {	// including ASTException 
+//						continue;
+//					}
+//			
+//		} catch (Exception e) {
+//			throwUnhandledException(e);
+//		} finally {
+//			index.releaseReadLock();
+//		}
 		
 		CACHE.put(callee, vod); 
 		return vod;
