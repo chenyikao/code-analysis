@@ -421,13 +421,13 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 		
 		// regular child node s should be in AST order
 		ASTNode pre = null;
-		final boolean isPragma = me instanceof IASTPreprocessorPragmaStatement;
+//		final boolean isPragma = me instanceof IASTPreprocessorPragmaStatement;
 		for (ASTNode sbl : parent.getChildren()) {
-			if (isPragma) {
-				final Boolean isSblPre = isBeforeLocally(sbl, me);
-				if (isSblPre == null) DebugElement.throwTodoException("unsupported pragma");
-				else if (!isSblPre) break;
-			} else 
+//			if (isPragma) {
+//				final Boolean isSblPre = isBeforeLocally(sbl, me);
+//				if (isSblPre == null) DebugElement.throwTodoException("unsupported pragma");
+//				else if (!isSblPre) break;
+//			} else 
 				if (sbl == me) break;
 			
 			pre = sbl;
@@ -447,30 +447,30 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 		return pre;
 	}
 	
-	/**
-	 * Pragmas are NOT included as regular child nodes. 
-	 * Neither {@link IASTNodeSelector} finds preprocessor statements.
-	 * 
-	 * @param me
-	 * @param pre
-	 * @param tu
-	 * @param CondGen 
-	 * @return
-	 */
-	@SuppressWarnings("removal")
-	public IASTPreprocessorPragmaStatement previousPragmaOfAfter(
-			final ASTNode me, ASTNode pre, IASTTranslationUnit tu) {
-		if (me == null) DebugElement.throwInvalidityException("me");
-		
-		if (tu == null) tu = me.getTranslationUnit();
-		for (IASTPreprocessorPragmaStatement p : ASTUtil.getPragmas(tu)) 
-			if (ASTUtil.isInTheSameFile(p, me)) 
-				if (pre == null || 
-				(Elemental.tests(isBeforeLocally(pre, p)) && Elemental.tests(isBeforeLocally(p, me))))
-					pre = p;
-		return pre instanceof IASTPreprocessorPragmaStatement ?
-				(IASTPreprocessorPragmaStatement) pre : null;
-	}
+//	/**
+//	 * Pragmas are NOT included as regular child nodes. 
+//	 * Neither {@link IASTNodeSelector} finds preprocessor statements.
+//	 * 
+//	 * @param me
+//	 * @param pre
+//	 * @param tu
+//	 * @param CondGen 
+//	 * @return
+//	 */
+//	@SuppressWarnings("removal")
+//	public IASTPreprocessorPragmaStatement previousPragmaOfAfter(
+//			final ASTNode me, ASTNode pre, IASTTranslationUnit tu) {
+//		if (me == null) DebugElement.throwInvalidityException("me");
+//		
+//		if (tu == null) tu = me.getTranslationUnit();
+//		for (IASTPreprocessorPragmaStatement p : ASTUtil.getPragmas(tu)) 
+//			if (ASTUtil.isInTheSameFile(p, me)) 
+//				if (pre == null || 
+//				(Elemental.tests(isBeforeLocally(pre, p)) && Elemental.tests(isBeforeLocally(p, me))))
+//					pre = p;
+//		return pre instanceof IASTPreprocessorPragmaStatement ?
+//				(IASTPreprocessorPragmaStatement) pre : null;
+//	}
 	
 	
 	
