@@ -13,6 +13,8 @@ import java.util.Set;
 
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.PostfixExpression;
+import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.ast.IASTBinaryExpression;
 import org.eclipse.jdt.core.dom.ast.IASTDeclarator;
 import org.eclipse.jdt.core.dom.ast.IASTEqualsInitializer;
@@ -143,21 +145,20 @@ implements AssignableExpression {
 	
 	/**
 	 * Factory constructor for an AST-derived unary assignment.
-	 * @param expOp - Op code of {@link IASTUnaryExpression}
+	 * 
+	 * @param expOp - Op code of {@link PrefixExpression}
 	 * @param pvp
 	 * @return
 	 */
-	public static Proposition from(int expOp, PathVariablePlaceholder pvp) {
+	public static Proposition from(PrefixExpression.Operator expOp, PathVariablePlaceholder pvp) {
 		if (pvp == null) throwNullArgumentException("delegate"); 
-		if (pvp.isDirectlyFunctional()) switch (expOp) {
-			// Subtraction assignment: clause--, --clause
-			case IASTUnaryExpression.op_postFixDecr	: 
-			case IASTUnaryExpression.op_prefixDecr	: 
+		if (pvp.isDirectlyFunctional()) {
+			// Subtraction assignment: --exp
+			if (expOp == PrefixExpression.Operator.DECREMENT) 
 				return fromFunctional(Assignment.Operator.MINUS_ASSIGN, pvp, Int.ONE);
 				
-				// Addition assignment: clause++, ++clause
-			case IASTUnaryExpression.op_postFixIncr	: 
-			case IASTUnaryExpression.op_prefixIncr	: 
+			// Addition assignment: ++exp
+			if (expOp == PrefixExpression.Operator.INCREMENT) 
 				return fromFunctional(Assignment.Operator.PLUS_ASSIGN, pvp, Int.ONE);
 		}
 		if (pvp.isLoopIterator()) return ExpressionRange.fromIteratorOf(
@@ -171,18 +172,55 @@ implements AssignableExpression {
 		
 		Proposition asm = null;
 		final PathVariablePlaceholder ppvp = prs.first();
-		switch (expOp) {
-		// Subtraction assignment: clause--, --clause
-		case IASTUnaryExpression.op_postFixDecr	: 
-		case IASTUnaryExpression.op_prefixDecr	: 
+		// Subtraction assignment: --exp
+		if (expOp == PrefixExpression.Operator.DECREMENT) 
 			asm = fromAssignment(pvp, (Expression) ppvp.subtract(Int.ONE));
-			break;
 
-		// Addition assignment: clause++, ++clause
-		case IASTUnaryExpression.op_postFixIncr	: 
-		case IASTUnaryExpression.op_prefixIncr	: 
+		// Addition assignment: ++exp
+		else if (expOp == PrefixExpression.Operator.INCREMENT) 
 			asm = fromAssignment(pvp, (Expression) ppvp.add(Int.ONE));
+		
+		if (asm == null) throwTodoException("unsupported assignment");
+//		if (asm instanceof Equality) ((Equality) asm).setAssigned();
+		return asm;
+	}
+	
+	/**
+	 * Factory constructor for an AST-derived unary assignment.
+	 * 
+	 * @param expOp - Op code of {@link PostfixExpression}
+	 * @param pvp
+	 * @return
+	 */
+	public static Proposition from(PostfixExpression.Operator expOp, PathVariablePlaceholder pvp) {
+		if (pvp == null) throwNullArgumentException("delegate"); 
+		if (pvp.isDirectlyFunctional()) {
+			// Subtraction assignment: exp--
+			if (expOp == PostfixExpression.Operator.DECREMENT) 
+				return fromFunctional(Assignment.Operator.MINUS_ASSIGN, pvp, Int.ONE);
+			
+			// Addition assignment: exp++
+			if (expOp == PostfixExpression.Operator.INCREMENT) 
+				return fromFunctional(Assignment.Operator.PLUS_ASSIGN, pvp, Int.ONE);
 		}
+		if (pvp.isLoopIterator()) return ExpressionRange.fromIteratorOf(
+				pvp.getEnclosingCanonicalLoop(), pvp.cacheRuntimeAddress(), pvp.getCondGen());
+		
+		// constant counting non-functional variable versions
+		final NavigableSet<PathVariablePlaceholder> prs = pvp.previousRuntimes();
+		if (prs.isEmpty()) throwTodoException("not initialized placeholder");
+		if (prs.size() != 1) throwTodoException("unsupported conditional placeholders");
+//		Elemental.consumeNonNull(nv-> ppvd.reversion(nv), ()-> pvd.getVersion().appendConstantCounting());
+		
+		Proposition asm = null;
+		final PathVariablePlaceholder ppvp = prs.first();
+		// Subtraction assignment: exp--
+		if (expOp == PostfixExpression.Operator.DECREMENT) 
+			asm = fromAssignment(pvp, (Expression) ppvp.subtract(Int.ONE));
+			
+		// Addition assignment: exp++
+		if (expOp == PostfixExpression.Operator.INCREMENT) 
+			asm = fromAssignment(pvp, (Expression) ppvp.add(Int.ONE));
 		
 		if (asm == null) throwTodoException("unsupported assignment");
 //		if (asm instanceof Equality) ((Equality) asm).setAssigned();

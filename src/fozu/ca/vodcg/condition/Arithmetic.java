@@ -11,6 +11,7 @@ import org.eclipse.cdt.core.dom.ast.IASTBinaryExpression;
 import org.eclipse.cdt.core.dom.ast.IASTUnaryExpression;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.PrefixExpression;
 
 import fozu.ca.DuoKeyMultiPartitionMap;
 import fozu.ca.DuoKeySetMultiPartitionMap;
@@ -278,19 +279,15 @@ public class Arithmetic extends Relation implements ArithmeticExpression {
 	/**
 	 * Non-assignments have NO side-effects of their own to propagate outwards.
 	 * 
-	 * @param exp - to be checked if it's a non-assignment
-	 * @param expOp
+	 * @param expOp - to be checked if it's a non-assignment
 	 * @param operand
-	 * @param scope
 	 * @return
 	 */
-	public static Arithmetic from(IASTUnaryExpression exp, int expOp, Expression operand) {
+	public static Arithmetic from(PrefixExpression.Operator expOp, Expression operand) {
 		
 		Operator op = null;
-		switch (expOp) {
-		case IASTUnaryExpression.op_minus:		op = Operator.Subtract; break;
-		case IASTUnaryExpression.op_plus:		op = Operator.Add; break;
-		}
+		if (expOp == PrefixExpression.Operator.MINUS) op = Operator.Subtract;
+		else if (expOp == PrefixExpression.Operator.PLUS) op = Operator.Add;
 		
 		return (op != null) ? new Arithmetic(op, operand) : null;
 	}

@@ -27,6 +27,7 @@ import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
 
+import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.condition.ArithmeticExpression;
 import fozu.ca.vodcg.condition.Equality;
@@ -446,10 +447,34 @@ public class Assignment extends SystemElement {
 		return false;
 	}
 	
+	@SuppressWarnings("removal")
 	public boolean isUnary() {
-		return asmAsm instanceof IASTUnaryExpression
-				? ASTAssignableComputer.isAssignment((IASTUnaryExpression) asmAsm) 
-				: false;
+		switch (asmAsm.getNodeType()) {
+		case ASTNode.CONSTRUCTOR_INVOCATION: 
+		case ASTNode.METHOD_INVOCATION: 
+			return ((MethodInvocation) asmAsm).arguments().size() == 1;
+		
+		case ASTNode.PREFIX_EXPRESSION:
+		case ASTNode.POSTFIX_EXPRESSION:
+			return true;
+
+		case ASTNode.ASSIGNMENT:
+		case ASTNode.BOOLEAN_LITERAL:
+		case ASTNode.CHARACTER_LITERAL:
+		case ASTNode.NULL_LITERAL:
+		case ASTNode.NUMBER_LITERAL:
+		case ASTNode.STRING_LITERAL:
+		case ASTNode.TYPE_LITERAL:
+		case ASTNode.NAME_QUALIFIED_TYPE: 
+		case ASTNode.MODULE_QUALIFIED_NAME: 
+		case ASTNode.QUALIFIED_NAME: 
+		case ASTNode.SIMPLE_NAME: 
+			return false;
+			
+		default:
+		}
+	
+		return DebugElement.throwTodoException("assignment");
 	}
 	
 	public boolean isBinary() {

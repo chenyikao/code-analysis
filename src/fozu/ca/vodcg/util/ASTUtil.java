@@ -27,6 +27,7 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.ParenthesizedExpression;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -320,19 +321,16 @@ public final class ASTUtil extends DebugElement {
 		case ASTNode.STRING_LITERAL:
 		case ASTNode.TYPE_LITERAL:
 			return true;
+		case ASTNode.PREFIX_EXPRESSION:
+			return isConstant(((PrefixExpression) exp).getOperand());
+		case ASTNode.POSTFIX_EXPRESSION:
+			return isConstant(((PostfixExpression) exp).getOperand());
+		case ASTNode.ASSIGNMENT:
+			return isConstant((Assignment) exp);
 		default:
-			return false;
 		}
 	
-		if (exp instanceof IASTUnaryExpression) return isConstant((IASTUnaryExpression) exp);
-		if (exp instanceof Assignment) return isConstant((Assignment) exp);
-		DebugElement.throwTodoException(toStringOf(exp));
-		return false;
-	}
-	
-	public static boolean isConstant(IASTUnaryExpression exp) {
-		if (exp == null) return true;
-		return isConstant(exp.getOperand());
+		return DebugElement.throwTodoException(toStringOf(exp));
 	}
 	
 	public static boolean isConstant(Assignment exp) {
@@ -1261,14 +1259,12 @@ public final class ASTUtil extends DebugElement {
 	 * @param exp
 	 * @return
 	 */
-	public static Expression unbracket(IASTUnaryExpression exp) {
+	public static Expression unbracket(Expression exp) {
 		// TODO: caching results
-		Expression ubExp = exp;
-		if (exp.getOperator() == IASTUnaryExpression.op_bracketedPrimary) {
-			ubExp = exp.getOperand();
-			if (ubExp instanceof IASTUnaryExpression) return unbracket((IASTUnaryExpression) ubExp);
+		if (exp.getNodeType() == ASTNode.PARENTHESIZED_EXPRESSION) {
+			return unbracket(((ParenthesizedExpression) exp).getExpression());
 		}
-		return ubExp;
+		return exp;
 	}
 	
 	
@@ -1312,15 +1308,36 @@ public final class ASTUtil extends DebugElement {
 	 * @return
 	 */
 	public static Name getNameOf(final Expression exp) {
-		if (exp instanceof Name) 
+		if (exp == null) return null;
+		
+		switch (exp.getNodeType()) {
+		case ASTNode.NAME_QUALIFIED_TYPE: 
+		case ASTNode.MODULE_QUALIFIED_NAME: 
+		case ASTNode.QUALIFIED_NAME: 
+		case ASTNode.SIMPLE_NAME: 
 			return getNameOf((Name) exp);
 		
-		else if (exp instanceof MethodInvocation) 
+		case ASTNode.CONSTRUCTOR_INVOCATION: 
+		case ASTNode.METHOD_INVOCATION: 
 			return getNameOf((MethodInvocation) exp);
 		
-		else if (exp instanceof IASTUnaryExpression) 
-			return getNameOf(((IASTUnaryExpression) exp).getOperand());
-		
+		case ASTNode.PREFIX_EXPRESSION:
+			return getNameOf(((PrefixExpression) exp).getOperand());
+		case ASTNode.POSTFIX_EXPRESSION:
+			return getNameOf(((PostfixExpression) exp).getOperand());
+
+		case ASTNode.ASSIGNMENT:
+		case ASTNode.BOOLEAN_LITERAL:
+		case ASTNode.CHARACTER_LITERAL:
+		case ASTNode.NULL_LITERAL:
+		case ASTNode.NUMBER_LITERAL:
+		case ASTNode.STRING_LITERAL:
+		case ASTNode.TYPE_LITERAL:
+			return null;
+			
+		default:
+		}
+	
 		return DebugElement.throwTodoException("unsupported expression");
 	}
 

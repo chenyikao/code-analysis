@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.dom.IASTIdExpression;
 import org.eclipse.jdt.core.dom.IASTInitializerClause;
 import org.eclipse.jdt.core.dom.IASTLiteralExpression;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.ParenthesizedExpression;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.IASTNameOwner;
@@ -254,43 +255,39 @@ public final class ASTAssignableComputer {
 		return isUnaryAssignment(exp) || isBinaryAssignment(exp);
 	}
 
-	public static boolean isAssignment(IASTUnaryExpression exp) {
-		final Expression ubExp = ASTUtil.unbracket(exp);
-		return ubExp == exp 
-				? isUnbracketedAssignment(exp) 
-				: isAssignment(ubExp);
+	public static boolean isAssignment(PrefixExpression exp) {
+		if (exp == null) return false;
+		
+		final PrefixExpression.Operator op = exp.getOperator();
+		return op.equals(PrefixExpression.Operator.DECREMENT) || op.equals(PrefixExpression.Operator.INCREMENT);
 	}
 	
-	public static boolean isLikeAssignment(Expression exp) {
-		return exp instanceof IASTUnaryExpression 
-				&& isLikeAssignment((IASTUnaryExpression) exp);
+	public static boolean isAssignment(PostfixExpression exp) {
+		if (exp == null) return false;
+		
+		final PostfixExpression.Operator op = exp.getOperator();
+		return op.equals(PostfixExpression.Operator.DECREMENT) || op.equals(PostfixExpression.Operator.INCREMENT);
 	}
 	
-	public static boolean isLikeAssignment(IASTUnaryExpression exp) {
-		final Expression ubExp = ASTUtil.unbracket(exp);
-		return ubExp == exp 
-				? isLikeUnbracketedAssignment(exp) 
-				: isLikeAssignment(ubExp);
-	}
-	
-	private static boolean isUnbracketedAssignment(IASTUnaryExpression exp) {
-		if (exp instanceof IASTUnaryExpression) 
-			switch (((IASTUnaryExpression) exp).getOperator()) {
-			case IASTUnaryExpression.op_postFixDecr	: return true;
-			case IASTUnaryExpression.op_postFixIncr	: return true;
-			case IASTUnaryExpression.op_prefixDecr	: return true;
-			case IASTUnaryExpression.op_prefixIncr	: return true;
-			};
-			return false;
-	}
-	
-	private static boolean isLikeUnbracketedAssignment(IASTUnaryExpression exp) {
-		if (exp instanceof IASTUnaryExpression) 
-			switch (((IASTUnaryExpression) exp).getOperator()) {
-			case IASTUnaryExpression.op_amper		: return true;	// assignment if passed-by-reference
-			};
-		return false;
-	}
+//	public static boolean isLikeAssignment(Expression exp) {
+//		return exp instanceof IASTUnaryExpression 
+//				&& isLikeAssignment((IASTUnaryExpression) exp);
+//	}
+//	
+//	public static boolean isLikeAssignment(IASTUnaryExpression exp) {
+//		final Expression ubExp = ASTUtil.unbracket(exp);
+//		return ubExp == exp 
+//				? isLikeUnbracketedAssignment(exp) 
+//				: isLikeAssignment(ubExp);
+//	}
+//	
+//	private static boolean isLikeUnbracketedAssignment(IASTUnaryExpression exp) {
+//		if (exp instanceof IASTUnaryExpression) 
+//			switch (((IASTUnaryExpression) exp).getOperator()) {
+//			case IASTUnaryExpression.op_amper		: return true;	// assignment if passed-by-reference
+//			};
+//		return false;
+//	}
 	
 
 	
@@ -491,9 +488,16 @@ public final class ASTAssignableComputer {
     
     
     
-    public static boolean isUnaryAssignment(ASTNode initializerOrClause) {
-        return (initializerOrClause instanceof IASTUnaryExpression) 
-                ? isAssignment((IASTUnaryExpression) initializerOrClause) : false;
+    public static boolean isUnaryAssignment(ASTNode node) {
+    		switch (node.getNodeType()) {
+    		case ASTNode.PREFIX_EXPRESSION:
+    			return isAssignment((PrefixExpression) node);
+    		case ASTNode.POSTFIX_EXPRESSION:
+    			return isAssignment((PostfixExpression) node);
+    		case ASTNode.PARENTHESIZED_EXPRESSION:
+    			return isUnaryAssignment(((ParenthesizedExpression) node).getExpression());
+    		}
+        return false;
     }
 
 //  public static boolean isUnaryAssigning(Name var) {
@@ -668,10 +672,6 @@ public final class ASTAssignableComputer {
 			// var (ID) must be at the top level of parameter (ID)
 			// (sub-) array reference (var[...]... or just ID var), not array content 
 			if (isArrayReferenceIn(lValue, varArg)) return true;
-			// &, 
-			if (varArg instanceof IASTUnaryExpression 
-					&& ((IASTUnaryExpression) varArg).getOperator() == IASTUnaryExpression.op_amper) 
-				return true;
 		}
 		
 		return false;

@@ -20,6 +20,9 @@ import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.ParenthesizedExpression;
+import org.eclipse.jdt.core.dom.PostfixExpression;
+import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.SwitchCase;
 import org.eclipse.jdt.core.dom.SwitchStatement;
@@ -850,33 +853,54 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 	
 	
 	
-	public static Proposition fromRecursively(IASTUnaryExpression exp, final ASTAddressable rtAddr, VODCondGen condGen) {
-		int unaryOp = exp.getOperator();
+	public static Proposition fromRecursively(ParenthesizedExpression exp, final ASTAddressable rtAddr, VODCondGen condGen) {
+		// (): (exp)
+		return fromRecursively(exp.getExpression(), rtAddr, condGen);
+//			
+//		// Star: *clause
+//		case IASTUnaryExpression.op_star: 
+//			return eOprd.toProposition();
+	}
+	
+	
+	
+	public static Proposition fromRecursively(PrefixExpression exp, final ASTAddressable rtAddr, VODCondGen condGen) {
+		PrefixExpression.Operator unaryOp = exp.getOperator();
 		org.eclipse.jdt.core.dom.Expression unaryOprd = exp.getOperand();
 		Expression eOprd = Expression.fromRecursively(unaryOprd, rtAddr, condGen);
 		assert eOprd != null;
 		
-		switch (unaryOp) {
-		// (): (clause)
-		case IASTUnaryExpression.op_bracketedPrimary: 
-		// Star: *clause
-		case IASTUnaryExpression.op_star: 
-			return eOprd.toProposition();
-			
 		// Not: !clause
-		case IASTUnaryExpression.op_not: 
+		if (unaryOp == PrefixExpression.Operator.NOT)
 //			e.setSideEffect(prop);
 			return eOprd.toProposition().not();
 			
-		default:
-			// Subtraction assignment: clause--, --clause
-			// Addition assignment: clause++, ++clause
-			if (eOprd instanceof PathVariablePlaceholder) {
-				final Proposition prop = Equality.from(
-						unaryOp, (PathVariablePlaceholder) eOprd);
-				if (prop != null) eOprd.andSideEffect(()-> prop);
-				return prop;
-			}
+		// Subtraction assignment: --exp
+		// Addition assignment: ++exp
+		if (eOprd instanceof PathVariablePlaceholder) {
+			final Proposition prop = Equality.from(
+					unaryOp, (PathVariablePlaceholder) eOprd);
+			if (prop != null) eOprd.andSideEffect(()-> prop);
+			return prop;
+		}
+		return returnTodoException("unsupported unary expression");
+	}
+	
+	
+	
+	public static Proposition fromRecursively(PostfixExpression exp, final ASTAddressable rtAddr, VODCondGen condGen) {
+		PostfixExpression.Operator unaryOp = exp.getOperator();
+		org.eclipse.jdt.core.dom.Expression unaryOprd = exp.getOperand();
+		Expression eOprd = Expression.fromRecursively(unaryOprd, rtAddr, condGen);
+		assert eOprd != null;
+		
+		// Subtraction assignment: exp--
+		// Addition assignment: exp++
+		if (eOprd instanceof PathVariablePlaceholder) {
+			final Proposition prop = Equality.from(
+					unaryOp, (PathVariablePlaceholder) eOprd);
+			if (prop != null) eOprd.andSideEffect(()-> prop);
+			return prop;
 		}
 		return returnTodoException("unsupported unary expression");
 	}

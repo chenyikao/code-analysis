@@ -43,6 +43,9 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.NullLiteral;
 import org.eclipse.jdt.core.dom.NumberLiteral;
+import org.eclipse.jdt.core.dom.ParenthesizedExpression;
+import org.eclipse.jdt.core.dom.PostfixExpression;
+import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
@@ -251,7 +254,7 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 				break;
 				
 			case ASTNode.PREFIX_EXPRESSION: 
-				e = fromRecursively((IASTUnaryExpression) exp, rtAddr, condGen);
+				e = fromRecursively((PrefixExpression) exp, rtAddr, condGen);
 				break;
 				
 			case ASTNode.ASSIGNMENT: 
@@ -473,34 +476,33 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 	
 	
 	private static Expression fromRecursively(
-			IASTUnaryExpression unary, final ASTAddressable rtAddr, VODCondGen condGen) 
+			ParenthesizedExpression unary, final ASTAddressable rtAddr, VODCondGen condGen) 
+					throws ASTException {
+		// (exp)
+		return fromRecursively(unary.getExpression(), rtAddr, condGen);
+//		
+//		/* *exp, original pointing level (dimension) is retrieved from 
+//		 * the referenced {@link Variable} during the construction of 
+//		 * {@link Version}.
+//		 */
+//					case IASTUnaryExpression.op_star: 
+//						return Pointer.pointFromRecursively(oprd, rtAddr, condGen);
+//						
+//						// &exp
+//					case IASTUnaryExpression.op_amper: 
+//						return Pointer.depointFromRecursively(oprd, rtAddr, condGen);
+	}
+	
+	private static Expression fromRecursively(
+			PrefixExpression unary, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
 		assert unary != null;
-		final int op = unary.getOperator();
+		final org.eclipse.jdt.core.dom.PrefixExpression.Operator op = unary.getOperator();
 		final org.eclipse.jdt.core.dom.Expression oprd = unary.getOperand();
 		
-		switch (op) {
-		// (exp)
-		case IASTUnaryExpression.op_bracketedPrimary:	
-			return fromRecursively(oprd, rtAddr, condGen);
-			
-		/* *exp, original pointing level (dimension) is retrieved from 
-		 * the referenced {@link Variable} during the construction of 
-		 * {@link Version}.
-		 */
-		case IASTUnaryExpression.op_star: 
-			return Pointer.pointFromRecursively(oprd, rtAddr, condGen);
-			
-		// &exp
-		case IASTUnaryExpression.op_amper: 
-			return Pointer.depointFromRecursively(oprd, rtAddr, condGen);
-			
-		// Subtraction asm: clause--, --clause
-		case IASTUnaryExpression.op_postFixDecr	: 
-		case IASTUnaryExpression.op_prefixDecr	: 
-		// Addition asm: clause++, ++clause
-		case IASTUnaryExpression.op_postFixIncr	: 
-		case IASTUnaryExpression.op_prefixIncr	: try {
+		// Subtraction asm: --exp
+		// Addition asm: ++exp
+		if (op == PrefixExpression.Operator.DECREMENT || op == PrefixExpression.Operator.INCREMENT) try {
 			final PathVariablePlaceholder pvd = 
 			PathVariablePlaceholder.from(Assignable.from(oprd, rtAddr, condGen));
 			return pvd.isDirectlyFunctional() ? pvd : Equality.from(op, pvd);
@@ -514,13 +516,39 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 			return throwTodoException(e);
 		}
 			
-		default:
-			// unary arithmetics
-			return Arithmetic.from(unary, op, 
-					fromRecursively(oprd, rtAddr, condGen));
-		}
+		// unary arithmetics
+		return Arithmetic.from(unary, op, 
+				fromRecursively(oprd, rtAddr, condGen));
 	}
 
+	private static Expression fromRecursively(
+			PostfixExpression unary, final ASTAddressable rtAddr, VODCondGen condGen) 
+					throws ASTException {
+		assert unary != null;
+		final org.eclipse.jdt.core.dom.PostfixExpression.Operator op = unary.getOperator();
+		final org.eclipse.jdt.core.dom.Expression oprd = unary.getOperand();
+		
+		// Subtraction asm: exp--
+		// Addition asm: exp++
+		if (op == PostfixExpression.Operator.DECREMENT || op == PostfixExpression.Operator.INCREMENT) try {
+			final PathVariablePlaceholder pvd = 
+					PathVariablePlaceholder.from(Assignable.from(oprd, rtAddr, condGen));
+			return pvd.isDirectlyFunctional() ? pvd : Equality.from(op, pvd);
+			// TODO? version-ing functional index
+//			Version<FunctionalPathVariable> ver = FunctionalIntInputVersion.from(lv);
+//			if (ver != null) {
+//				PathVariableDelegate.from(lv).reversion(ver); 
+//				return ver;
+//			}
+		} catch (Exception e) {
+			return throwTodoException(e);
+		}
+		
+		// unary arithmetics
+		return Arithmetic.from(unary, op, 
+				fromRecursively(oprd, rtAddr, condGen));
+	}
+	
 		
 
 	private static Expression fromRecursively(

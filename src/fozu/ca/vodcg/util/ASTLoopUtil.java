@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.dom.IASTInitializer;
 import org.eclipse.jdt.core.dom.IASTInitializerClause;
 import org.eclipse.jdt.core.dom.IASTLiteralExpression;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.ParenthesizedExpression;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -109,24 +110,31 @@ public final class ASTLoopUtil {
 	 * @param loop
 	 * @return
 	 */
+	@SuppressWarnings("removal")
 	public static org.eclipse.jdt.core.dom.Expression getSingleIteratorOf(ForStatement loop, Fragment location) {
-	    org.eclipse.jdt.core.dom.Expression lie = loop.getExpression();
-		if (lie instanceof IASTUnaryExpression) lie = ((IASTUnaryExpression) lie).getOperand();
-		
-		// binary incr-expr
-		else if (lie instanceof Assignment) {
-		    final Assignment bie = (Assignment) lie;
+		org.eclipse.jdt.core.dom.Expression lie = ASTUtil.unbracket(loop.getExpression());
+		switch (lie.getNodeType()) {
+		case ASTNode.PREFIX_EXPRESSION:
+			return ((PrefixExpression) lie).getOperand();
+
+		case ASTNode.POSTFIX_EXPRESSION:
+			return ((PostfixExpression) lie).getOperand();
+			
+		case ASTNode.ASSIGNMENT:
+			// binary incr-expr
+			final Assignment bie = (Assignment) lie;
 			final Assignment.Operator op = bie.getOperator();
 			if (op == Assignment.Operator.PLUS_ASSIGN            // var += incr
-			        || op == Assignment.Operator.MINUS_ASSIGN    // var -= incr
-			        || op == Assignment.Operator.ASSIGN) 
+					|| op == Assignment.Operator.MINUS_ASSIGN    // var -= incr
+					|| op == Assignment.Operator.ASSIGN) 
 				// 					var = var + incr
 				//					var = incr + var
 				// 					var = var - incr
-			    lie = bie.getLeftHandSide(); 
-			// else TODO
+				return bie.getLeftHandSide(); 
+			
+		default:
 		}
-		return lie;
+		return DebugElement.throwTodoException("loop");
 	}
 	
 	/**
