@@ -42,6 +42,7 @@ import org.eclipse.jdt.core.dom.ArrayAccess;
 import org.eclipse.jdt.core.dom.ChildListPropertyDescriptor;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.SwitchCase;
+import org.eclipse.jdt.core.dom.SwitchStatement;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.Comment;
 import org.eclipse.jdt.core.dom.DoStatement;
@@ -1153,10 +1154,10 @@ public final class ASTUtil extends DebugElement {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static IASTSwitchStatement getEnclosingSwitchStatementOf(Statement stat) {
+	public static SwitchStatement getEnclosingSwitchStatementOf(Statement stat) {
 		if (stat == null) DebugElement.throwNullArgumentException("AST statement");
-		return (IASTSwitchStatement) getAncestorOfAs(
-				stat, new Class[] {IASTSwitchStatement.class}, true);
+		return (SwitchStatement) getAncestorOfAs(
+				stat, new Class[] {SwitchStatement.class}, true);
 	}
 	
 
