@@ -14,6 +14,7 @@ import org.eclipse.jdt.core.dom.IASTDeclarator;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IASTFunctionCallExpression;
@@ -420,7 +421,7 @@ public class Assignment extends SystemElement {
 	
 
 	
-	public boolean contains(IASTNode node) {
+	public boolean contains(ASTNode node) {
 		return (asmAsm != null && asmAsm.contains(node))
 				|| (asmDcl != null && asmDcl.contains(node));
 	}
@@ -495,7 +496,7 @@ public class Assignment extends SystemElement {
 	/**
 	 * @return
 	 */
-	public IASTNode toASTNode() {
+	public ASTNode toASTNode() {
 		assert !(asmAsm != null && asmDcl != null);
 		if (asmDcl != null) return asmDcl;
 		if (asmAsm != null) return asmAsm;

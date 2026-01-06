@@ -286,8 +286,8 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 		assert node1 != node2;
 		int no1 = fl1.getNodeOffset(), no2 = fl2.getNodeOffset();
 		if (no1 == no2) {
-			final IASTNodeLocation[] ls1 = node1.getNodeLocations(), ls2 = node2.getNodeLocations();
-			assert ls1 != null && ls2 != null;
+//			final IASTNodeLocation[] ls1 = node1.getNodeLocations(), ls2 = node2.getNodeLocations();
+//			assert ls1 != null && ls2 != null;
 //			for (IASTNodeLocation l1 : ls1)
 //				for (IASTNodeLocation l2 : ls2)
 //					if (l1 instanceof IASTMacroExpansionLocation && l2 instanceof IASTMacroExpansionLocation) 
