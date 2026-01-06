@@ -28,6 +28,7 @@ import org.eclipse.jdt.core.dom.IParameter;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 
 import fozu.ca.DuoKeyMap;
@@ -663,7 +664,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 			// setting function body on demand
 			setBody(getBody(ASTUtil.getDescendantsOfAs(
 					ASTUtil.getWritingFunctionDefinitionOf(getASTName()).getBody(), 
-					IASTReturnStatement.class).iterator()));
+					ReturnStatement.class).iterator()));
 
 			if (body == null) throwTodoException("non-void return asked of empty body");
 //			body = VariablePlaceholder.fromNonAST(getName() + "_return", 
@@ -672,12 +673,12 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 		return body;
 	}
 
-	private Expression getBody(final Iterator<IASTReturnStatement> rit) {
+	private Expression getBody(final Iterator<ReturnStatement> rit) {
 		assert rit != null;
 		if (!rit.hasNext()) return null;
 		
 		final VODCondGen cg = getCondGen();
-		final IASTReturnStatement r = rit.next();
+		final ReturnStatement r = rit.next();
 		
 		initiateTraversalOf();
 		final Proposition rcond = Proposition.fromParentBranchCondition(r, null, cg);
