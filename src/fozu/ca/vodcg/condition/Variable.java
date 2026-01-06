@@ -16,6 +16,7 @@ import org.eclipse.cdt.core.dom.IName;
 import org.eclipse.cdt.core.dom.ast.IASTName;
 import org.eclipse.cdt.core.dom.ast.IVariable;
 import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.Statement;
 
 import fozu.ca.condition.SerialFormat;
@@ -80,7 +81,7 @@ public class Variable extends Referenceable {
 //		this(name, type, Function.getScopeOf(name));
 //	}
 	
-	protected Variable(IASTName name, IBinding bind, final ASTAddressable rtAddr, VODCondGen condGen) {
+	protected Variable(Name name, IBinding bind, final ASTAddressable rtAddr, VODCondGen condGen) {
 		super(name, bind, rtAddr, condGen);
 	}
 	
@@ -208,7 +209,7 @@ public class Variable extends Referenceable {
 	public boolean isParameter() {
 		if (isParam != null) return isParam;
 		
-		final IASTName cName = getASTName();
+		final Name cName = getASTName();
 		if (cName != null) {
 			final Assignable<?> def = Assignable.from(
 					ASTUtil.getDefinitionOf(cName), true, getCondGen());

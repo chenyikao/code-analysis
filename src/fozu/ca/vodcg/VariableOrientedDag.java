@@ -21,6 +21,7 @@ import org.eclipse.cdt.core.index.IndexFilter;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import fozu.ca.vodcg.condition.Proposition;
@@ -160,7 +161,7 @@ implements Comparable<VariableOrientedDag> {
 		if (vod.isMain()) return vod;
 		
 		// tail paths
-		final IASTName callerName = ASTUtil.getNameOf(vod.caller);
+		final Name callerName = ASTUtil.getNameOf(vod.caller);
 //		final IBinding hafBind = hafName.resolveBinding();
 //		TODO? while (true) {
 //		try {
@@ -208,7 +209,7 @@ implements Comparable<VariableOrientedDag> {
 		return vod;
 	}
 	
-	public static VariableOrientedDag from(IASTName callee, final ASTAddressable rtAddr, VODCondGen condGen) 
+	public static VariableOrientedDag from(Name callee, final ASTAddressable rtAddr, VODCondGen condGen) 
 			throws ASTException {
 		return from(Assignable.from(callee, rtAddr, condGen), condGen);
 	}

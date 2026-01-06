@@ -27,6 +27,7 @@ import org.eclipse.jdt.core.dom.IFunction;
 import org.eclipse.jdt.core.dom.IParameter;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 
 import fozu.ca.DuoKeyMap;
@@ -292,7 +293,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 			throws ASTException {
 		if (aav == null) return throwNullArgumentException("array access version");
 
-		final IASTName cName = aav.getASTName();
+		final Name cName = aav.getASTName();
 		final IBinding cBinding = cName.resolveBinding();
 		if (cBinding == null) throwTodoException("AST function definition is required!");
 		if (cBinding instanceof IFunction) throwTodoException("call other factory methods for IFunction");
@@ -381,8 +382,8 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 
 		// creating - set function body first if there's any body
 		if (f == null) {
-			if (cName instanceof IASTName) {
-				final IASTName astName = (IASTName) cName;
+			if (cName instanceof Name) {
+				final Name astName = (Name) cName;
 				if (ASTUtil.getEnclosingFunctionCallOf(astName) != null)
 					throwInvalidityException("function name instead of call name should be provided");
 				assert astName.resolveBinding() instanceof IFunction;

@@ -18,6 +18,7 @@ import org.eclipse.jdt.core.dom.IASTNodeSelector;
 import org.eclipse.jdt.core.dom.IASTPreprocessorPragmaStatement;
 import org.eclipse.jdt.core.dom.IASTTranslationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 import org.eclipse.cdt.core.index.IIndexName;
 import org.eclipse.core.runtime.CoreException;
@@ -169,9 +170,9 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 	
 
 
-	public static void bind(IASTName aname, IIndexName iname) {
-		INDEX_NAME_MAP.put(aname, iname);
-	}
+//	public static void bind(Name aname, IIndexName iname) {
+//		INDEX_NAME_MAP.put(aname, iname);
+//	}
 
 
 

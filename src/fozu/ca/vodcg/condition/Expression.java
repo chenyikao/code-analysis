@@ -369,7 +369,7 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 			final FieldAccess refExp, final ASTAddressable rtAddr, final VODCondGen condGen) 
 					throws ASTException {
 		assert refExp != null;
-		final IASTName refName = refExp.getFieldName();
+		final Name refName = refExp.getName();
 		final IBinding refBind = ASTUtil.getBindingOf(refName);
 		
 		// Non-boolean (non-binary) enum

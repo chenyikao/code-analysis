@@ -105,8 +105,8 @@ public final class ASTUtil extends DebugElement {
 
 	static final int prime = 31;
 	public static final int r_any = 
-			prime * (prime * (prime * IASTNameOwner.r_declaration 
-					+ IASTNameOwner.r_definition) + IASTNameOwner.r_reference) + IASTNameOwner.r_unclear;
+			prime * (prime * (prime /* IASTNameOwner.r_declaration 
+					+ IASTNameOwner.r_definition*/) /*+ IASTNameOwner.r_reference*/) /*+ IASTNameOwner.r_unclear*/;
 	
 	static final String MAIN_METHOD_NAME = "main";
 	
@@ -1285,10 +1285,10 @@ public final class ASTUtil extends DebugElement {
 				loc.getNodeOffset(), loc.getNodeLength(), refreshesIndex);
 	}
 	
-	public static Name getNameOf(final IASTNameOwner owner) {
-		if (owner == null) return null;
+	public static Name getNameOf(final VariableDeclaration vd) {
+		if (vd == null) return null;
 		
-		for (ASTNode child : ((ASTNode)owner).getChildren()) 
+		for (ASTNode child : ((ASTNode)vd).getChildren()) 
 			if (child instanceof Name) return (Name) child;
 		return null;
 	}
@@ -1342,10 +1342,10 @@ public final class ASTUtil extends DebugElement {
 //		final boolean hasRole = role != r_any;
 		int iRole;
 		switch (role) {
-		case IASTNameOwner.r_declaration:	iRole = IIndex.FIND_DECLARATIONS;		break;
-		case IASTNameOwner.r_definition:	iRole = IIndex.FIND_DEFINITIONS;		break;
-		case IASTNameOwner.r_reference:		iRole = IIndex.FIND_REFERENCES;			break;
-		case IASTNameOwner.r_unclear:		iRole = IIndex.FIND_POTENTIAL_MATCHES;	break;
+//		case IASTNameOwner.r_declaration:	iRole = IIndex.FIND_DECLARATIONS;		break;
+//		case IASTNameOwner.r_definition:	iRole = IIndex.FIND_DEFINITIONS;		break;
+//		case IASTNameOwner.r_reference:		iRole = IIndex.FIND_REFERENCES;			break;
+//		case IASTNameOwner.r_unclear:		iRole = IIndex.FIND_POTENTIAL_MATCHES;	break;
 		case r_any:
 		default:							iRole = IIndex.FIND_ALL_OCCURRENCES;
 		}

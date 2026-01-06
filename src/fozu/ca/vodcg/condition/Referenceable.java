@@ -299,8 +299,8 @@ implements ASTAddressable {
 	 */
 	protected boolean equalsWithoutLocality(SystemElement e2, boolean ignoresLocation) {
 		Referenceable refb2 = (Referenceable) e2;
-		if (cName != null && cName instanceof IASTName) 
-			return ASTUtil.equals((IASTName)cName, (IASTName)refb2.cName, 
+		if (cName != null && cName instanceof Name) 
+			return ASTUtil.equals((Name)cName, (Name)refb2.cName, 
 					ignoresLocation);
 		else if (name != null && type != null)
 			return name.equals(refb2.name) 
@@ -323,8 +323,8 @@ implements ASTAddressable {
 	 * @return
 	 */
 	protected List<Integer> hashCodeVarsWithLocality(boolean ignoresLocation) {
-		return Arrays.asList(cName != null && cName instanceof IASTName 
-				? ASTUtil.hashCodeOf((IASTName)cName, ignoresLocation) 
+		return Arrays.asList(cName != null && cName instanceof Name 
+				? ASTUtil.hashCodeOf((Name)cName, ignoresLocation) 
 				: (name != null ? name.hashCode() : 0), 
 				type != null ? type.hashCode() : 0);
 	}

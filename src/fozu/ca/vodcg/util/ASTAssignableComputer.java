@@ -217,8 +217,8 @@ public final class ASTAssignableComputer {
 	 * @param exp
 	 * @return
 	 */
-	public static IASTNameOwner getVariableNameOwnerOf(
-			final IASTUnaryExpression exp) {
+	public static VariableDeclaration getVariableNameOwnerOf(
+			final PrefixExpression exp) {
 		return (exp != null) ? getVariableNameOwnerOf(exp.getOperand()) : null;
 	}
 	

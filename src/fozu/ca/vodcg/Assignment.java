@@ -390,8 +390,8 @@ public class Assignment extends SystemElement {
 		    final org.eclipse.jdt.core.dom.Assignment asm = (org.eclipse.jdt.core.dom.Assignment) asmAsm;
 			asds.add(Assignable.from(
 					asm.getLeftHandSide(), null, cg));
-			for (IASTName rhsName : ASTUtil.getDescendantsOfAs(
-			        asm.getRightHandSide(), IASTName.class)) try {
+			for (Name rhsName : ASTUtil.getDescendantsOfAs(
+			        asm.getRightHandSide(), Name.class)) try {
 				final Assignable<?> rhs = Assignable.from(rhsName, null, cg);
 				/* rhsLv == this && asgm is binary 
 				 * => lv's not at lhs && lv's not unary-assigned
@@ -479,7 +479,7 @@ public class Assignment extends SystemElement {
 		return isUnary() || isBinary();
 	}
 	
-	public boolean isDirectlyAssignedTo(IASTName lhs) {
+	public boolean isDirectlyAssignedTo(Name lhs) {
 		return isDirect() 
 				&& (asmDcl != null
 				? ASTAssignableComputer.isDirectlyAssignedIn(lhs, asmDcl)

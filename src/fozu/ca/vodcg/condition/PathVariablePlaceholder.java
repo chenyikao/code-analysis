@@ -24,6 +24,7 @@ import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.IASTNameOwner;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IVariable;
 
@@ -313,17 +314,17 @@ implements Comparable<PathVariablePlaceholder>, Comparator<PathVariablePlacehold
 	/**
 	 * @param varBind
 	 * @param varName
-	 * @param varNameOwner
+	 * @param varDecl
 	 * @param condGen
 	 * @return null if missing bounded assignable's
 	 * @throws ASTException
 	 */
 	public static PathVariablePlaceholder from(IBinding varBind, 
-			Name varName, IASTNameOwner varNameOwner, final ASTAddressable rtAddr, VODCondGen condGen) 
+			Name varName, VariableDeclaration varDecl, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
 		try {
 			return applySkipNullThrow(asn-> from(asn), ()-> 
-			Assignable.from(varBind, varName, varNameOwner, rtAddr, condGen));
+			Assignable.from(varBind, varName, varDecl, rtAddr, condGen));
 			
 		} catch (ASTException e) {	// assignable may be un-resolvable!
 			return ASTUtil.throwASTException(varBind, e);
