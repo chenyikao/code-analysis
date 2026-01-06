@@ -40,6 +40,7 @@ import org.eclipse.jdt.core.dom.IASTLiteralExpression;
 import org.eclipse.jdt.core.dom.IASTUnaryExpression;
 import org.eclipse.jdt.core.dom.IEnumeration;
 import org.eclipse.jdt.core.dom.IEnumerator;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 
 import fozu.ca.Addressable;
 import fozu.ca.DuoKeyMultiPartitionMap;
@@ -655,7 +656,7 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 	 * @param scopeManager 
 	 * @return boolean constant following Java (TODO: C/C++) convention.
 	 */
-	public static Proposition from(IEnumerator enumerator) {
+	public static Proposition from(ITypeBinding enumerator) {
 		return (enumerator != null
 				&& (Boolean.parseBoolean(enumerator.getName())
 						|| Boolean.parseBoolean(enumerator.toString()))) 
@@ -825,11 +826,9 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 	 * @return
 	 */
 	public static Proposition fromRecursively(Name exp, final ASTAddressable rtAddr, VODCondGen condGen) {
-		IBinding idBind = ASTUtil.getNameOf(exp).resolveBinding();
-		if (idBind instanceof IEnumerator) {
-			IEnumerator idEnum = (IEnumerator) idBind;
-			if (ASTUtil.isBinary((IEnumeration) idEnum.getType())) 
-				return Proposition.from(idEnum);	// same as False.from(...)
+		ITypeBinding typeBind = ASTUtil.getNameOf(exp).resolveTypeBinding();
+		if (typeBind.isEnum() && ASTUtil.isBinary(typeBind)) {
+			return Proposition.from(typeBind);	// same as False.from(...)
 		}
 		return null;
 	}

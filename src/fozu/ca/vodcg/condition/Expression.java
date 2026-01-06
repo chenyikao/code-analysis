@@ -334,8 +334,8 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 		final IBinding nameBind = ASTUtil.getBindingOf(name);
 		
 		// Non-boolean (non-binary) enum
-		if (nameBind instanceof IEnumerator) 
-			return from((IEnumerator) nameBind, name.getFileLocation());
+		if (nameBind instanceof ITypeBinding) 
+			return from((ITypeBinding) nameBind, name.getFileLocation());
 	
 		// ID TODO: or other side-effect suitable's
 		final Expression e = PathVariablePlaceholder.from(nameBind, name, name, rtAddr, condGen);
@@ -383,8 +383,8 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 		final IBinding refBind = ASTUtil.getBindingOf(refName);
 		
 		// Non-boolean (non-binary) enum
-		if (refBind instanceof IEnumerator) 
-			return from((IEnumerator) refBind, refExp.getFileLocation());
+		if (refBind instanceof ITypeBinding) 
+			return from((ITypeBinding) refBind, refExp.getFileLocation());
 		
 		// ID TODO: or other side-effect suitable's
 		final Expression e = PathVariablePlaceholder.from(
