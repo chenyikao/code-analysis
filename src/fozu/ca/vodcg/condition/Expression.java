@@ -43,6 +43,7 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.NullLiteral;
 import org.eclipse.jdt.core.dom.NumberLiteral;
+import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 import org.eclipse.jdt.core.dom.TypeLiteral;
@@ -238,10 +239,6 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 				e = fromRecursively((Name) exp, rtAddr, condGen);
 				break;
 				
-			case ASTNode.NORMAL_ANNOTATION: 
-				e = fromRecursively((IASTTypeIdExpression) exp, condGen);
-				break;
-				
 			case ASTNode.BOOLEAN_LITERAL: 
 				e = Proposition.fromRecursively((BooleanLiteral) exp, rtAddr, condGen);
 				break;
@@ -250,6 +247,8 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 			case ASTNode.NUMBER_LITERAL: 
 			case ASTNode.STRING_LITERAL: 
 			case ASTNode.TYPE_LITERAL: 
+				e = fromRecursively((TypeLiteral) exp, condGen);
+				break;
 				
 			case ASTNode.PREFIX_EXPRESSION: 
 				e = fromRecursively((IASTUnaryExpression) exp, rtAddr, condGen);
@@ -350,13 +349,21 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 	
 	
 	
+	/**
+	 * The parsing of TypeLiteral has no side-effects.
+	 * 
+	 * @param idExp
+	 * @param condGen
+	 * @return
+	 * @throws ASTException
+	 */
 	private static Expression fromRecursively(
-			final IASTTypeIdExpression idExp, final VODCondGen condGen) 
+			final TypeLiteral idExp, final VODCondGen condGen) 
 					throws ASTException {
 		assert idExp != null;
 		switch (idExp.getOperator()) {
-		case IASTTypeIdExpression.op_sizeof:
-			return VODCondGen.getCLibraryFunction("sizeof_Void");
+//		case IASTTypeIdExpression.op_sizeof:
+//			return VODCondGen.getCLibraryFunction("sizeof_Void");
 		default:
 		}
 		return throwTodoException("unsupported Type ID expression: " 
@@ -458,22 +465,6 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 	 */
 	private static Expression fromRecursively(
 			final NullLiteral lit, final VODCondGen condGen) {
-		// TODO: void?
-		// TODO: this
-		return throwTodoException("unsupported literal");
-	}
-	
-	
-	
-	/**
-	 * The parsing of TypeLiteral has no side-effects.
-	 * 
-	 * @param lit
-	 * @param condGen
-	 * @return
-	 */
-	private static Expression fromRecursively(
-			final TypeLiteral lit, final VODCondGen condGen) {
 		// TODO: void?
 		// TODO: this
 		return throwTodoException("unsupported literal");
