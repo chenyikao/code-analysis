@@ -68,11 +68,11 @@ public class Variable extends Referenceable {
 		this.isParam = isParameter;
 	}
 	
-	protected Variable(IName name, PlatformType type, final ASTAddressable rtAddr, VODCondGen condGen) {
+	protected Variable(Name name, PlatformType type, final ASTAddressable rtAddr, VODCondGen condGen) {
 		super(name, type, rtAddr, condGen);
 	}
 	
-	protected Variable(IName name, final ASTAddressable rtAddr, VODCondGen condGen) {
+	protected Variable(Name name, final ASTAddressable rtAddr, VODCondGen condGen) {
 		this(name, (PlatformType) null, rtAddr, condGen);
 	}
 	

@@ -202,7 +202,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	 * @param fBinding
 	 * @param condGen
 	 */
-	private Function(IName fName, IMethodBinding fBinding, final ASTAddressable rtAddr, VODCondGen condGen) {
+	private Function(Name fName, IMethodBinding fBinding, final ASTAddressable rtAddr, VODCondGen condGen) {
 		this(fName, fBinding, ASTUtil.getDefinitionOf(fBinding), rtAddr, condGen);
 //		
 //		assert fName != null;
@@ -218,7 +218,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	 * @param definition
 	 * @param condGen
 	 */
-	private Function(IName cName, IMethodBinding cBinding, 
+	private Function(Name cName, IMethodBinding cBinding, 
 			MethodDeclaration definition, final ASTAddressable rtAddr, VODCondGen condGen) {
 		super(cName, cBinding, rtAddr, condGen);
 		
@@ -306,12 +306,12 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	}
 	
 	public static Function from(
-			IName cName, MethodDeclaration definition, final ASTAddressable rtAddr, VODCondGen condGen) {
+			Name cName, MethodDeclaration definition, final ASTAddressable rtAddr, VODCondGen condGen) {
 		return from(cName, null, definition, rtAddr, condGen);
 	}
 	
 	public static Function from(
-			IName cName, IMethodBinding cBinding, final ASTAddressable rtAddr, VODCondGen condGen) 
+			Name cName, IMethodBinding cBinding, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
 		return from(cName, cBinding, ASTUtil.getDefinitionOf(cBinding), rtAddr, condGen);
 	}
@@ -346,7 +346,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	 * @param condGen 
 	 * @return
 	 */
-	private static Function from(IName cName, IMethodBinding fBinding, 
+	private static Function from(Name cName, IMethodBinding fBinding, 
 			MethodDeclaration definition, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
 //		C_FUNCTIONS.clear();
@@ -447,7 +447,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	 * @param sideEffect
 	 * @return
 	 */
-	public FunctionCall<? extends Function> getCall(IName callName, 
+	public FunctionCall<? extends Function> getCall(Name callName, 
 			List<?> args, ConditionElement scope, Supplier<Proposition> sideEffect) {
 		return FunctionCall.from(
 				this, 
@@ -1353,7 +1353,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 		
 		// TODO? extracting arguments from caller function of callScope
 		final BooleanFunction bf = BooleanFunction.from(this, sideEffect);
-		final IName bfAstName = bf.getIName();
+		final Name bfAstName = bf.getIName();
 		final CallProposition cp = bfAstName != null
 				? bf.getCallProposition(bfAstName, null, callScope)
 				: bf.getCallProposition(bf.getName(), null, callScope);

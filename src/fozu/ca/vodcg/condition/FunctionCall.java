@@ -288,12 +288,12 @@ extends Reference<F> implements ArithmeticExpression {
 		return getSkipNull(()-> scope == null || scope.isGlobal());
 	}
 	
-	private static Boolean initGlobal(IName callName, final ConditionElement scope) {
+	private static Boolean initGlobal(Name callName, final ConditionElement scope) {
 		return getSkipNull(()-> (callName != null && ASTUtil.isGlobal(callName))
 				|| scope == null || scope.isGlobal());
 	}
 	
-	private void init(final CallProposition cp, final IName cn, final String cn2, 
+	private void init(final CallProposition cp, final Name cn, final String cn2, 
 			final List<?> args, final ConditionElement scope) 
 			throws ASTException {
 		if (cn == null && cn2 == null) throwNullArgumentException("call name");
@@ -366,7 +366,7 @@ extends Reference<F> implements ArithmeticExpression {
 	 * @return
 	 */
 	public static FunctionCall<? extends Function> from(Function f, 
-			IName callName, final List<?> args, ConditionElement scope, 
+			Name callName, final List<?> args, ConditionElement scope, 
 			Supplier<Proposition> sideEffect) 
 					throws ASTException {
 		return from(f, args, 

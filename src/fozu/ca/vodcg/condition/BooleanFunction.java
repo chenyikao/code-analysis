@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 
 import org.eclipse.cdt.core.dom.IName;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.Statement;
 
 import fozu.ca.DuoKeyMap;
@@ -236,7 +237,7 @@ implements VersionEnumerable<BooleanFunction> {
 	 * @return
 	 */
 	public FunctionCall<BooleanFunction> getCall(
-			IName callName, List<?> args, ConditionElement callScope) {
+			Name callName, List<?> args, ConditionElement callScope) {
 		return getCall(callScope, 
 				()-> new FunctionCall<>(this, callName, args, callScope));
 	}
@@ -253,7 +254,7 @@ implements VersionEnumerable<BooleanFunction> {
 	 * @return
 	 */
 	public CallProposition getCallProposition(
-			IName callName, List<?> args, ConditionElement callScope) {
+			Name callName, List<?> args, ConditionElement callScope) {
 		return getCall(callName, args, callScope).getCallProposition();
 	}
 	
