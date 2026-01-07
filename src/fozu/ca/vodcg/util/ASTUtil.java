@@ -404,7 +404,9 @@ public final class ASTUtil extends DebugElement {
 	}
 
 	public static boolean isParameter(Name id) {
-		return id.resolveBinding() instanceof IParameter;
+		final IBinding idBind = id.resolveBinding();
+		return idBind instanceof IVariableBinding
+				&& ((IVariableBinding) idBind).isParameter();
 	}
 	
 	

@@ -26,6 +26,7 @@ import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IFunction;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.IParameter;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
@@ -837,9 +838,9 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 		if (f == null) throwNullArgumentException("function");
 		
 		String id = f.getName();
-		IParameter[] fParams = f.getParameters();	// Varargs is ignored
+		ITypeBinding[] fParams = f.getParameterTypes();	// Varargs is ignored
 		if (fParams != null) 
-			for (IParameter fp : fParams) 
+			for (ITypeBinding fp : fParams) 
 				id += ("_" + DataType.from(fp.getType()).getID(null));
 				// AST language-based ID
 //				id += ("_" + ASTUtil.toID(fp.getType()));
