@@ -1201,9 +1201,9 @@ public final class ASTUtil extends DebugElement {
 		return new ASTReturnVisitor().findNextTo(node);
 	}
 	
-	private static class ASTReturnVisitor extends GenericAstVisitor {
+	private static class ASTReturnVisitor extends ASTVisitor {
 		private boolean hasFoundNode = false;
-		private boolean findsIn = false;
+//		private boolean findsIn = false;
 		private boolean findsNextTo = false;
 		private ASTNode n = null;
 		final private List<ReturnStatement> rs = new ArrayList<>();
@@ -1218,7 +1218,8 @@ public final class ASTUtil extends DebugElement {
 			
 			final MethodDeclaration f = getWritingFunctionDefinitionOf(node);
 			if (f == null) DebugElement.throwNullArgumentException("function child");
-			findsIn = true; n = node;
+//			findsIn = true; 
+			n = node;
 			f.accept(this);
 			return rs;
 		}
@@ -1235,24 +1236,27 @@ public final class ASTUtil extends DebugElement {
 		}
 		
 		@Override
-		protected int genericVisit(ASTNode node) {
-			if (node == n) hasFoundNode = true;
-			return PROCESS_CONTINUE;	// continue-ing to find r
+		public boolean preVisit2(ASTNode node) {
+			if (node == n) {
+				hasFoundNode = true;
+				return false;	// stop visiting children of n
+			}
+			return true;	// continue-ing to find n
 		}
 		
-		@Override
-		protected int genericLeave(ASTNode node) {
-			if (findsIn && node == n) return PROCESS_ABORT;
-			return PROCESS_CONTINUE;	// continue-ing to find r if findsNextTo
-		}
+//		@Override
+//		protected int genericLeave(ASTNode node) {
+//			if (findsIn && node == n) return PROCESS_ABORT;
+//			return PROCESS_CONTINUE;	// continue-ing to find r if findsNextTo
+//		}
 
 		@Override
-		public int visit(Statement statement) {
-			if (statement instanceof ReturnStatement && hasFoundNode) {
-				rs.add((ReturnStatement) statement);
-				if (findsNextTo) return PROCESS_ABORT;
+		public boolean visit(ReturnStatement statement) {
+			if (hasFoundNode) {
+				rs.add(statement);
+				if (findsNextTo) return false;	// stop visiting further
 			} 
-			return PROCESS_CONTINUE;	// continue-ing to find n
+			return true;	// continue-ing to find n
 		}
 	}
 	
