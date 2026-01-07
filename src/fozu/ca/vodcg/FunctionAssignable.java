@@ -97,7 +97,7 @@ public class FunctionAssignable extends Assignable<FunctionalPathVariable> {
 	}
 	
 	public Function getFunction() {
-		return Function.from((IFunction) getBinding(), cacheRuntimeAddress(), getCondGen());
+		return Function.from((IMethodBinding) getBinding(), cacheRuntimeAddress(), getCondGen());
 	}
 	
 	@Override

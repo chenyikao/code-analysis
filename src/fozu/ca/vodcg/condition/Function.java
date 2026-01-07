@@ -24,6 +24,7 @@ import org.eclipse.jdt.core.dom.IASTReturnStatement;
 import org.eclipse.jdt.core.dom.IASTStandardFunctionDeclarator;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IFunction;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.IParameter;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
@@ -172,7 +173,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	private Function(ArrayAccessVersion<?> aav) {
 		super(aav.getASTName(), aav.getCodomainType(), aav.getRuntimeAddress(), aav.getCondGen());
 		
-		assert !(aav.getASTName().resolveBinding() instanceof IFunction);
+		assert !(aav.getASTName().resolveBinding() instanceof IMethodBinding);
 		
 		setName(aav.getID(null));	// named by version ID, as part of the function ID
 		setParameters(()-> Parameter.from(
@@ -201,7 +202,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	 * @param fBinding
 	 * @param condGen
 	 */
-	private Function(IName fName, IFunction fBinding, final ASTAddressable rtAddr, VODCondGen condGen) {
+	private Function(IName fName, IMethodBinding fBinding, final ASTAddressable rtAddr, VODCondGen condGen) {
 		this(fName, fBinding, ASTUtil.getDefinitionOf(fBinding), rtAddr, condGen);
 //		
 //		assert fName != null;
@@ -217,7 +218,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	 * @param definition
 	 * @param condGen
 	 */
-	private Function(IName cName, IFunction cBinding, 
+	private Function(IName cName, IMethodBinding cBinding, 
 			MethodDeclaration definition, final ASTAddressable rtAddr, VODCondGen condGen) {
 		super(cName, cBinding, rtAddr, condGen);
 		
@@ -255,7 +256,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 
 
 	public static Function from(
-			IFunction cBinding, final ASTAddressable rtAddr, VODCondGen condGen) throws ASTException {
+			IMethodBinding cBinding, final ASTAddressable rtAddr, VODCondGen condGen) throws ASTException {
 		return from(
 				cBinding, 
 				ASTUtil.getDefinitionOf(cBinding),
@@ -279,8 +280,8 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 		if (call == null || condGen == null) return null;
 		final IBinding bind = ASTUtil.getNameOf(
 				call.getFunctionNameExpression()).resolveBinding();
-		return bind instanceof IFunction
-				? from((IFunction) bind, rtAddr, condGen)
+		return bind instanceof IMethodBinding
+				? from((IMethodBinding) bind, rtAddr, condGen)
 				: throwTodoException("unsupported call");
 	}
 	
@@ -297,7 +298,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 		final Name cName = aav.getASTName();
 		final IBinding cBinding = cName.resolveBinding();
 		if (cBinding == null) throwTodoException("AST function definition is required!");
-		if (cBinding instanceof IFunction) throwTodoException("call other factory methods for IFunction");
+		if (cBinding instanceof IMethodBinding) throwTodoException("call other factory methods for IFunction");
 
 		Function f = C_FUNCTIONS.get(cBinding);
 		if (f == null) C_FUNCTIONS.put(cBinding, f = new Function(aav));
@@ -310,13 +311,13 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	}
 	
 	public static Function from(
-			IName cName, IFunction cBinding, final ASTAddressable rtAddr, VODCondGen condGen) 
+			IName cName, IMethodBinding cBinding, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
 		return from(cName, cBinding, ASTUtil.getDefinitionOf(cBinding), rtAddr, condGen);
 	}
 	
 	public static Function from(
-			IFunction cBinding, MethodDeclaration definition, final ASTAddressable rtAddr, VODCondGen condGen) 
+			IMethodBinding cBinding, MethodDeclaration definition, final ASTAddressable rtAddr, VODCondGen condGen) 
 			throws ASTException {
 		return from(ASTUtil.getNameOf(definition), cBinding, definition, rtAddr, condGen);
 	}
@@ -345,7 +346,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	 * @param condGen 
 	 * @return
 	 */
-	private static Function from(IName cName, IFunction fBinding, 
+	private static Function from(IName cName, IMethodBinding fBinding, 
 			MethodDeclaration definition, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
 //		C_FUNCTIONS.clear();
@@ -387,7 +388,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 				final Name astName = (Name) cName;
 				if (ASTUtil.getEnclosingFunctionCallOf(astName) != null)
 					throwInvalidityException("function name instead of call name should be provided");
-				assert astName.resolveBinding() instanceof IFunction;
+				assert astName.resolveBinding() instanceof IMethodBinding;
 			}
 			
 			if (fBinding != null) 
@@ -832,7 +833,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	 * @param condGen
 	 * @return SMT language-based ID to cross C/C++ machines.
 	 */
-	public static String getID(IFunction f) {
+	public static String getID(IMethodBinding f) {
 		if (f == null) throwNullArgumentException("function");
 		
 		String id = f.getName();

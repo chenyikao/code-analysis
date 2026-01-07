@@ -20,6 +20,7 @@ import org.eclipse.cdt.core.index.IIndex;
 import org.eclipse.cdt.core.index.IndexFilter;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
@@ -86,7 +87,7 @@ implements Comparable<VariableOrientedDag> {
 		
 		final IVariableBinding calleeBind = callee.getBinding();
 		if (calleeBind != null) {
-			if (!(calleeBind instanceof IVariable || calleeBind instanceof IFunction)) 
+			if (!(calleeBind instanceof IVariable || calleeBind instanceof IMethodBinding)) 
 				throwTodoException("unsupported callee");
 			
 //			if (calleeBind instanceof IVariable) validTail = null;
@@ -325,7 +326,7 @@ implements Comparable<VariableOrientedDag> {
 	 * 	where arguments go prior to their function call.
 	 */
 	public int getCalleeCompletedLocation() {
-		final StructuralPropertyDescriptor loc = callee.getBinding() instanceof IFunction 
+		final StructuralPropertyDescriptor loc = callee.getBinding() instanceof IMethodBinding 
 				? ASTUtil.getAncestorOfAsUnless(callee.getTopNode(), 
 						ASTUtil.AST_FUNCTION_CALL_EXPRESSION,
 						ASTUtil.AST_STATEMENT_TYPE,

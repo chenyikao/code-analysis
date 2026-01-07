@@ -14,6 +14,7 @@ import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.IFunction;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.condition.FunctionCall;
@@ -55,7 +56,7 @@ public class FunctionalAssignable extends FunctionAssignable {
 				null, 
 				asnPv.getCondGen());
 		
-		if (asnPv.getBinding() instanceof IFunction) throwTodoException("non-virtual functional assignable");
+		if (asnPv.getBinding() instanceof IMethodBinding) throwTodoException("non-virtual functional assignable");
 	}
 	
 //	protected FunctionalAssignable(
