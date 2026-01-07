@@ -87,7 +87,7 @@ implements Comparable<VariableOrientedDag> {
 		
 		final IVariableBinding calleeBind = callee.getBinding();
 		if (calleeBind != null) {
-			if (!(calleeBind instanceof IVariable || calleeBind instanceof IMethodBinding)) 
+			if (!(calleeBind instanceof IVariableBinding || calleeBind instanceof IMethodBinding)) 
 				throwTodoException("unsupported callee");
 			
 //			if (calleeBind instanceof IVariable) validTail = null;

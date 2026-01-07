@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.IASTDeclarator;
 import org.eclipse.jdt.core.dom.IASTFileLocation;
+import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
@@ -299,7 +300,7 @@ implements Comparable<PathVariablePlaceholder>, Comparator<PathVariablePlacehold
 	 * @return
 	 */
 	public static PathVariablePlaceholder from(
-			IVariable var, fozu.ca.vodcg.condition.Function scope, VODCondGen condGen) 
+			ILocalVariable var, fozu.ca.vodcg.condition.Function scope, VODCondGen condGen) 
 					throws ASTException, IncomparableException, 
 					UncertainPlaceholderException, NoSuchVersionException {
 		if (scope == null) throwNullArgumentException("function scope");
