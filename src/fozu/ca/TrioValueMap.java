@@ -11,8 +11,7 @@ import java.util.Set;
  * @author Kao, Chen-yi
  *
  */
-@SuppressWarnings("deprecation")
-public class TrioValueMap<K, V1, V2, V3> implements Elemental {
+public class TrioValueMap<K, V1, V2, V3> extends Elemental {
 
 	final private Map<K, Trio<V1, V2, V3>> map = new HashMap<>();
 	
@@ -22,7 +21,8 @@ public class TrioValueMap<K, V1, V2, V3> implements Elemental {
 		return map.get(key);
 	}
 	
-	public V1 getValue1(K key) {
+	@SuppressWarnings("removal")
+    public V1 getValue1(K key) {
 		try {
 			return Elemental.getSkipNull(()-> get(key).getPeer1());
 		} catch (Exception e) {
@@ -30,7 +30,8 @@ public class TrioValueMap<K, V1, V2, V3> implements Elemental {
 		}
 	}
 	
-	public V2 getValue2(K key) {
+	@SuppressWarnings("removal")
+    public V2 getValue2(K key) {
 		try {
 			return Elemental.getSkipNull(()-> get(key).getPeer2());
 		} catch (Exception e) {
@@ -38,7 +39,8 @@ public class TrioValueMap<K, V1, V2, V3> implements Elemental {
 		}
 	}
 
-	public V3 getValue3(K key) {
+	@SuppressWarnings("removal")
+    public V3 getValue3(K key) {
 		try {
 			return Elemental.getSkipNull(()-> get(key).getPeer3());
 		} catch (Exception e) {

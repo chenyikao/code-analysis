@@ -72,7 +72,6 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 			public java.lang.String getID(SerialFormat format) {return "pt_";}
 		};
 		
-		@SuppressWarnings("removal")
 		public java.lang.String getID(SerialFormat format) {
 			return throwTodoException("unsupprted op");
 		}
@@ -114,7 +113,6 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 			}
 		}
 		
-		@SuppressWarnings("removal")
 		public <H extends Relation> java.lang.String toZ3SmtString(
 				H host, boolean printsVariableDeclaration, boolean printsFunctionDefinition) {
 			switch (this) {
@@ -218,7 +216,6 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 	 * @param condGen
 	 * @return
 	 */
-	@SuppressWarnings("removal")
 	public static Expression pointFromRecursively(
 			org.eclipse.jdt.core.dom.Expression starOperand, final ASTAddressable rtAddr, VODCondGen condGen) {
 		if (starOperand == null) return throwNullArgumentException("operand");
@@ -329,7 +326,7 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 		return getSkipNull(()-> getAssignable().getDependentLoops());
 	}
 
-	@SuppressWarnings({ "unchecked", "removal" })
+	@SuppressWarnings({ "unchecked" })
 	public VariablePlaceholder<PathVariable> getBeginningPlaceholder() {
 		final Expression pb = getPointingBeginning();
 		if (pb instanceof VariablePlaceholder) try {
@@ -342,7 +339,6 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 		return throwTodoException("unsupported pointing beginning");
 	}
 	
-	@SuppressWarnings("removal")
 	@Override
 	public java.lang.String getID(SerialFormat format) {
 //		if (format != null) switch (format) {
@@ -402,7 +398,6 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 	 * 	Pointer (int*) &v -> type(v) = int, type(&v) = int*
 	 * @see fozu.ca.vodcg.condition.Expression#getType()
 	 */
-	@SuppressWarnings("removal")
 	@Override
 	public PlatformType getType() {
 		if (isNull()) return PointerType.NULL_POINTER_TYPE;
@@ -457,7 +452,6 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 	 * 
 	 * @return
 	 */
-	@SuppressWarnings("removal")
 	public ArithmeticExpression getDepointFrom() {
 		switch ((Operator) getOp()) {
 		case POINT:		return throwTodoException("Supplying a pointing chain cache?");
@@ -478,7 +472,6 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 		return ps;
 	}
 	
-	@SuppressWarnings("removal")
 	public ArithmeticExpression getPointTo() {
 		if (getOp() == Operator.POINT) throwTodoException("Supplying a pointing chain cache?");
 		return (ArithmeticExpression) getFirstOperand();
@@ -509,7 +502,6 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 	/**
 	 * @return @NotNull beginning expression.
 	 */
-	@SuppressWarnings("removal")
 	public Expression getPointingBeginning() {
 		if (isNull()) return this;
 		
@@ -534,7 +526,6 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 	 * 	- {@code null} is left for {@link PointerType#pointToPrimitive(DataType)}.
 	 * @throws UnsupportedOperationException TODO
 	 */
-	@SuppressWarnings("removal")
 	public void pointTo(Expression addressable) throws UnsupportedOperationException {
 		if (isFinal()) throwTodoException("truly final?");
 		
@@ -549,7 +540,6 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 	 * 	- {@code null} is left for {@link PointerType#pointToPrimitive(DataType)}.
 	 * @throws UnsupportedOperationException TODO
 	 */
-	@SuppressWarnings("removal")
 	public void depointFrom(Expression addressable) throws UnsupportedOperationException {
 		if (isFinal()) throwTodoException("truly final?");
 		
@@ -800,7 +790,6 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 	
 	
 	@Override
-	@SuppressWarnings("removal")
 	protected Expression toConstantIf() {
 		return isNull()
 				? this		// PointerType.NULL
@@ -853,7 +842,6 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 	/**
 	 * @see fozu.ca.vodcg.condition.Relation#toZ3SmtString(boolean, boolean, boolean)
 	 */
-	@SuppressWarnings("removal")
 	@Override
 	public java.lang.String toZ3SmtString(
 			boolean printsVariableDeclaration, boolean printsFunctionDefinition, boolean isLhs) {
@@ -880,13 +868,11 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 				printsVariableDeclaration, printsFunctionDefinition);
 	}
 
-	@SuppressWarnings("removal")
 	@Override
 	public boolean isLoopIteratingIterator() {
 		return throwTodoException("unsupprted operation");
 	}
 
-	@SuppressWarnings("removal")
 	@Override
 	public boolean isLoopInitializedIterator() {
 		return throwTodoException("unsupprted operation");
@@ -900,7 +886,7 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 				e-> null);
 	}
 
-	@SuppressWarnings({ "removal", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	@Override
 	public Version<PathVariable> getVersion(FunctionallableRole role) {
 		return (Version<PathVariable>) get(()-> getBeginningPlaceholder().getVersion(role),
@@ -915,7 +901,7 @@ implements AssignableExpression, VersionEnumerable<PathVariable>	// TODO:, Funct
 				e-> null);
 	}
 
-	@SuppressWarnings({ "removal", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	@Override
 	public Version<PathVariable> peekVersion(ThreadRoleMatchable role) {
 		return (Version<PathVariable>) get(()-> getBeginningPlaceholder().peekVersion(role),

@@ -209,8 +209,8 @@ public class ParallelCondition extends Condition implements Addressable {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	protected <T> Set<? extends T> cacheDirectVariableReferences(Class<T> refType) {
-		if (refType == null) return throwNullArgumentException("reference type", ()-> Collections.emptySet());
+	protected <T> Set<T> cacheDirectVariableReferences(Class<T> refType) {
+		if (refType == null) return throwNullArgumentException("reference type");
 		
 		final Set<T> dvrs = new HashSet<>(super.cacheDirectVariableReferences(refType));
 		try {
@@ -352,18 +352,18 @@ public class ParallelCondition extends Condition implements Addressable {
 	
 	
 	
-	/**
-	 * @return Disjunction of sub-directive race conditions.
-	 */
-	public Proposition generateRaceAssertion() {
-		Proposition result = null;
-		for (OmpDirective dir : getDirectives()) {
-			Proposition dirRace = dir.generateRaceAssertion();
-			if (result == null) result = dirRace;
-			else if (dirRace != null) result = result.or(()-> dirRace);
-		}
-		return result;
-	}
+//	/**
+//	 * @return Disjunction of sub-directive race conditions.
+//	 */
+//	public Proposition generateRaceAssertion() {
+//		Proposition result = null;
+//		for (OmpDirective dir : getDirectives()) {
+//			Proposition dirRace = dir.generateRaceAssertion();
+//			if (result == null) result = dirRace;
+//			else if (dirRace != null) result = result.or(()-> dirRace);
+//		}
+//		return result;
+//	}
 
 
 

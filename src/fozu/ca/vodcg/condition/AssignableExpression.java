@@ -7,11 +7,10 @@ import org.eclipse.jdt.core.dom.Statement;
 
 import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
+import fozu.ca.vodcg.ASTException;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.AssignableElement;
 import fozu.ca.vodcg.Assignment;
-import fozu.ca.vodcg.ASTException;
-import fozu.ca.vodcg.IncomparableException;
 import fozu.ca.vodcg.ReenterException;
 import fozu.ca.vodcg.SystemElement;
 import fozu.ca.vodcg.condition.data.NumericExpression;
@@ -163,14 +162,15 @@ extends ArithmeticExpression, AssignableElement, ThreadPrivatizable {
 		getAssignable().isFunctional()));
 	}
 	
-	public default boolean isUnsigned() throws IncomparableException {
-		return getAsnNonNull(()-> 
-		getAssignable().isUnsigned());
-	}
+//	public default boolean isUnsigned() throws IncomparableException {
+//		return getAsnNonNull(()-> 
+//		getAssignable().isUnsigned());
+//	}
 	
 	/**
 	 * @return true only possibly if it's type is numeric. 
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public default Boolean isZero() 
 			throws ASTException {
@@ -212,13 +212,13 @@ extends ArithmeticExpression, AssignableElement, ThreadPrivatizable {
 	 * 
 	 * @see fozu.ca.condition.ArithmeticExpression#isPositive()
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	@Override
 	public default Boolean isPositive() throws ReenterException {
 		return trySkipNullException(
-				getMethod(AssignableExpression.class, "isPositive"),
+		        DebugElement.getMethod(AssignableExpression.class, "isPositive"),
 				// main return
-				()-> getAssignable().isUnsigned(),
+//				()-> getAssignable().isUnsigned(),
 				((NumericExpression) getAssigner())::isPositive,
 				ArithmeticExpression.super::isPositive);
 	}
@@ -229,11 +229,11 @@ extends ArithmeticExpression, AssignableElement, ThreadPrivatizable {
 	 * 
 	 * @fozu.caozu.ca.condition.ArithmeticExpression#isPositiveInfinity()
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	@Override
 	public default Boolean isPositiveInfinity() throws ReenterException {
 		return trySkipNullException(
-				getMethod(AssignableExpression.class, "isPositiveInfinity"),
+		        DebugElement.getMethod(AssignableExpression.class, "isPositiveInfinity"),
 				// main return
 				((NumericExpression) getAssigner())::isPositiveInfinity,
 				ArithmeticExpression.super::isPositiveInfinity);
@@ -261,11 +261,11 @@ extends ArithmeticExpression, AssignableElement, ThreadPrivatizable {
 	 * 
 	 *fozu.ca fozu.ca.condition.ArithmeticExpression#isNegative()
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	@Override
 	public default Boolean isNegative() throws ReenterException {
 		return trySkipNullException(
-				getMethod(AssignableExpression.class, "isNegative"),
+		        DebugElement.getMethod(AssignableExpression.class, "isNegative"),
 				// main return
 				()-> isSelfAssigned() ? ((NumericExpression) getAssigner()).isNegative() : null,
 				ArithmeticExpression.super::isNegative);
@@ -277,11 +277,11 @@ extends ArithmeticExpression, AssignableElement, ThreadPrivatizable {
 	 * 
 	fozu.caee fozu.ca.condition.ArithmeticExpression#isNegativeInfinity()
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	@Override
 	public default Boolean isNegativeInfinity() throws ReenterException {
 		return trySkipNullException(
-				getMethod(AssignableExpression.class, "isNegativeInfinity"),
+		        DebugElement.getMethod(AssignableExpression.class, "isNegativeInfinity"),
 				// main return
 				((NumericExpression) getAssigner())::isNegativeInfinity,
 				ArithmeticExpression.super::isNegativeInfinity);
@@ -289,12 +289,12 @@ extends ArithmeticExpression, AssignableElement, ThreadPrivatizable {
 	
 	
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	public default Boolean equals(AssignableExpression ae2) 
 			throws ReenterException {
 		if (ae2 == null) return SystemElement.throwNullArgumentException("assignable expression");
 		return trySkipNullException(
-				getMethod(AssignableExpression.class, "equals", AssignableExpression.class),
+		        DebugElement.getMethod(AssignableExpression.class, "equals", AssignableExpression.class),
 				// main return - initializer list elements share the same assignment but are not necessarily equal
 				()-> getAssignment() != ae2.getAssignment() ? false : null,
 				()-> ArithmeticExpression.super.equals(ae2));
@@ -316,6 +316,7 @@ extends ArithmeticExpression, AssignableElement, ThreadPrivatizable {
 		getAssignable().getPrivatizingBlock());
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public default <T> T throwUnsupportedException() {
 		return DebugElement.throwTodoException(

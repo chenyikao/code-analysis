@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import fozu.ca.Elemental;
+import fozu.ca.DebugElement;
 import fozu.ca.vodcg.ASTException;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.IncomparableException;
@@ -77,8 +77,9 @@ public class MutexAssignedVersion extends Version<PathVariable> {
 	
 //	static private final Method METHOD_TO_NON_EMPTY_STRING = 
 //			Elemental.getMethod(MutexAssignedVersion.class, "toNonEmptyString", boolean.class);
-	private static final Method METHOD_TO_Z3_SMT_STRING = 
-			Elemental.getMethod(MutexAssignedVersion.class, "toZ3SmtString", boolean.class, boolean.class, boolean.class);
+	@SuppressWarnings({ "removal", "deprecation" })
+    private static final Method METHOD_TO_Z3_SMT_STRING = 
+	        DebugElement.getMethod(MutexAssignedVersion.class, "toZ3SmtString", boolean.class, boolean.class, boolean.class);
 	
 	
 	
@@ -344,7 +345,6 @@ public class MutexAssignedVersion extends Version<PathVariable> {
 //					
 	}
 	
-	@SuppressWarnings("removal")
 	public PathVariablePlaceholder previousPlaceholder() 
 			throws IncomparableException {
 		try {
@@ -474,13 +474,14 @@ public class MutexAssignedVersion extends Version<PathVariable> {
 	/**
 	fozu.caee fozu.ca.condition.ConditionElement#toZ3SmtString()
 	 */
-	@SuppressWarnings({ "unchecked", "removal" })
+	@SuppressWarnings({ "unchecked" })
 	@Override
 	public String toZ3SmtString(boolean printsVariableDeclaration, boolean printsFunctionDefinition, boolean isLhs) {
 		if (printsVariableDeclaration) {
 			String decl = "";
 			for (Version<Variable> v : getDirectVariableReferences(Version.class)) {
-				final String subDecl = toZ3SmtDeclaration(equalsAssignable(v)
+				@SuppressWarnings("deprecation")
+                final String subDecl = toZ3SmtDeclaration(equalsAssignable(v)
 						? super.toZ3SmtString(true, printsFunctionDefinition, isLhs)		// default to print ID
 						: debugGet(()-> v.toZ3SmtString(true, printsFunctionDefinition, isLhs)));
 				if (!subDecl.isBlank()) decl += (subDecl + "\n");

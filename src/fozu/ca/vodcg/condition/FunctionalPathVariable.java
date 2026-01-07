@@ -3,17 +3,14 @@
  */
 package fozu.ca.vodcg.condition;
 
-import org.eclipse.jdt.core.dom.ArrayType;
-import org.eclipse.jdt.core.dom.ast.IASTArrayModifier;
 import org.eclipse.jdt.core.dom.ArrayAccess;
-import org.eclipse.jdt.core.dom.ast.IASTInitializerClause;
+import org.eclipse.jdt.core.dom.ArrayType;
 
 import fozu.ca.vodcg.ASTAddressable;
-import fozu.ca.vodcg.VODCondGen;
-import fozu.ca.vodcg.condition.data.ArrayPointer;
-import fozu.ca.vodcg.condition.data.PointerType;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.FunctionalAssignable;
+import fozu.ca.vodcg.VODCondGen;
+import fozu.ca.vodcg.condition.data.ArrayPointer;
 import fozu.ca.vodcg.condition.data.DataType;
 
 /**

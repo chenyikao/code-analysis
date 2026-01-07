@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import fozu.ca.Elemental;
+import fozu.ca.DebugElement;
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.SystemElement;
 import fozu.ca.vodcg.UncertainException;
@@ -31,8 +31,9 @@ extends ConditionElement implements SideEffectElement {
 
 //	private static final Map<And, Condition> CONDITIONS = new HashMap<>();
 	
-	private static final Method METHOD_REDUCE_ONCE = 
-			Elemental.getMethod(Condition.class, "reduceOnce");
+	@SuppressWarnings("removal")
+    private static final Method METHOD_REDUCE_ONCE = 
+	        DebugElement.getMethod(Condition.class, "reduceOnce");
 
 	private Supplier<Proposition> assertion = null;
 
@@ -175,7 +176,7 @@ extends ConditionElement implements SideEffectElement {
 	 * @return a non-null set
 	 */
 	@Override
-	protected <T> Set<? extends T> cacheDirectVariableReferences(Class<T> refType) {
+	protected <T> Set<T> cacheDirectVariableReferences(Class<T> refType) {
 		final Set<T> dvrs = new HashSet<>();
 		if (assertion != null) 
 			dvrs.addAll(assertion.get().cacheDirectVariableReferences(refType));

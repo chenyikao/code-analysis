@@ -12,8 +12,7 @@ import fozu.ca.MultiPartitionable.Key;
  * @author Kao, Chen-yi
  *
  */
-@SuppressWarnings("deprecation")
-public class MultiPartitionMap<K extends MultiPartitionable, V> implements Elemental {
+public class MultiPartitionMap<K extends MultiPartitionable, V> extends Elemental {
 
 	private final 
 	Map<Class<? extends Key>, Map<Key, MultiPartitionMap<K, V>>> 
@@ -31,7 +30,7 @@ public class MultiPartitionMap<K extends MultiPartitionable, V> implements Eleme
 	 * @param pk
 	 * @return non-null multi-partition map for non-null {@code pk}
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "removal" })
 	protected <PM extends Map<Key, MultiPartitionMap<K, V>>> 
 	MultiPartitionMap<K, V> getMap(MultiPartitionable.Key pk) {
 		if (pk == null) return null;

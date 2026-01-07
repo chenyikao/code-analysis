@@ -16,19 +16,15 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.eclipse.jdt.core.dom.IASTDeclarator;
-import org.eclipse.jdt.core.dom.IASTFileLocation;
-import org.eclipse.jdt.core.ILocalVariable;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.dom.ForStatement;
+import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
-import org.eclipse.jdt.core.dom.IASTNameOwner;
 import org.eclipse.jdt.core.dom.Statement;
-import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
-import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.jdt.core.dom.IVariable;
 
+import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.ASTException;
@@ -72,22 +68,26 @@ public class PathVariablePlaceholder
 extends VariablePlaceholder<PathVariable>
 implements Comparable<PathVariablePlaceholder>, Comparator<PathVariablePlaceholder> {
 
-	static private final Method METHOD_CACHE_SCOPE = 
-			Elemental.getMethod(PathVariablePlaceholder.class, "cacheScope");
+	@SuppressWarnings("removal")
+    static private final Method METHOD_CACHE_SCOPE = 
+	        DebugElement.getMethod(PathVariablePlaceholder.class, "cacheScope");
 //	private static final Method METHOD_GET_THREAD_ROLE = 
 //			Elemental.getMethod(PathVariablePlaceholder.class, "getThreadRole");
 //	static private final Method METHOD_GET_VARIABLE_REFERENCES = 
 //			Elemental.getMethod(PathVariablePlaceholder.class, "getVariableReferences");
-	static private final Method METHOD_GET_VERSION = 
-			Elemental.getMethod(PathVariablePlaceholder.class, "getVersion");
-	static private final Method METHOD_DETERMINE_VERSION = 
-			Elemental.getMethod(PathVariablePlaceholder.class, "determineASTVersion", Assignable.class, Statement.class, FunctionallableRole.class, Version.class);
+	@SuppressWarnings("removal")
+    static private final Method METHOD_GET_VERSION = 
+	        DebugElement.getMethod(PathVariablePlaceholder.class, "getVersion");
+	@SuppressWarnings("removal")
+    static private final Method METHOD_DETERMINE_VERSION = 
+	        DebugElement.getMethod(PathVariablePlaceholder.class, "determineASTVersion", Assignable.class, Statement.class, FunctionallableRole.class, Version.class);
 //	static private final Method METHOD_FROM = 
 //			Elemental.getMethod(PathVariablePlaceholder.class, "from", Assignable.class);
 //	static private final Method METHOD_TO_PROPOSITION = 
 //			Elemental.getMethod(PathVariablePlaceholder.class, "toProposition");
-	static private final Method METHOD_TO_NON_EMPTY_STRING = 
-			Elemental.getMethod(PathVariablePlaceholder.class, "toNonEmptyString", boolean.class);
+	@SuppressWarnings("removal")
+    static private final Method METHOD_TO_NON_EMPTY_STRING = 
+	        DebugElement.getMethod(PathVariablePlaceholder.class, "toNonEmptyString", boolean.class);
 
 	private static final Map<Assignable<?>, PathVariablePlaceholder> 
 	AST_PV_PLACEHOLDERS = new HashMap<>();
@@ -293,24 +293,24 @@ implements Comparable<PathVariablePlaceholder>, Comparator<PathVariablePlacehold
 		return from(Assignable.from(svDeclaration, rtAddr, condGen));
 	}
 	
-	/**
-	 * @param var
-	 * @param scope - pre-cached function scope for some function parameter var
-	 * @param condGen 
-	 * @return
-	 */
-	public static PathVariablePlaceholder from(
-			ILocalVariable var, fozu.ca.vodcg.condition.Function scope, VODCondGen condGen) 
-					throws ASTException, IncomparableException, 
-					UncertainPlaceholderException, NoSuchVersionException {
-		if (scope == null) throwNullArgumentException("function scope");
-		
-		final Name varAst = ASTUtil.getNameOfFrom(var, scope.getIName());
-		// var != null && varAst == null => var is in external libraries
-		return varAst == null 
-				? from(Assignable.from(var, condGen)) 
-				: from(Assignable.from(varAst, scope.getRuntimeAddress(), condGen));
-	}
+//	/**
+//	 * @param var
+//	 * @param scope - pre-cached function scope for some function parameter var
+//	 * @param condGen 
+//	 * @return
+//	 */
+//	public static PathVariablePlaceholder from(
+//			ILocalVariable var, fozu.ca.vodcg.condition.Function scope, VODCondGen condGen) 
+//					throws ASTException, IncomparableException, 
+//					UncertainPlaceholderException, NoSuchVersionException {
+//		if (scope == null) throwNullArgumentException("function scope");
+//		
+//		final Name varAst = ASTUtil.getNameOfFrom(var, scope.getIName());
+//		// var != null && varAst == null => var is in external libraries
+//		return varAst == null 
+//				? from(Assignable.from(var, condGen)) 
+//				: from(Assignable.from(varAst, scope.getRuntimeAddress(), condGen));
+//	}
 	
 	/**
 	 * @param varBind
@@ -324,8 +324,9 @@ implements Comparable<PathVariablePlaceholder>, Comparator<PathVariablePlacehold
 			Name varName, VariableDeclaration varDecl, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
 		try {
-			return applySkipNullThrow(asn-> from(asn), ()-> 
-			Assignable.from(varBind, varName, varDecl, rtAddr, condGen));
+			return applySkipNullThrow(
+					asn-> from(asn), 
+					()-> Assignable.from(varBind, varName, varDecl, rtAddr, condGen));
 			
 		} catch (ASTException e) {	// assignable may be un-resolvable!
 			return ASTUtil.throwASTException(varBind, e);
@@ -598,7 +599,7 @@ implements Comparable<PathVariablePlaceholder>, Comparator<PathVariablePlacehold
 
 	
 	@Override
-	public Version<? extends PathVariable> getVersion() 
+	public Version<PathVariable> getVersion() 
 			throws ReenterException, IncomparableException, UncertainPlaceholderException {
 		if (reversioning != null) try {
 			debugCallDepth(()-> guardThrow(()-> 
@@ -612,11 +613,12 @@ implements Comparable<PathVariablePlaceholder>, Comparator<PathVariablePlacehold
 		return super.getVersion();
 	}
 	
-	@Override
-	public Version<? extends PathVariable> getVersion(FunctionallableRole role) 
+	@SuppressWarnings("unchecked")
+    @Override
+	public Version<PathVariable> getVersion(FunctionallableRole role) 
 			throws ReenterException, IncomparableException, UncertainPlaceholderException {
 		final Assignable<?> asn = getAssignable();
-		return get(()-> {
+		return (Version<PathVariable>) get(()-> {
 			if (isFunctional()) return FunctionalVersion.from(asn, role, getDependentLoops());
 			
 			if (isArray()) {
@@ -624,7 +626,6 @@ implements Comparable<PathVariablePlaceholder>, Comparator<PathVariablePlacehold
 				if (asn.isDirectiveLocal()) return super.getVersion(role);	
 
 				// a_master[i_thread1]
-				@SuppressWarnings("unchecked")
 				ArrayAccessVersion<PathVariable> mv = (ArrayAccessVersion<PathVariable>) determineASTVersion(asn, null, ThreadRole.MASTER, null);
 				mv = mv.cloneReversion(null, role, mv);
 //				mv.matchArgumentsTo(mv.getArguments(), role);
@@ -727,7 +728,7 @@ implements Comparable<PathVariablePlaceholder>, Comparator<PathVariablePlacehold
 			/* Parsing assignments returns variables/pointers directly
 			 * and side-effects are better for scopes?
 			 */
-			scope = Proposition.fromRecursively(asn.getFirstClause(), cacheRuntimeAddress(), getCondGen());
+			scope = Proposition.fromRecursively(asn.getVariableDeclaration(), cacheRuntimeAddress(), getCondGen());
 
 		} catch (Exception e) {
 			throwTodoException(e);
@@ -743,9 +744,8 @@ implements Comparable<PathVariablePlaceholder>, Comparator<PathVariablePlacehold
 
 	
 	
-	@SuppressWarnings("unchecked")
 	@Override
-	protected <T> Set<? extends T> cacheDirectVariableReferences(
+	protected <T> Set<T> cacheDirectVariableReferences(
 			Class<T> refType) {
 		return guard(
 				()-> (Set<T>) super.cacheDirectVariableReferences(refType),
@@ -772,7 +772,7 @@ implements Comparable<PathVariablePlaceholder>, Comparator<PathVariablePlacehold
 	
 	
 	@Override
-	public StructuralPropertyDescriptor getFileLocation() {
+	public IPath getFileLocation() {
 		return getAssignable().getFileLocation();
 	}
 	

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
 import fozu.ca.condition.SerialFormat;
 import fozu.ca.solver.CarryInRangeDegrader;
@@ -34,8 +35,9 @@ import fozu.ca.vodcg.condition.data.Pointer;
 public class VODConditions 
 extends ConditionElement implements SideEffectElement {
 
-	private static final Method METHOD_REDUCE_ONCE = 
-			Elemental.getMethod(VODConditions.class, "reduceOnce");
+	@SuppressWarnings({ "deprecation", "removal" })
+    private static final Method METHOD_REDUCE_ONCE = 
+	        DebugElement.getMethod(VODConditions.class, "reduceOnce");
 
 	private ParallelCondition paraCond;
 	private PathCondition pathCond;
@@ -124,7 +126,7 @@ extends ConditionElement implements SideEffectElement {
 
 	
 
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
     @Override
 	public String getIDSuffix(SerialFormat format) {
 		return get(()-> getParallelCondition().getIDSuffix(format),
@@ -257,7 +259,7 @@ extends ConditionElement implements SideEffectElement {
 	
 	
 	
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
     public <T extends SideEffectElement> VODConditions and(T newSe) {
 		if (newSe instanceof VODConditions) 			return and((VODConditions) newSe);
 		else if (newSe instanceof ParallelCondition) 	return and((ParallelCondition) newSe);
@@ -344,13 +346,13 @@ extends ConditionElement implements SideEffectElement {
 	 * 
 	 * @return
 	 */
-	@SuppressWarnings("removal")
-    public VODConditions addFrom(Supplier<VODConditions> seSup, SideEffectElement seContainer) 
+	public VODConditions addFrom(Supplier<VODConditions> seSup, SideEffectElement seContainer) 
 	throws UncertainException, UncertainPlaceholderException {
 		if (seContainer != null && seContainer.suitsSideEffect()) {
 			if (seSup == null) throwNullArgumentException("side-effect supplier");
 //			final VODConditions se = seSup.get();
-			final VODConditions se = debugGet(seSup);
+			@SuppressWarnings("deprecation")
+            final VODConditions se = debugGet(seSup);
 			if (se != null) add(se);
 		}
 		return this;
@@ -379,7 +381,7 @@ extends ConditionElement implements SideEffectElement {
 	
 
 	
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
     public <T extends SideEffectElement> void or(T newSe) {
 		if (newSe instanceof VODConditions) or((VODConditions) newSe);
 		else throwTodoException("unsupported side-effect");
@@ -424,8 +426,7 @@ extends ConditionElement implements SideEffectElement {
 	
 
 	
-	@SuppressWarnings("removal")
-    public VODConditions not() {
+	public VODConditions not() {
 		try {
 			final ParallelCondition para2 = Elemental.getSkipNull(()-> (ParallelCondition) paraCond.clone());
 			final PathCondition path2 = Elemental.getSkipNull(()-> (PathCondition) pathCond.clone());
@@ -458,8 +459,7 @@ extends ConditionElement implements SideEffectElement {
 	
 	
 	
-	@SuppressWarnings("removal")
-    @Override
+	@Override
 	protected Boolean cacheConstant() {
 		try {
 			return testsSkipNull(()->

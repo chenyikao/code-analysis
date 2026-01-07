@@ -4,11 +4,11 @@
 package fozu.ca.vodcg.condition;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.IASTInitializerClause;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.Statement;
 
@@ -89,12 +89,65 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	 * @param condGen
 	 * @return an increment map of <incrementor, increment>
 	 */
-	@SuppressWarnings("unchecked")
-    public static ArithmeticExpression fromIncrementOf(ForStatement loop, Expression initializer, final ASTAddressable runTimeAddr, VODCondGen condGen) {
-	    return ASTLoopUtil.getIncrementOf(loop, initializer, runTimeAddr, condGen);
+	@SuppressWarnings({ "unchecked", "removal" })
+    public static ArithmeticExpression fromIncrementOf(ForStatement loop, final ASTAddressable runTimeAddr, VODCondGen condGen) {
+		if (loop == null) DebugElement.throwNullArgumentException("loop");
+		
+		final List<org.eclipse.jdt.core.dom.Expression> initializers = loop.initializers();
+	    return initializers.size() == 1 
+	    		? ASTLoopUtil.getIncrementOf(loop, initializers.get(0), runTimeAddr, condGen)
+	    		: DebugElement.throwTodoException(
+	    				"unsupported multiple initializers: " + initializers);
 	}
 		
 	
+    /**<pre>
+     *      incr-expr   One of the following:
+     *                  ++var
+     *                  var++
+     *                  --var
+     *                  var--
+     *                  var += incr
+     *                  var -= incr
+     *                  var = var + incr
+     *                  var = incr + var
+     *                  var = var - incr
+     * 
+     *      var         One of the following:
+     *                      A variable of a signed or unsigned integer type.
+     *                      TODO: For C++, a variable of a random access iterator type.
+     *                      TODO: For C, a variable of a pointer type.
+     *                  If this variable would otherwise be shared, it is implicitly made private in the
+     *                  loop construct. This variable must not be modified during the execution of the
+     *                  for-loop other than in incr-expr. Unless the variable is specified lastprivate
+     *                  or linear on the loop construct, its value after the loop is unspecified.
+     * 
+     *      incr        A loop invariant integer expression.
+     * <br>
+     * 
+     * @param loop
+     * @param sideEffect 
+     * @param condGen 
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static ArithmeticExpression fromCanonicalIncrementOf(ForStatement loop, final ASTAddressable dynaAddr, VODCondGen condGen) {
+        if (ASTLoopUtil.isNonCanonical(loop)) return null;
+        
+        final org.eclipse.jdt.core.dom.Expression init = ((List<org.eclipse.jdt.core.dom.Expression>) loop.initializers()).get(0);
+        ArithmeticExpression incr = ASTLoopUtil.getIncrementOf(
+                loop, init, dynaAddr, condGen);
+        if (incr == null) {
+            ArithmeticExpression e = ArithmeticExpression.fromIncrementOf(loop, dynaAddr, condGen);
+            incr = (e instanceof Int) ? (Int) e : null; // type-checking
+            
+            if (incr == null) ASTLoopUtil.setNonCanonical(loop);
+            else ASTLoopUtil.setIncrementOf(loop, init, incr);
+        }
+        return incr;
+    }
+    
+    
 	/**
 	 * TODO: handling non-canonical loops.
 	 * 
@@ -124,7 +177,7 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 		ArithmeticExpression lb = null, ub = null; 
 		Expression ibe = Expression.fromRecursively(ib, rtAddr, condGen), 
 				tbe = Expression.fromRecursively(tb, rtAddr, condGen); 
-		final Int incr = Int.fromCanonicalIncrementOf(loop, rtAddr, condGen);
+		final ArithmeticExpression incr = fromCanonicalIncrementOf(loop, rtAddr, condGen);
 		final InfixExpression.Operator tbOp = ASTLoopUtil.getCanonicalTestOperatorToVarOf(loop, condGen);
 		OrderRelation.Operator orOp;
 		
@@ -349,12 +402,12 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 		return ThreadRoleMatchable.super.isPrivate();
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "removal" })
 	@Override
 	public default Boolean isNegativeInfinity() 
 			throws ReenterException {
 		return trySkipNullException(
-				getMethod(ArithmeticExpression.class, "isNegativeInfinity"),
+		        DebugElement.getMethod(ArithmeticExpression.class, "isNegativeInfinity"),
 				NumericExpression.super::isNegativeInfinity,
 				// main return
 				()-> getZero().subtract(this).isPositiveInfinity());
@@ -421,7 +474,7 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	
 
 	
-	@SuppressWarnings({ "unchecked", "removal" })
+	@SuppressWarnings({ "unchecked" })
 	public default ArithmeticExpression subtract(ArithmeticExpression subtrahend) 
 			throws ReenterException {
 		if (subtrahend == null) Elemental.throwNullArgumentException("subtrahend");
@@ -464,7 +517,7 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	 * @param subtrahend
 	 * @return aRest if this is at + aRest and at == subtrahend.
 	 */
-	@SuppressWarnings({ "unlikely-arg-type", "removal" })
+	@SuppressWarnings({ "unlikely-arg-type" })
 	public default ArithmeticExpression subtractByAugend(ArithmeticExpression subtrahend) {
 		if (subtrahend == null) Elemental.throwNullArgumentException("subtrahend");
 
@@ -645,8 +698,7 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	}
 	
 	@Override
-	@SuppressWarnings("removal")
-    public default Expression negate() 
+	public default Expression negate() 
 			throws ReenterException, UnsupportedOperationException {
 		try {
 		final Expression result = NumericExpression.super.negate();
@@ -682,8 +734,7 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	
 	
 	
-	@SuppressWarnings("removal")
-    public default <T> T throwNullArithmeticException(String message) {
+	public default <T> T throwNullArithmeticException(String message) {
 		if (message == null) message = "arithmetic expression";
 		return Elemental.throwNullArgumentException(message);
 //		TODO: throw new NullArithmeticException(); super("null Arithmetic");

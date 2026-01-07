@@ -13,10 +13,12 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.BooleanLiteral;
 import org.eclipse.jdt.core.dom.DoStatement;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.Name;
@@ -28,21 +30,9 @@ import org.eclipse.jdt.core.dom.SwitchCase;
 import org.eclipse.jdt.core.dom.SwitchStatement;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.WhileStatement;
-import org.eclipse.jdt.core.dom.Assignment.Operator;
-import org.eclipse.jdt.core.dom.Block;
-import org.eclipse.jdt.core.dom.BooleanLiteral;
-import org.eclipse.jdt.core.dom.IASTBinaryExpression;
-import org.eclipse.jdt.core.dom.IASTCompoundStatement;
-import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
-import org.eclipse.jdt.core.dom.IASTIdExpression;
-import org.eclipse.jdt.core.dom.IASTInitializerClause;
-import org.eclipse.jdt.core.dom.IASTLiteralExpression;
-import org.eclipse.jdt.core.dom.IASTUnaryExpression;
-import org.eclipse.jdt.core.dom.IEnumeration;
-import org.eclipse.jdt.core.dom.IEnumerator;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 
 import fozu.ca.Addressable;
+import fozu.ca.DebugElement;
 import fozu.ca.DuoKeyMultiPartitionMap;
 import fozu.ca.DuoKeySetMultiPartitionMap;
 import fozu.ca.Elemental;
@@ -53,7 +43,6 @@ import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.Assignment;
 import fozu.ca.vodcg.SystemElement;
 import fozu.ca.vodcg.VODCondGen;
-import fozu.ca.vodcg.condition.Expression;
 import fozu.ca.vodcg.condition.FunctionCall.CallProposition;
 import fozu.ca.vodcg.condition.ReductionOperations.ReductionOctet;
 import fozu.ca.vodcg.condition.data.ArithmeticGuard;
@@ -395,9 +384,11 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 	
 	private static final int PROP_CALL_DEPTH = 200;
 	
-	private final static Method METHOD_FROM = Elemental.getMethod(Proposition.class, 
+	@SuppressWarnings("removal")
+    private final static Method METHOD_FROM = DebugElement.getMethod(Proposition.class, 
 			"from", Operator.class, Proposition.class, Supplier.class, Supplier.class);
-	private final static Method METHOD_NOT = Elemental.getMethod(Proposition.class, 
+	@SuppressWarnings("removal")
+    private final static Method METHOD_NOT = DebugElement.getMethod(Proposition.class, 
 			"not");
 	
 //	final static private Map<Set<Proposition>, Proposition> AndCache = new HashMap<>();
@@ -909,14 +900,12 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 	public static Proposition fromRecursively(
 	        InfixExpression exp, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
-		Expression lhs = Expression.fromRecursively(exp.getLeftHandSide(), rtAddr, condGen);
-		Expression rhs = Expression.fromRecursively(exp.getRightHandSide(), rtAddr, condGen);
+		Expression lhs = Expression.fromRecursively(exp.getLeftOperand(), rtAddr, condGen);
+		Expression rhs = Expression.fromRecursively(exp.getRightOperand(), rtAddr, condGen);
 		InfixExpression.Operator binaryOp = exp.getOperator();
 //		Function scope = Function.getFunctionScopeOf(binary, condGen);
 		
-		/* =, ==, /=, -=, %=, *=, +=, 
-		 * TODO: &=?, TODO: |=?, TODO: ^=?, TODO: <<=?, TODO: >>=?,
-		 * >=, >, <=, <, !=: TODO creating a NonEquality class with Set of operands
+		/* >=, >, <=, <, !=: TODO creating a NonEquality class with Set of operands
 		 */
 		Proposition prop = OrderRelation.fromRecursively(binaryOp, lhs, rhs);
 		if (prop != null) return prop;
@@ -928,6 +917,24 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 		// ||
 		if (binaryOp == InfixExpression.Operator.CONDITIONAL_OR) return lhsProp.or(rhsProp);
 		return returnTodoException("unsupported binary expression " + exp);
+	}
+	
+	
+	
+	public static Proposition fromRecursively(
+	        org.eclipse.jdt.core.dom.Assignment exp, final ASTAddressable rtAddr, VODCondGen condGen) 
+	                throws ASTException {
+	    Expression lhs = Expression.fromRecursively(exp.getLeftHandSide(), rtAddr, condGen);
+	    Expression rhs = Expression.fromRecursively(exp.getRightHandSide(), rtAddr, condGen);
+	    org.eclipse.jdt.core.dom.Assignment.Operator assignOp = exp.getOperator();
+//		Function scope = Function.getFunctionScopeOf(binary, condGen);
+	    
+	    /* =, ==, /=, -=, %=, *=, +=, 
+	     * TODO: &=?, TODO: |=?, TODO: ^=?, TODO: <<=?, TODO: >>=?,
+	     */
+	    Proposition prop = Equality.from(assignOp, lhs, rhs);
+	    if (prop != null) return prop;
+	    return returnTodoException("unsupported assignment " + exp);
 	}
 	
 	
@@ -2461,7 +2468,9 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 		// TODO? returnTodoException("ignoreDependency(Operator.And, p2)")
 		// extracting the common and(()->...) from roForall
 		try {
-			return applySkipNull(result-> and(()-> result), ()-> fa.getProposition().reduceByOperands(ros, true));
+			return applySkipNull(
+					((TryFunction<Proposition, Proposition>) result-> and(()-> result)), 
+					()-> fa.getProposition().reduceByOperands(ros, true));
 		} catch (Exception e) {
 			return throwUnhandledException(e);
 		}

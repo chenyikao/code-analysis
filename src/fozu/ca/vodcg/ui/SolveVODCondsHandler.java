@@ -1,5 +1,7 @@
 package fozu.ca.vodcg.ui;
 
+import java.io.IOException;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -23,6 +25,7 @@ import org.eclipse.ui.dialogs.ResourceListSelectionDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.FileEditorInput;
 
+import fozu.ca.DebugElement;
 import fozu.ca.solver.Solver;
 import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.VariablePath;
@@ -88,18 +91,19 @@ public class SolveVODCondsHandler extends AbstractHandler {
 					final VODCondGen condGen = VODCondGen.from(mainPath, Display.getCurrent());
 					
 					final Job job = new Job(task) {
-						protected IStatus run(IProgressMonitor monitor) {
-							condGen.setStart(monitor, task, VariablePath.from(ts, varPath, condGen));
-							Solver.main(new String[] {osPath, "-rd:In"});
-//							try {
+						@SuppressWarnings({ "deprecation", "removal" })
+                        protected IStatus run(IProgressMonitor monitor) {
+							try {
+							    condGen.setStart(monitor, task, VariablePath.from(ts, varPath, condGen));
+							    Solver.main(new String[] {osPath, "-rd:In"});
 //								PrintStream outFile = new PrintStream(new File(outPath));
 //								outFile.print();
 //								outFile.close();
 //								
-//							} catch (FileNotFoundException e) {	// top level general debugging?
-//								DebugElement.throwTodoException(e);
-//								return Status.CANCEL_STATUS;
-//							}
+							} catch (IOException e) {	// top level general debugging?
+								DebugElement.throwTodoException(e);
+								return Status.CANCEL_STATUS;
+							}
 							condGen.done(null, "Condition solving ends!");
 							return Status.OK_STATUS;
 						}

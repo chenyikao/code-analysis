@@ -85,7 +85,7 @@ public class PathCondition extends Condition {
 	}
 	
 	@Override
-	protected <T> Set<? extends T> cacheDirectVariableReferences(Class<T> refType) {
+	protected <T> Set<T> cacheDirectVariableReferences(Class<T> refType) {
 		final Set<T> vrs = new HashSet<>(super.cacheDirectVariableReferences(refType));
 		
 		// TODO: merge three following function caches

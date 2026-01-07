@@ -1,7 +1,7 @@
 package fozu.ca.vodcg.ui;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -94,13 +94,14 @@ public class GenerateVODCondsHandler extends AbstractHandler {
 					
 					final Job job = new Job(task) {
 						protected IStatus run(IProgressMonitor monitor) {
-							condGen.setStart(monitor, task, VariablePath.from(ts, varFilePath, condGen));
 							try {
+							    condGen.setStart(monitor, task, VariablePath.from(ts, varFilePath, condGen));
+							    
 								PrintStream outFile = new PrintStream(new File(outPath));
 								outFile.print(condGen.generateConditionString());
 								outFile.close();
 								
-							} catch (FileNotFoundException e) {	// top level general debugging?
+							} catch (IOException e) {	// top level general debugging?
 								e.printStackTrace();
 								return Status.CANCEL_STATUS;
 //								DebugElement.throwTodoException(e);

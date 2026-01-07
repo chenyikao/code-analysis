@@ -3,7 +3,6 @@
  */
 package fozu.ca.vodcg.condition;
 
-import org.eclipse.cdt.core.dom.ast.IASTForStatement;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.Statement;
 
@@ -11,9 +10,9 @@ import fozu.ca.Elemental;
 import fozu.ca.TrioKeyMap;
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.VODCondGen;
+import fozu.ca.vodcg.condition.data.Int;
 import fozu.ca.vodcg.condition.data.NumericExpression;
 import fozu.ca.vodcg.condition.data.PlatformType;
-import fozu.ca.vodcg.condition.data.Int;
 import fozu.ca.vodcg.condition.version.ArrayAccessVersion;
 
 /**<pre>

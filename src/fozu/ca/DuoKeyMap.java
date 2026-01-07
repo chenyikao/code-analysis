@@ -17,8 +17,7 @@ import java.util.function.Predicate;
  * @author Kao, Chen-yi
  *
  */
-@SuppressWarnings("deprecation")
-public class DuoKeyMap<K1, K2, V> implements Mappable<K1, Map<K2, V>>, Elemental {
+public class DuoKeyMap<K1, K2, V> extends Elemental implements Mappable<K1, Map<K2, V>> {
 
 	private Map<K1, Map<K2, V>> key1Map = null;
 	
@@ -29,6 +28,7 @@ public class DuoKeyMap<K1, K2, V> implements Mappable<K1, Map<K2, V>>, Elemental
 	/**
 	 * @param key1Map
 	 */
+	@SuppressWarnings("removal")
 	protected DuoKeyMap(Map<K1, Map<K2, V>> key1Map) {
 		if (key1Map == null) DebugElement.throwNullArgumentException("map of key1");
 		this.key1Map = Collections.synchronizedMap(key1Map);

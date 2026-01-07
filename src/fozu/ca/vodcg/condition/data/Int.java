@@ -8,14 +8,10 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.jdt.core.dom.ForStatement;
-
-import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.SystemElement;
 import fozu.ca.vodcg.condition.ArithmeticExpression;
 import fozu.ca.vodcg.condition.Expression;
-import fozu.ca.vodcg.util.ASTLoopUtil;
 
 /**
  * @author Kao, Chen-yi
@@ -89,49 +85,6 @@ public class Int extends Number<BigInteger> {
 				from(String.valueOf(intValue), address);
 	}
 	
-	/**<pre>
-	 * 		incr-expr 	One of the following:
-	 * 					++var
-	 * 					var++
-	 * 					--var
-	 * 					var--
-	 * 					var += incr
-	 * 					var -= incr
-	 * 					var = var + incr
-	 *					var = incr + var
-	 * 					var = var - incr
-	 * 
-	 *		var 		One of the following:
-	 *						A variable of a signed or unsigned integer type.
-	 *						TODO: For C++, a variable of a random access iterator type.
-	 *						TODO: For C, a variable of a pointer type.
-	 *					If this variable would otherwise be shared, it is implicitly made private in the
-	 *					loop construct. This variable must not be modified during the execution of the
-	 *					for-loop other than in incr-expr. Unless the variable is specified lastprivate
-	 *					or linear on the loop construct, its value after the loop is unspecified.
-	 * 
-	 *		incr 		A loop invariant integer expression.
-	 * <br>
-	 * 
-	 * @param loop
-	 * @param sideEffect 
-	 * @param condGen 
-	 * @return
-	 */
-	public static Int fromCanonicalIncrementOf(ForStatement loop, final ASTAddressable dynaAddr, VODCondGen condGen) {
-		if (ASTLoopUtil.isNonCanonical(loop)) return null;
-		
-		Int incr = ASTLoopUtil.getIncrementOf(loop);
-		if (incr == null) {
-			ArithmeticExpression e = ArithmeticExpression.fromIncrementOf(loop, dynaAddr, condGen);
-			incr = (e instanceof Int) ? (Int) e : null;	// type-checking
-			
-			if (incr == null) ASTLoopUtil.setNonCanonical(loop);
-			else ASTLoopUtil.setIncrementOf(loop, incr);
-		}
-		return incr;
-	}
-	
 	
 	
 	/* (non-Javadoc)
@@ -202,7 +155,7 @@ public class Int extends Number<BigInteger> {
 		return from(getValue().negate(), getShortAddress());
 	}
 
-	@SuppressWarnings("removal")
+	@SuppressWarnings("deprecation")
     @Override
 	protected ArithmeticExpression add(Number<?> n2) {
 		assert n2 != null && !n2.isInfinity() && !isInfinity();
@@ -212,7 +165,7 @@ public class Int extends Number<BigInteger> {
 		return null;
 	}
 	
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
     @Override
 	protected ArithmeticExpression subtract(Number<?> n2) {
 		assert n2 != null && !n2.isInfinity() && !isInfinity();
@@ -222,7 +175,7 @@ public class Int extends Number<BigInteger> {
 		return null;
 	}
 	
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
     @Override
 	protected ArithmeticExpression multiply(Number<?> n2) {
 		assert n2 != null && !n2.isInfinity() && !isInfinity();
@@ -232,7 +185,7 @@ public class Int extends Number<BigInteger> {
 		return null;
 	}
 	
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
     @Override
 	protected ArithmeticExpression divide(Number<?> n2) {
 		assert n2 != null && !n2.isInfinity() && !isInfinity();

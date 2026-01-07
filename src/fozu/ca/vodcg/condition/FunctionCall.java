@@ -8,10 +8,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.IASTFunctionCallExpression;
-import org.eclipse.jdt.core.dom.IASTInitializerClause;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 
 import fozu.ca.DuoKeyMap;
 import fozu.ca.condition.SerialFormat;
@@ -136,7 +135,7 @@ extends Reference<F> implements ArithmeticExpression {
 		 * @fozu.caozu.ca.vodcg.condition.ConditionElement#getVariableReferences()
 		 */
 		@Override
-		protected <T> Set<? extends T> cacheDirectVariableReferences(Class<T> refType) {
+		protected <T> Set<T> cacheDirectVariableReferences(Class<T> refType) {
 			assert call != null;
 			return call.cacheDirectVariableReferences(refType);
 		}
@@ -429,13 +428,12 @@ extends Reference<F> implements ArithmeticExpression {
 		
 		return from(
 				Function.from(fv), 
-				fv.getIName(), 
+				fv.getASTName(), 
 				fv.getArguments(), 
 				fv.getScope(), 
 				sideEffect);
 	}
 	
-	@SuppressWarnings("removal")
 	public static FunctionCall<? extends Function> fromRecursively(
 			MethodInvocation exp, Supplier<Proposition> sideEffect, final ASTAddressable rtAddr, 
 			VODCondGen condGen) 
@@ -443,15 +441,31 @@ extends Reference<F> implements ArithmeticExpression {
 		if (exp == null) throwNullArgumentException("expression");
 
 		final Name fName = ASTUtil.getNameOf(exp);
-		if (fName == null) throwTodoException("unsupported function call");
+		if (fName == null) throwTodoException("unsupported method invocation");
 
 		return from(Function.from(ASTUtil.getMethodBindingOf(fName), rtAddr, condGen), 
 				fName,
-				Arrays.asList(exp.getArguments()),
+				Arrays.asList(exp.arguments()),
 				Function.getFunctionScopeOf(exp, rtAddr, condGen), 
 				sideEffect);
 	}
 
+	public static FunctionCall<? extends Function> fromRecursively(
+			SuperMethodInvocation exp, Supplier<Proposition> sideEffect, final ASTAddressable rtAddr, 
+			VODCondGen condGen) 
+					throws ASTException {
+		if (exp == null) throwNullArgumentException("expression");
+		
+		final Name fName = ASTUtil.getNameOf(exp);
+		if (fName == null) throwTodoException("unsupported super-method invocation");
+		
+		return from(Function.from(ASTUtil.getMethodBindingOf(fName), rtAddr, condGen), 
+				fName,
+				Arrays.asList(exp.arguments()),
+				Function.getFunctionScopeOf(exp, rtAddr, condGen), 
+				sideEffect);
+	}
+	
 
 	
 	protected void checkCircularDependency() {
@@ -570,10 +584,9 @@ extends Reference<F> implements ArithmeticExpression {
 	}
 	
 	@Override
-	protected <T> Set<? extends T> cacheDirectVariableReferences(Class<T> refType) {
+	protected <T> Set<T> cacheDirectVariableReferences(Class<T> refType) {
 		final Set<T> vrs = new HashSet<>();
 		if (args != null) for (Expression arg : args) {
-			@SuppressWarnings("unchecked")
 			final Set<T> argVrs = (Set<T>) 
 					arg.cacheDirectVariableReferences(refType);
 			if (argVrs != null) vrs.addAll(argVrs);

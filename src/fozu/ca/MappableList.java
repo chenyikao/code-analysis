@@ -17,8 +17,7 @@ import java.util.Set;
  * @author Kao, Chen-yi
  *
  */
-@SuppressWarnings("deprecation")
-public class MappableList<K, V> implements Map<K, V>, Elemental {
+public class MappableList<K, V> extends Elemental implements Map<K, V> {
 	
 	public class KeyValuePair extends Pair<K, V> {	// TODO: implements Entry<K, V>
 		
@@ -77,6 +76,7 @@ public class MappableList<K, V> implements Map<K, V>, Elemental {
 	/* (non-Javadoc)
 	 * @see java.util.Map#containsValue(java.lang.Object)
 	 */
+	@SuppressWarnings("removal")
 	@Override
 	public boolean containsValue(Object value) {
 		DebugElement.throwTodoException("unimplemented Map method");
@@ -120,6 +120,7 @@ public class MappableList<K, V> implements Map<K, V>, Elemental {
 	/* (non-Javadoc)
 	 * @see java.util.Map#entrySet()
 	 */
+	@SuppressWarnings("removal")
 	@Override
 	public Set<Entry<K, V>> entrySet() {
 		DebugElement.throwTodoException("unimplemented Map method");
@@ -129,6 +130,7 @@ public class MappableList<K, V> implements Map<K, V>, Elemental {
 	/* (non-Javadoc)
 	 * @see java.util.Map#keySet()
 	 */
+	@SuppressWarnings("removal")
 	@Override
 	public Set<K> keySet() {
 		DebugElement.throwTodoException("unimplemented Map method");
@@ -173,6 +175,7 @@ public class MappableList<K, V> implements Map<K, V>, Elemental {
 	/* (non-Javadoc)
 	 * @see java.util.Map#putAll(java.util.Map)
 	 */
+	@SuppressWarnings("removal")
 	@Override
 	public void putAll(Map<? extends K, ? extends V> m) {
 		DebugElement.throwTodoException("unimplemented Map method");
@@ -181,6 +184,7 @@ public class MappableList<K, V> implements Map<K, V>, Elemental {
 	/* (non-Javadoc)
 	 * @see java.util.Map#remove(java.lang.Object)
 	 */
+	@SuppressWarnings("removal")
 	@Override
 	public V remove(Object key) {
 		DebugElement.throwTodoException("unimplemented Map method");

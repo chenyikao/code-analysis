@@ -5,37 +5,24 @@ package fozu.ca.vodcg.util;
 
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.ASTNameCollector;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ArrayAccess;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
+import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.IASTDeclarator;
-import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
-import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.IASTFieldReference;
-import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.IASTFunctionCallExpression;
-import org.eclipse.jdt.core.dom.IASTIdExpression;
-import org.eclipse.jdt.core.dom.IASTInitializerClause;
-import org.eclipse.jdt.core.dom.IASTLiteralExpression;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.ParenthesizedExpression;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
-import org.eclipse.jdt.core.dom.IASTNameOwner;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ArrayAccess;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
-import org.eclipse.jdt.core.dom.IASTUnaryExpression;
-import org.eclipse.jdt.core.dom.ArrayType;
-import org.eclipse.jdt.core.dom.Assignment;
 
 import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.ASTAddressable;
-import fozu.ca.vodcg.ASTException;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.VODCondGen;
 
@@ -61,7 +48,7 @@ public final class ASTAssignableComputer {
 	@SuppressWarnings("unchecked")
 	public static Expression getArgumentExpressionOf(Expression lValue) {
 		List<ASTNode> ancestors = ASTUtil.getAncestorsOfUntil(
-				lValue, ASTUtil.AST_FUNCTION_CALL_EXPRESSION);
+				lValue, ASTUtil.AST_METHOD_INVOCATION_EXPRESSION);
 		if (ancestors != null) {
 			final int grandAncestorIndex = ancestors.size() - 1;
 			final ASTNode grandAncestor = ancestors.get(grandAncestorIndex);
@@ -87,12 +74,15 @@ public final class ASTAssignableComputer {
 //				ASTUtil.AST_EXPRESSION, 
 //				false));	
 //	}
-//	
-//	public static Expression getNonIdExpressionOf(Name name) {
-//		if (name == null) DebugElement.throwNullArgumentException("name");
-//		return Elemental.getNonNullSupplier(
-//				()-> (Expression) getIdExpressionOf(name).getParent());	
-//	}
+	
+	@SuppressWarnings("removal")
+    public static Expression getNonIdExpressionOf(Name name) {
+		if (name == null) DebugElement.throwNullArgumentException("name");
+		return Elemental.getNonNullSupplier(
+				()-> ASTUtil.getAncestorOfAs(name, 
+                        ASTUtil.AST_EXPRESSION, 
+                        false));	
+	}
 	
 
 
@@ -138,24 +128,24 @@ public final class ASTAssignableComputer {
 		}
 	}
 	
-	/**
-	 * @param exp
-	 * @return
-	 */
-	public static VariableDeclaration getVariableNameOwnerOf(
-			final Name exp) 
-					throws ASTException {
-		return (exp != null && getVariableNameOf(exp) != null) ? exp : null;
-	}
+//	/**
+//	 * @param exp
+//	 * @return
+//	 */
+//	public static VariableDeclaration getVariableDeclarationOf(
+//			final Name exp) 
+//					throws ASTException {
+//		return (exp != null && getVariableNameOf(exp) != null) ? exp : null;
+//	}
 	
-	/**
-	 * @param exp
-	 * @return
-	 */
-	public static VariableDeclaration getVariableNameOwnerOf(
-			final PrefixExpression exp) {
-		return (exp != null) ? getVariableNameOwnerOf(exp.getOperand()) : null;
-	}
+//	/**
+//	 * @param exp
+//	 * @return
+//	 */
+//	public static VariableDeclaration getVariableDeclarationOf(
+//			final PrefixExpression exp) {
+//		return (exp != null) ? getVariableDeclarationOf(exp.getOperand()) : null;
+//	}
 	
 //	/**
 //	 * Currently supporting l-value type expression: {@link IASTIdExpression} and 
@@ -277,16 +267,16 @@ public final class ASTAssignableComputer {
 	
 	/**
 	 * @param lValue
-	 * @param exp
+	 * @param asm
 	 * @return
 	 */
-	public static boolean isDirectlyAssignedIn(Name lValue, Expression exp) {
+	public static boolean isDirectlyAssignedIn(Name lValue, Assignment asm) {
 		// A unary assignment has only one operand containing the given l-value
-		if (isUnaryAssignment(exp)) return true; 
+		if (isUnaryAssignment(asm)) return true; 
 		
 		// usually lhs of a direct (non-function-call) assignment
 		// lValue == null -> not a classical AST ID, e.g. a parameter declaration
-		return lValue != null && isBinaryAssignedIn(lValue, exp);
+		return lValue != null && isBinaryAssignedIn(lValue, asm);
 	}
 	
 	public static boolean isDirectlyAssignedIn(Name lValue, VariableDeclaration init) {
@@ -414,7 +404,7 @@ public final class ASTAssignableComputer {
 		while (expParent != null) {
 			expParent = expParent.getParent();
 			if (isAbbreviatedBinaryAssignment(expParent) 
-					|| (isPlainBinaryAssignment(expParent) && !isLValueOf(exp, (InfixExpression) expParent))) 
+					|| (isPlainBinaryAssignment(expParent) && !isLValueOf(exp, (Assignment) expParent))) 
 				if (exp2 == null || exp2 == expParent) return true;
 		}
 		return false;
@@ -469,24 +459,24 @@ public final class ASTAssignableComputer {
 		return false;
 	}
 	
-	public static boolean isConstantAssignment(InfixExpression exp) {
-		return isPlainBinaryAssignment(exp) && ASTUtil.isConstant(exp.getRightOperand());
+	public static boolean isConstantAssignment(Assignment exp) {
+		return isPlainBinaryAssignment(exp) && ASTUtil.isConstant(exp.getRightHandSide());
 	}
 
 	@SuppressWarnings("removal")
-	public static boolean isLValueOf(Expression exp, InfixExpression binary) {
+	public static boolean isLValueOf(Expression exp, Assignment binary) {
 		if (binary == null) DebugElement.throwNullArgumentException("binary");
-		return ASTUtil.contains(binary.getLeftOperand(), exp);
+		return ASTUtil.contains(binary.getLeftHandSide(), exp);
 	}
 	
-	public static boolean isRewritingAssignment(Expression exp) {
+	public static boolean isRewritingAssignment(Assignment exp) {
 		// every unary and abbreviated binary assignment is rewriting to its (lhs) operand
 		if (isUnaryAssignment(exp) || isAbbreviatedBinaryAssignment(exp)) return true;
 		
 		// lhs of a binary assignment not appearing in rhs is not rewriting to lhs
 		if (isPlainBinaryAssignment(exp)) {
-			InfixExpression asg = (InfixExpression) exp;
-			return isRewritingAssignmentTo(asg, getVariableNameOf(asg.getLeftOperand()));
+		    Assignment asm = (Assignment) exp;
+			return isRewritingAssignmentTo(asm, getVariableNameOf(asm.getLeftHandSide()));
 		}
 		
 		return false;	// neither unary nor binary assignments
@@ -504,7 +494,7 @@ public final class ASTAssignableComputer {
 	 * @param var - may be in lhs, rhs or neither one of them
 	 * @return
 	 */
-	public static boolean isRewritingAssignmentTo(InfixExpression exp, Name var) {
+	public static boolean isRewritingAssignmentTo(Assignment exp, Name var) {
 		if (exp == null || var == null) return false;
 		
 		// every unary is rewriting to its only operand
@@ -512,20 +502,20 @@ public final class ASTAssignableComputer {
 //		return ((IASTIdExpression) ((IASTUnaryExpression) exp).getOperand()).getName() == var;
 		
 		// var in lhs <-> rewriting
-		if (isAbbreviatedBinaryAssignment(exp)) return ((Expression) var.getParent()).isLValue();
+//		if (isAbbreviatedBinaryAssignment(exp)) 
 		
 		// var in both lhs and rhs <-> rewriting
-		if (isPlainBinaryAssignment(exp)) {
-			ASTNameCollector varCol = new ASTNameCollector(var.toCharArray());
-			Name[] lhsVars, rhsVars;
-			
-			exp.getLeftOperand().accept(varCol); lhsVars = varCol.getNames();
-			exp.getRightOperand().accept(varCol); rhsVars = varCol.getNames();
-			if (lhsVars != null && rhsVars != null) 	// var in both lhs and rhs
-				for (Name v : lhsVars) if (((Expression) v.getParent()).isLValue()) return true;
-		}
+//		if (isPlainBinaryAssignment(exp)) {
+//			ASTNameCollector varCol = new ASTNameCollector(var.toCharArray());
+//			Name[] lhsVars, rhsVars;
+//			
+//			exp.getLeftOperand().accept(varCol); lhsVars = varCol.getNames();
+//			exp.getRightOperand().accept(varCol); rhsVars = varCol.getNames();
+//			if (lhsVars != null && rhsVars != null) 	// var in both lhs and rhs
+//				for (Name v : lhsVars) if (((Expression) v.getParent()).isLValue()) return true;
+//		}
 		
-		return false;
+		return ASTUtil.contains(exp.getLeftHandSide(), var);
 	}
 	
 	/**
@@ -536,10 +526,10 @@ public final class ASTAssignableComputer {
 	 * @return
 	 */
 	public static boolean isRewritinglyAssigned(Name var) {
-		final Expression varAsg = (Expression) var.getParent().getParent();	// bypassing IASTIdExpression 
-		return isUnaryAssignment(varAsg)
-				|| ((varAsg instanceof InfixExpression) 
-						&& isRewritingAssignmentTo((InfixExpression) varAsg, var));
+        final ASTNode asm = ASTUtil.getAncestorOfAs(var, ASTUtil.AST_ASSIGNMENT_TYPES, false);
+		return isUnaryAssignment(asm)
+				|| ((asm instanceof Assignment) 
+						&& isRewritingAssignmentTo((Assignment) asm, var));
 	}
 
 	

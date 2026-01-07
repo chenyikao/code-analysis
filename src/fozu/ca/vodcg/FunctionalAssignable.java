@@ -10,23 +10,23 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Statement;
-import org.eclipse.jdt.core.dom.IFunction;
+import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.Statement;
 
+import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
+import fozu.ca.vodcg.condition.ArithmeticExpression;
 import fozu.ca.vodcg.condition.FunctionCall;
+import fozu.ca.vodcg.condition.FunctionalPathVariable;
+import fozu.ca.vodcg.condition.PathVariable;
 import fozu.ca.vodcg.condition.version.FunctionalVersion;
 import fozu.ca.vodcg.condition.version.NoSuchVersionException;
-import fozu.ca.vodcg.condition.FunctionalPathVariable;
-import fozu.ca.vodcg.parallel.OmpDirective;
-import fozu.ca.vodcg.util.ASTLoopUtil;
-import fozu.ca.vodcg.condition.ArithmeticExpression;
-import fozu.ca.vodcg.condition.PathVariable;
 import fozu.ca.vodcg.condition.version.ThreadRole;
 import fozu.ca.vodcg.condition.version.Version;
+import fozu.ca.vodcg.parallel.OmpDirective;
+import fozu.ca.vodcg.util.ASTLoopUtil;
 
 /**
  * Assignable is given a type argument to distinguish Assignable<PathVariable> and Assignable<FunctionalPathVariable>
@@ -37,8 +37,9 @@ import fozu.ca.vodcg.condition.version.Version;
  */
 public class FunctionalAssignable extends FunctionAssignable {
 
-	private static final Method METHOD_GET_DEPENDENT_LOOPS = 
-			Elemental.getMethod(FunctionalAssignable.class, "getDependentLoops");
+	@SuppressWarnings({ "deprecation", "removal" })
+    private static final Method METHOD_GET_DEPENDENT_LOOPS = 
+	        DebugElement.getMethod(FunctionalAssignable.class, "getDependentLoops");
 //	private static final Method METHOD_TESTS_UBIQUITY = 
 //			Elemental.getMethod(FunctionalAssignable.class, "testsUbiquity", Function.class, Boolean.class);
 
@@ -50,11 +51,11 @@ public class FunctionalAssignable extends FunctionAssignable {
 	 * Constructor for the assignable with a virtual function call
 	 * @param asnPv
 	 */
-	protected FunctionalAssignable(Assignable<PathVariable> asnPv) {
+	@SuppressWarnings("deprecation")
+    protected FunctionalAssignable(Assignable<PathVariable> asnPv) {
 		super(getNonNull(()-> asnPv.getASTName()), 
-				null, 
-				asnPv.getNameOwner(), 
-				null, 
+				(IMethodBinding) asnPv.getBinding(), 
+				asnPv.getRuntimeAddress(), 
 				asnPv.getCondGen());
 		
 		if (asnPv.getBinding() instanceof IMethodBinding) throwTodoException("non-virtual functional assignable");
@@ -87,7 +88,8 @@ public class FunctionalAssignable extends FunctionAssignable {
 	/**
 	 * @return @NotNull
 	 */
-	@Override
+	@SuppressWarnings("deprecation")
+    @Override
 	public List<Statement> getDependentLoops() {
 //		if (enters(METHOD_GET_DEPENDENT_LOOPS)) return Collections.emptyList();
 		
@@ -149,7 +151,8 @@ public class FunctionalAssignable extends FunctionAssignable {
 	/**
 	 * @return @NotNull
 	 */
-	@Override
+	@SuppressWarnings("deprecation")
+    @Override
 	public Set<Assignable<?>> getArguments() {
 		final Set<Assignable<?>> args = new HashSet<>();
 		for (ArithmeticExpression arg : debugGet(()-> getVersion().getArguments())) 
@@ -214,7 +217,8 @@ public class FunctionalAssignable extends FunctionAssignable {
 		super.setPrevious(pasn);
 	}
 
-	@Override
+	@SuppressWarnings("deprecation")
+    @Override
 	protected Assignable<FunctionalPathVariable> previousOrNext(
 			ASTNode root, final Boolean findsNext, Boolean findsLocally) throws IncomparableException {
 		final Assignable<FunctionalPathVariable> spon = super.previousOrNext(root, findsNext, findsLocally);

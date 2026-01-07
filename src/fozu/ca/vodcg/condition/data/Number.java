@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import fozu.ca.Addressable;
+import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.ASTException;
 import fozu.ca.vodcg.ReenterException;
@@ -27,10 +28,12 @@ import fozu.ca.vodcg.condition.VariablePlaceholder;
 abstract public class Number<Value extends java.lang.Number & Comparable<Value>> 
 extends Expression implements ArithmeticExpression, Addressable {
 	
-	private static final Method METHOD_IS_LESS_THAN = 
-			Elemental.getMethod(Number.class, "isLessThan", NumericExpression.class);
-	private static final Method METHOD_SUBTRACT = 
-			Elemental.getMethod(Number.class, "subtract", ArithmeticExpression.class);
+	@SuppressWarnings({ "removal", "deprecation" })
+    private static final Method METHOD_IS_LESS_THAN = 
+	        DebugElement.getMethod(Number.class, "isLessThan", NumericExpression.class);
+	@SuppressWarnings({ "removal", "deprecation" })
+    private static final Method METHOD_SUBTRACT = 
+	        DebugElement.getMethod(Number.class, "subtract", ArithmeticExpression.class);
 	
 	
 	
@@ -199,7 +202,7 @@ extends Expression implements ArithmeticExpression, Addressable {
 		return value.equals(n2.value);
 	}
 	
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
     @Override
 	protected List<Integer> hashCodeVars() {
 		Integer hcv = null;
@@ -230,8 +233,7 @@ extends Expression implements ArithmeticExpression, Addressable {
 	
 	abstract protected ArithmeticExpression add(Number<?> n2);
 
-	@SuppressWarnings("removal")
-    @Override
+	@Override
 	public ArithmeticExpression subtract(ArithmeticExpression ae2) 
 	throws ReenterException {
 		try {

@@ -23,9 +23,8 @@ import fozu.ca.vodcg.condition.Relation.Operator;
  * @author Kao, Chen-yi
  *
  */
-@SuppressWarnings("deprecation")
 public class ReductionOperations 
-implements Elemental, Iterable<List<ReductionOperations.ReductionOctet>> {
+extends Elemental implements Iterable<List<ReductionOperations.ReductionOctet>> {
 
 	public static class ReductionOctet extends 
 	Octet<Proposition, String, 
@@ -154,7 +153,8 @@ implements Elemental, Iterable<List<ReductionOperations.ReductionOctet>> {
 	 * Cloning by resetting.
 	 * @param disjRos
 	 */
-	private boolean addClone(List<ReductionOctet> disjRos) {
+	@SuppressWarnings("removal")
+    private boolean addClone(List<ReductionOctet> disjRos) {
 		assert disjRos != null;
 		List<ReductionOctet> disjClone = new ArrayList<>();
 		for (ReductionOctet d : disjRos) {
@@ -221,7 +221,8 @@ implements Elemental, Iterable<List<ReductionOperations.ReductionOctet>> {
 	/**
 	 * @param nonDisjunctiveRos
 	 */
-	public boolean addAll(List<ReductionOctet> nonDisjunctiveRos) {
+	@SuppressWarnings("removal")
+    public boolean addAll(List<ReductionOctet> nonDisjunctiveRos) {
 		if (nonDisjunctiveRos == null || nonDisjunctiveRos.isEmpty()) 
 			DebugElement.throwNullArgumentException("non disjunctive reduction operations");
 		
@@ -237,7 +238,8 @@ implements Elemental, Iterable<List<ReductionOperations.ReductionOctet>> {
 	/**
 	 * @param ro
 	 */
-	public boolean addPrim(ReductionOctet ro) {
+	@SuppressWarnings("removal")
+    public boolean addPrim(ReductionOctet ro) {
 		if (ro == null) DebugElement.throwNullArgumentException("reduction operation");
 		
 		return add(ro);
@@ -246,7 +248,8 @@ implements Elemental, Iterable<List<ReductionOperations.ReductionOctet>> {
 	/**
 	 * @param primDisjRos
 	 */
-	@SafeVarargs
+	@SuppressWarnings("removal")
+    @SafeVarargs
 	final public boolean addPrimDisj(ReductionOctet... primDisjRos) {
 		if (primDisjRos == null) DebugElement.throwNullArgumentException("disjunctive ros");
 		

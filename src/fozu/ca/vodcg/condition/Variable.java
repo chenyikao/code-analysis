@@ -12,9 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.eclipse.cdt.core.dom.IName;
-import org.eclipse.cdt.core.dom.ast.IASTName;
-import org.eclipse.cdt.core.dom.ast.IVariable;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.dom.IBinding;
@@ -31,7 +28,6 @@ import fozu.ca.vodcg.condition.data.PlatformType;
 import fozu.ca.vodcg.condition.version.FunctionallableRole;
 import fozu.ca.vodcg.condition.version.ThreadRole;
 import fozu.ca.vodcg.condition.version.Version;
-import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * @author Kao, Chen-yi
@@ -122,7 +118,8 @@ public class Variable extends Referenceable {
 		return astScope;
 	}
 	
-	@Override
+	@SuppressWarnings("deprecation")
+    @Override
 	public String getIDSuffix(final SerialFormat format) {
 		return debugGetNonNull(()-> isParameter()
 				? getFunctionScope().getName()
@@ -145,7 +142,7 @@ public class Variable extends Referenceable {
 	 * @see fozu.ca.vodcg.condition.ConditionElement#getDirectVariableReferences()
 	 */
 	@Override
-	protected <T> Set<? extends T> cacheDirectVariableReferences(Class<T> refType) {
+	protected <T> Set<T> cacheDirectVariableReferences(Class<T> refType) {
 		return null;
 	}
 	
@@ -213,8 +210,7 @@ public class Variable extends Referenceable {
 		
 		final Name cName = getASTName();
 		if (cName != null) {
-			final Assignable<?> def = Assignable.from(
-					ASTUtil.getDefinitionOf(cName), getCondGen());
+			final Assignable<?> def = Assignable.from(cName, getCondGen());
 			if (def != null) return isParam = def.isParameter();
 		}
 		

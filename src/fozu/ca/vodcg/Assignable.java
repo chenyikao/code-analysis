@@ -21,6 +21,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.SubMonitor;
@@ -29,23 +30,9 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ArrayAccess;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.DoStatement;
-import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.ArrayType;
-import org.eclipse.jdt.core.dom.ArrayAccess;
-import org.eclipse.jdt.core.dom.IASTDeclSpecifier;
-import org.eclipse.jdt.core.dom.IASTDeclarator;
-import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
-import org.eclipse.jdt.core.dom.IASTFileLocation;
-import org.eclipse.jdt.core.dom.IASTInitializer;
-import org.eclipse.jdt.core.dom.IASTInitializerClause;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
-import org.eclipse.jdt.core.dom.IASTSimpleDeclSpecifier;
-import org.eclipse.jdt.core.dom.IASTSimpleDeclaration;
 import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.jdt.core.dom.IMacroBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.IQualifierType;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.IfStatement;
@@ -58,10 +45,11 @@ import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Statement;
-import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.WhileStatement;
 
 import fozu.ca.Addressable;
+import fozu.ca.DebugElement;
 import fozu.ca.DuoKeyMap;
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.condition.ArithmeticExpression;
@@ -253,18 +241,24 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 //	private static final Map<ForStatement, Trio<Assignable, Assignable, Assignable>> 
 //	LOOP_ITERATOR_CACHE = new HashMap<>();
 	
-	private static final Method METHOD_CACHE_CONSTANT = 
-			Elemental.getMethod(Assignable.class, "cacheConstant");
-	private static final Method METHOD_IS_ASSIGNED = 
-			Elemental.getMethod(Assignable.class, "isAssigned");
-	private static final Method METHOD_IS_CONDITIONAL_TO = 
-			Elemental.getMethod(Assignable.class, "isConditionalTo", ForStatement.class);
-	private static final Method METHOD_IS_FUNCTIONAL = 
-			Elemental.getMethod(Assignable.class, "isFunctional");
-	private static final Method METHOD_GET_CONDITIONS = 
-			Elemental.getMethod(Assignable.class, "getConditions", String.class);
-	private static final Method METHOD_GET_PARALLEL_CONDITION = 
-			Elemental.getMethod(Assignable.class, "getParallelCondition");
+	@SuppressWarnings("removal")
+    private static final Method METHOD_CACHE_CONSTANT = 
+	        DebugElement.getMethod(Assignable.class, "cacheConstant");
+	@SuppressWarnings("removal")
+    private static final Method METHOD_IS_ASSIGNED = 
+	        DebugElement.getMethod(Assignable.class, "isAssigned");
+	@SuppressWarnings("removal")
+    private static final Method METHOD_IS_CONDITIONAL_TO = 
+	        DebugElement.getMethod(Assignable.class, "isConditionalTo", ForStatement.class);
+	@SuppressWarnings("removal")
+    private static final Method METHOD_IS_FUNCTIONAL = 
+	        DebugElement.getMethod(Assignable.class, "isFunctional");
+	@SuppressWarnings("removal")
+    private static final Method METHOD_GET_CONDITIONS = 
+	        DebugElement.getMethod(Assignable.class, "getConditions", String.class);
+	@SuppressWarnings("removal")
+    private static final Method METHOD_GET_PARALLEL_CONDITION = 
+	        DebugElement.getMethod(Assignable.class, "getParallelCondition");
 //	private static final Method 
 //	METHOD_GET_PATH_VARIABLE = Elemental.getMethod(Assignable.class, "getPathVariable");
 //	private static final Method 
@@ -412,22 +406,22 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		return fromCache(null, var, null, null, condGen);
 	}
 
-//	/**
-//	 * @param name
-//	 * @param variableDeclaration - pre-cached variable declaration if there is one.
-//	 * @param condGen 
-//	 * @return
-//	 */
-//	public static Assignable<?> from(
-//			Name name, VariableDeclaration variableDeclaration, final ASTAddressable rtAddr, VODCondGen condGen) 
-//					throws ASTException {
-//		if (name == null) throwNullArgumentException("AST name");
-//		
-//		IBinding lvBind = name.resolveBinding();
-//		// L-value must be a assignable binding: a variable or a function 
-//		return isAssignableBinding(lvBind) 
-//				? fromCache(name, lvBind, variableDeclaration, rtAddr, condGen) : null ;
-//	}
+	/**
+	 * @param name
+	 * @param variableDeclaration - pre-cached variable declaration if there is one.
+	 * @param condGen 
+	 * @return
+	 */
+	public static Assignable<?> from(
+			Name name, VariableDeclaration variableDeclaration, final ASTAddressable rtAddr, VODCondGen condGen) 
+					throws ASTException {
+		if (name == null) throwNullArgumentException("AST name");
+		
+		IBinding lvBind = name.resolveBinding();
+		// L-value must be a assignable binding: a variable or a function 
+		return isAssignableBinding(lvBind) 
+				? fromCache(name, lvBind, variableDeclaration, rtAddr, condGen) : null ;
+	}
 	
 	/**
 	 * @param varName
@@ -444,42 +438,42 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	 * @param condGen 
 	 * @return
 	 */
-	public static Assignable<?> from(SingleVariableDeclaration svDeclaration, final ASTAddressable rtAddr, VODCondGen condGen) {
+	public static Assignable<?> from(VariableDeclaration svDeclaration, final ASTAddressable rtAddr, VODCondGen condGen) {
 		return svDeclaration != null 
 				? from(ASTUtil.getNameOf(svDeclaration), svDeclaration, rtAddr, condGen) 
 				: throwNullArgumentException("AST variable declaration");
 	}
 	
-//	/**
-//	 * @param lvBind - the pre-cached L-value must be a assignable binding: 
-//	 * 	a variable or a function, 
-//	 * if available
-//	 * @param lvName
-//	 * @param lvVariableDeclaration
-//	 * @param condGen
-//	 * @return
-//	 */
-//	public static Assignable<?> from(IBinding lvBind, 
-//			Name lvName, VariableDeclaration lvVariableDeclaration, final ASTAddressable rtAddr, VODCondGen condGen) {
-//		if (lvName == null) throwNullArgumentException("name");
-//		
-//		if (lvBind == null) return from(lvName, rtAddr, condGen);
-//		return isAssignableBinding(lvBind) 
-//				? fromCache(lvName, lvBind, lvVariableDeclaration, rtAddr, condGen) : null ;
-//	}
+	/**
+	 * @param lvBind - the pre-cached L-value must be a assignable binding: 
+	 * 	a variable or a function, 
+	 * if available
+	 * @param lvName
+	 * @param lvVariableDeclaration
+	 * @param condGen
+	 * @return
+	 */
+	public static Assignable<?> from(IBinding lvBind, 
+			Name lvName, VariableDeclaration lvVariableDeclaration, final ASTAddressable rtAddr, VODCondGen condGen) {
+		if (lvName == null) throwNullArgumentException("name");
+		
+		if (lvBind == null) return from(lvName, rtAddr, condGen);
+		return isAssignableBinding(lvBind) 
+				? fromCache(lvName, lvBind, lvVariableDeclaration, rtAddr, condGen) : null ;
+	}
 	
-//	public static Assignable<?> from(
-//			final IASTInitializerClause clause, final ASTAddressable rtAddr, VODCondGen condGen) 
-//					throws ASTException {
-//		if (clause == null) throwNullArgumentException("clause");
-//		
-//		final VariableDeclaration no = ASTAssignableComputer.getVariableDeclarationOf(clause);
-//		if (no != null) return from(no, rtAddr, condGen);
-//		
-//		final Name name = ASTAssignableComputer.getVariableNameOf(clause);
-//		return name != null ?
-//				from(name, rtAddr, condGen) : null;
-//	}
+	public static Assignable<?> from(
+			final org.eclipse.jdt.core.dom.Expression exp, final ASTAddressable rtAddr, VODCondGen condGen) 
+					throws ASTException {
+		if (exp == null) throwNullArgumentException("clause");
+		
+//		final VariableDeclaration vd = ASTAssignableComputer.getVariableDeclarationOf(exp);
+//		if (vd != null) return from(vd, rtAddr, condGen);
+		
+		final Name name = ASTAssignableComputer.getVariableNameOf(exp);
+		return name != null ?
+				from(name, rtAddr, condGen) : null;
+	}
 
 	public static Assignable<?> from(
 			Name varName, /*boolean refreshesIndex,*/ VODCondGen condGen) {
@@ -536,7 +530,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 			ASTNode root, Name name, final ASTAddressable rtAddr, VODCondGen condGen) {
 		return name == null
 				? fromOf(root, rtAddr, condGen)
-				: fromOf(root, name.resolveBinding(), rtAddr, condGen);
+				: fromOf(root, (IVariableBinding) name.resolveBinding(), rtAddr, condGen);
 //		return fromOf(root, name.toString(), condGen);
 	}
 	
@@ -596,8 +590,9 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	 * @param condGen 
 	 * @return
 	 */
-	public static Assignable<?> fromCanonicalInitializedIteratorOf(ForStatement loop, final ASTAddressable rtAddr, VODCondGen condGen) {
-		return Assignment.from(loop, rtAddr, condGen).getAssigned();
+	public static List<Assignable<?>> fromCanonicalInitializedIteratorOf(ForStatement loop, final ASTAddressable rtAddr, VODCondGen condGen) {
+		return Assignment.from(loop, rtAddr, condGen)
+				.stream().map(Assignment::getAssigned).collect(Collectors.toList());
 	}
 			
 	/**
@@ -657,10 +652,10 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		 */
 	}
 	
-	private static void throwIllegalNameException(Name name) {
-		throw new IllegalArgumentException("No assignable found for the name '" 
-				+ ((name == null)?"null'":(name + "' " + ASTUtil.toStringOf(name))));
-	}
+//	private static void throwIllegalNameException(Name name) {
+//		throw new IllegalArgumentException("No assignable found for the name '" 
+//				+ ((name == null)?"null'":(name + "' " + ASTUtil.toStringOf(name))));
+//	}
 
 	<T> T throwIncomparableException(Assignable<?> asn2) {
 		return throwIncomparableException(asn2, "assignables");
@@ -751,8 +746,13 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		return getOthersEqualsVariable(asn -> asn != this && equalsVariable(asn) && tests(asn.isAssigned()));
 	}
 	
-	public IVariableBinding getBinding() {
+	public IBinding getBinding() {
 		return bindingView;
+	}
+	
+	public IVariableBinding getVariableBinding() {
+	    return bindingView instanceof IVariableBinding
+                ? (IVariableBinding) bindingView : null;
 	}
 	
 	public Assignable<PV> getDeclared() {
@@ -787,7 +787,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		try {
 			PlatformType t = getSkipNull(()-> DataType.from(getASTName()));
 			if (t == null) t = applySkipNull(
-					DataType::from, ()-> getBinding().getType());
+					((TryFunction<ITypeBinding, PlatformType>) DataType::from), ()-> ((IVariableBinding) getBinding()).getType());
 			if (t == null) 
 				throwTodoException("unknown type");
 			return t;
@@ -801,21 +801,21 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Version<? extends PV> peekVersion() {
-		return (Version<? extends PV>) getPathVariablePlaceholder().peekVersion();
+	public Version<PV> peekVersion() {
+		return (Version<PV>) getPathVariablePlaceholder().peekVersion();
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Version<? extends PV> peekVersion(ThreadRoleMatchable role) {
-		return (Version<? extends PV>) getNonNull(()-> getPathVariablePlaceholder())
+	public Version<PV> peekVersion(ThreadRoleMatchable role) {
+		return (Version<PV>) getNonNull(()-> getPathVariablePlaceholder())
 				.peekVersion(role);
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Version<? extends PV> getVersion() {
-		return (Version<? extends PV>) getPathVariablePlaceholder().getVersion();
+	public Version<PV> getVersion() {
+		return (Version<PV>) getPathVariablePlaceholder().getVersion();
 	}
 	
 	/**
@@ -826,8 +826,8 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public Version<? extends PV> getVersion(FunctionallableRole role) {
-		return (Version<? extends PV>) getPathVariablePlaceholder().getVersion(role);
+	public Version<PV> getVersion(FunctionallableRole role) {
+		return (Version<PV>) getPathVariablePlaceholder().getVersion(role);
 	}
 	
 	@Override
@@ -1451,7 +1451,8 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		
 		org.eclipse.jdt.core.dom.Expression exp = getExpressionView();
 		while (exp != null) try {
-			final ASTNode ep = exp.getParent();
+			// traversing ancestor
+			final ASTNode ep = ASTUtil.getAncestorOfAs(exp, ASTUtil.AST_ASSIGNMENT_TYPES, false);
 			if (ep instanceof VariableDeclaration) 
 				firstAssignmentView = Assignment.from((VariableDeclaration) ep, cacheRuntimeAddress(), getCondGen());
 			else if (exp instanceof MethodInvocation 
@@ -1465,10 +1466,8 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 //			else if (isAssigned) 
 //				throwTodoException("unsupported assignment type?");
 			
-			if (firstAssignmentView != null) break;
+			if (firstAssignmentView != null || ep == null) break;
 			
-			// traversing ancestor
-			exp = ASTUtil.getAncestorClauseOf(exp, false);
 //			if (ASTLValueComputer.isAssigningOf(clause, nameView)
 //					|| ASTLValueComputer.isAssignedTo(clause, expView)) break;
 			
@@ -1665,7 +1664,6 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	 * @throws ASTException
 	 * @throws UncertainException
 	 */
-	@SuppressWarnings("unchecked")
 	public Set<Assignable<?>> getAssigners() 
 			throws ASTException, UncertainException {
 		if (tests(isConstant())) return getDirectAssigners();
@@ -1818,12 +1816,12 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	public boolean isLikelyAssigned() {
 		if (tests(isAssigned) || isArray()) return true;
 		
-		org.eclipse.jdt.core.dom.Expression clause = getExpressionView();
-		// traversing ancestor
-		while (clause != null) {
-			if (ASTAssignableComputer.isLikeAssignment(clause)) return true;
-			clause = ASTUtil.getAncestorClauseOf(clause, false);
-		}
+//		ASTNode exp = getExpressionView();
+//		// traversing ancestor
+//		while (exp != null) {
+//			if (ASTAssignableComputer.isLikeAssignment(exp)) return true;
+//			exp = ASTUtil.getAncestorOfAs(exp, ASTUtil.AST_ASSIGNMENT_TYPES, false);
+//		}
 		return false;
 	}
 	
@@ -2164,8 +2162,8 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 			throws ASTException, UncertainPlaceholderException {
 		try {
 			return applySkipNull(
-					exp-> FunctionCall.fromRecursively(
-							exp, (Supplier<Proposition>) null, getRuntimeAddress(), getCondGen()),
+					((TryFunction<MethodInvocation, FunctionCall<?>>) exp-> FunctionCall.fromRecursively(
+							exp, (Supplier<Proposition>) null, getRuntimeAddress(), getCondGen())),
 					()-> getEnclosingCallExpression());
 			
 		} catch (ASTException | UncertainPlaceholderException e) {
@@ -2255,7 +2253,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	
 	public List<Statement> getEnclosingStatements() {
 		final List<ASTNode> ans = ASTUtil.getAncestorsOfUntil(
-				getTopNode(), ASTUtil.AST_FUNCTION_DEFINITION);
+				getTopNode(), ASTUtil.AST_METHOD_DECLARATION_DEFINITION);
 		if (ans == null) return null;
 		
 		final List<Statement> ess = new ArrayList<>();
@@ -2280,7 +2278,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		return (ForStatement) ASTUtil.getAncestorOfAsUnless(
 				getTopNode(), 
 				new Class[] {ForStatement.class},
-				ASTUtil.AST_FUNCTION_DEFINITION, 
+				ASTUtil.AST_METHOD_DECLARATION_DEFINITION, 
 				false);
 	}
 
@@ -2288,7 +2286,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		return fromCanonicalIteratorOf(getEnclosingCanonicalLoop(), cacheRuntimeAddress(), getCondGen());
 	}
 
-	public Assignable<?> getEnclosingCanonicalLoopInitializedIterator() {
+	public List<Assignable<?>> getEnclosingCanonicalLoopInitializedIterator() {
 		return fromCanonicalInitializedIteratorOf(getEnclosingCanonicalLoop(), cacheRuntimeAddress(), getCondGen());
 	}
 	
@@ -2346,7 +2344,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 			if (callerPath == null) continue;
 			callers.add(FunctionCall.fromRecursively(
 					ASTUtil.getAncestorOfAsUnless(callerPath.getCallee().getTopNode(), 
-							ASTUtil.AST_FUNCTION_CALL_EXPRESSION, ASTUtil.AST_STATEMENT_TYPE, false), 
+							ASTUtil.AST_METHOD_INVOCATION_EXPRESSION, ASTUtil.AST_STATEMENT_TYPE, false), 
 					(Supplier<Proposition>) null, rtAddr, cg));
 		} catch (ASTException e) {
 			continue;
@@ -2473,8 +2471,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	public boolean isArray() {
 		return variableDeclarationView.getName().resolveTypeBinding().isArray() 
 				|| tests(()-> 
-		getEnclosingArraySubscriptExpression()
-		.getArrayExpression().contains(nameView));
+				ASTUtil.contains(getEnclosingArraySubscriptExpression(), nameView));
 	}
 	
 	public boolean isEverLoopIndexedAssignedArray() {
@@ -2510,8 +2507,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	
 	public boolean isArrayArgument() {
 		return tests(()-> 
-		getEnclosingArraySubscriptExpression()
-		.getArgument().contains(nameView));
+		ASTUtil.contains(getEnclosingArraySubscriptExpression(), nameView));
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -2652,7 +2648,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		return getVariableDeclaration() != null 
 				&& ASTUtil.getAncestorOfAsUnless(getVariableDeclaration(), 
 						new Class[]{SingleVariableDeclaration.class},
-						ASTUtil.AST_FUNCTION_DEFINITION, 
+						ASTUtil.AST_METHOD_DECLARATION_DEFINITION, 
 						false) != null;
 	}
 	
@@ -2660,10 +2656,10 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		return getType() instanceof PointerType;
 	}
 	
-	public boolean isPointerEnclosing() {
-		return isPointer()
-				|| getEnclosingPointer() != null;
-	}
+//	public boolean isPointerEnclosing() {
+//		return isPointer()
+//				|| getEnclosingPointer() != null;
+//	}
 	
 	public boolean isReference() {
 		return !getType().isPrimitive()	// PointerType
@@ -2717,10 +2713,11 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	@Override
 	public boolean isLoopInitializedIterator() {
 		for (Statement bs : getBranchScopes()) 
-			if (bs instanceof ForStatement 
-					&& equalsToCache(fromCanonicalInitializedIteratorOf(
-							(ForStatement) bs, cacheRuntimeAddress(), getCondGen()))) 
-				return true;
+			if (bs instanceof ForStatement) {
+				for (Assignable<?> it : fromCanonicalInitializedIteratorOf(
+						(ForStatement) bs, cacheRuntimeAddress(), getCondGen())) 
+					if (equalsToCache(it)) return true;
+			}
 		return false;
 	}
 	
@@ -2740,9 +2737,13 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 
 		final ASTAddressable da = cacheRuntimeAddress();
 		final VODCondGen cg = getCondGen();
-		return (equalsVariable(fromCanonicalIteratorOf(loop, da, cg))
-				|| equalsVariable(fromCanonicalInitializedIteratorOf(loop, da, cg)))
-				&& new ASTRuntimeLocationComputer(cg).isIn(getTopNode(), loop); 
+		if (equalsVariable(fromCanonicalIteratorOf(loop, da, cg))) return true;
+
+		if (new ASTRuntimeLocationComputer(cg).isIn(getTopNode(), loop)) {
+			for (Assignable<?> it : fromCanonicalInitializedIteratorOf(loop, da, cg))
+				if (equalsVariable(it)) return true;
+		}
+		return false;
 	}
 
 	public boolean hasPrivateIterator() {
@@ -3348,7 +3349,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 //		 * for a global variable may be accessed via some indirect local calls
 //		 */
 //		if (!testsNot(isGlobal())) findsLocally = false;	
-		final NavigableSet<Assignable<?>> asns = fromOf(root, getBinding(), null, getCondGen());
+		final NavigableSet<Assignable<?>> asns = fromOf(root, getVariableBinding(), null, getCondGen());
 		pOrN = (Assignable<PV>) (tests(findsNext) ? asns.higher(this) : asns.lower(this));
 
 //		final boolean findsAny = findsNext == null && findsLocally == null;

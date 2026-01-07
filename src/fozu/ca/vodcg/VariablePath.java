@@ -55,7 +55,7 @@ public class VariablePath {
 	}
 
 	public static VariablePath from(
-			ITextSelection selection, IPath filePath, VODCondGen condGen) {
+			ITextSelection selection, IPath filePath, VODCondGen condGen) throws IOException {
 		// Loading C-Index AST
 //		final IIndex index = CCorePlugin.getIndexManager().getIndex(projs);	// findReferences(...) doesn't work!
 //		while (true) {

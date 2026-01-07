@@ -24,7 +24,6 @@ import fozu.ca.vodcg.parallel.ThreadPrivatizable;
  * @author Kao, Chen-yi
  *
  */
-@SuppressWarnings("deprecation")
 public interface VersionEnumerable<S extends Referenceable> 
 extends ASTAddressable, AssignableElement, ThreadPrivatizable {
 
@@ -33,12 +32,14 @@ extends ASTAddressable, AssignableElement, ThreadPrivatizable {
 	public Boolean isGlobal();
 //	public Boolean isDirectlyFunctional();
 	
+	@SuppressWarnings({ "removal", "deprecation" })
 	public default boolean isDeclarator() {
 		return !isInAST()
 				? DebugElement.throwInvalidityException("non-AST")
 				: DebugElement.throwTodoException("unsupported declarator");
 	}
 	
+	@SuppressWarnings({ "removal", "deprecation" })
 	public default boolean isParameter() {
 		return DebugElement.throwTodoException("unsupported parameter");
 	}
@@ -47,12 +48,14 @@ extends ASTAddressable, AssignableElement, ThreadPrivatizable {
 		return isLoopIteratingIterator() || isLoopInitializedIterator();
 	}
 	
+	@SuppressWarnings({ "removal", "deprecation" })
 	public default boolean isLoopIteratingIterator() {
 		return !isInAST()
 				? DebugElement.throwInvalidityException("non-AST")
 				: DebugElement.throwTodoException("unsupported loop iterator");
 	}
 	
+	@SuppressWarnings({ "removal", "deprecation" })
 	public default boolean isLoopInitializedIterator() {
 		return !isInAST()
 				? DebugElement.throwInvalidityException("non-AST")
@@ -152,10 +155,12 @@ extends ASTAddressable, AssignableElement, ThreadPrivatizable {
 	 * @return the current version with initialization or reversion,
 	 * 	therefore it may <em>not</em> be null.
 	 */
+	@SuppressWarnings({ "removal", "deprecation" })
 	public default Version<S> getVersion() {
 		return Elemental.get(this::peekVersion,
 				()-> DebugElement.throwTodoException("unsupported operation"));
 	}
+	@SuppressWarnings({ "removal", "deprecation" })
 	public default Version<S> getVersion(FunctionallableRole role) {
 		return Elemental.get(()-> peekVersion(role),
 				()-> DebugElement.throwTodoException("unsupported operation"));
@@ -166,6 +171,7 @@ extends ASTAddressable, AssignableElement, ThreadPrivatizable {
 	 * 	therefore it may be null.
 	 */
 	public Version<S> peekVersion();
+	@SuppressWarnings({ "removal", "deprecation" })
 	public default Version<S> peekVersion(ThreadRoleMatchable role) {
 		return role == null
 				? null
@@ -177,6 +183,7 @@ extends ASTAddressable, AssignableElement, ThreadPrivatizable {
 	 * @param newVersion
 	 * @throws NoSuchVersionException 
 	 */
+	@SuppressWarnings({ "removal", "deprecation" })
 	public default void setVersion(Version<? extends S> newVersion) throws NoSuchVersionException {
 		DebugElement.throwTodoException("unsupported operation");
 	}
@@ -185,6 +192,7 @@ extends ASTAddressable, AssignableElement, ThreadPrivatizable {
 		return !Elemental.testsNot(isAssigned());	// null or isAssigned
 	}
 	
+	@SuppressWarnings({ "removal", "deprecation" })
 	public default void reversion(Version<? extends S> newVersion) throws NoSuchVersionException {
 		if (!reversions()) DebugElement.throwTodoException("in-reversionable VersionEnumerable");
 	}

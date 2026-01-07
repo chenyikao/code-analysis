@@ -21,7 +21,7 @@ import fozu.ca.vodcg.util.JavaUtil;
  * @author Kao, Chen-yi
  *
  */
-public class ExceptionSkippingTesters<T, R> implements Elemental {
+public class ExceptionSkippingTesters<T, R> extends Elemental {
 
 	/**
 	 * Object.hashCode() doesn't trigger ExceptionSkippingTesters
@@ -36,7 +36,8 @@ public class ExceptionSkippingTesters<T, R> implements Elemental {
 	
 	private T defaultCaller = null;
 	
-	public ExceptionSkippingTesters(T caller, Class<Exception>[] exceptions) {
+	@SuppressWarnings("removal")
+    public ExceptionSkippingTesters(T caller, Class<Exception>[] exceptions) {
 		this(exceptions);
 		
 		if (caller == null) DebugElement.throwNullArgumentException("caller");
@@ -150,7 +151,8 @@ public class ExceptionSkippingTesters<T, R> implements Elemental {
 		return test(defaultCaller);
 	}
 	
-	public R test(T defaultCaller) {
+	@SuppressWarnings("removal")
+    public R test(T defaultCaller) {
 		if (defaultCaller == null) defaultCaller = this.defaultCaller;
 		
 		R result = null;

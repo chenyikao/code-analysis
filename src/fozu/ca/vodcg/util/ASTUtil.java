@@ -14,17 +14,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.jdt.core.CCorePlugin;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -37,72 +38,29 @@ import org.eclipse.jdt.core.dom.ChildListPropertyDescriptor;
 import org.eclipse.jdt.core.dom.ChildPropertyDescriptor;
 import org.eclipse.jdt.core.dom.Comment;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.DoStatement;
+import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.ForStatement;
+import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.IVariableBinding;
+import org.eclipse.jdt.core.dom.IfStatement;
+import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.ParenthesizedExpression;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.IVariableBinding;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTGenericVisitor;
-import org.eclipse.jdt.core.dom.ASTNameCollector;
-import org.eclipse.jdt.core.dom.ASTSignatureUtil;
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.DOMException;
-import org.eclipse.jdt.core.dom.EScopeKind;
-import org.eclipse.jdt.core.dom.ArrayAccess;
-import org.eclipse.jdt.core.dom.ChildListPropertyDescriptor;
-import org.eclipse.jdt.core.dom.Assignment;
-import org.eclipse.jdt.core.dom.SwitchCase;
-import org.eclipse.jdt.core.dom.SwitchStatement;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
-import org.eclipse.jdt.core.dom.Comment;
-import org.eclipse.jdt.core.dom.DoStatement;
-import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
-import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.IASTFileLocation;
-import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.IfStatement;
-import org.eclipse.jdt.core.dom.InfixExpression;
-import org.eclipse.jdt.core.dom.IASTInitializerClause;
-import org.eclipse.jdt.core.dom.IASTLiteralExpression;
-import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.IASTNameOwner;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.IASTNodeLocation;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.IASTPreprocessorStatement;
 import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
-import org.eclipse.jdt.core.dom.IASTSwitchStatement;
-import org.eclipse.jdt.core.dom.IASTTranslationUnit;
-import org.eclipse.jdt.core.dom.IASTUnaryExpression;
+import org.eclipse.jdt.core.dom.SwitchCase;
+import org.eclipse.jdt.core.dom.SwitchStatement;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.WhileStatement;
-import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.jdt.core.dom.IEnumeration;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.IParameter;
-import org.eclipse.jdt.core.dom.IProblemBinding;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.dom.Modifier;
-import org.eclipse.jdt.core.index.IIndex;
-import org.eclipse.jdt.core.index.IIndexBinding;
-import org.eclipse.jdt.core.index.IIndexManager;
-import org.eclipse.jdt.core.index.IndexFilter;
-import org.eclipse.jdt.core.model.CoreModel;
-import org.eclipse.jdt.core.model.CoreModelUtil;
-import org.eclipse.jdt.core.model.ICProject;
-import org.eclipse.jdt.core.model.ITranslationUnit;
-import org.eclipse.jdt.internal.compiler.GenericAstVisitor;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 
 import fozu.ca.DebugElement;
 import fozu.ca.DuoKeyMap;
@@ -114,7 +72,7 @@ import fozu.ca.vodcg.SystemElement;
  * @author Kao, Chen-yi
  *
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({ "deprecation", "removal" })
 public final class ASTUtil extends DebugElement {
 
 	static final int prime = 31;
@@ -133,6 +91,9 @@ public final class ASTUtil extends DebugElement {
 	@SuppressWarnings("unchecked")
 	public static final Class<Comment>[] 			AST_COMMENT = new Class[] {
 			Comment.class};
+	@SuppressWarnings("unchecked")
+    public static final Class<Annotation>[] 			AST_ANNOTATION = new Class[] {
+	        Annotation.class};
 //	@SuppressWarnings("unchecked")
 //	public static final Class<IASTInitializerClause>[] 	AST_INIT_CLAUSE_TYPE = new Class[] {
 //			IASTInitializerClause.class};
@@ -143,10 +104,10 @@ public final class ASTUtil extends DebugElement {
 	public static final Class<Name>[] 		AST_ID_EXPRESSION = new Class[] {
 			Name.class};
 	@SuppressWarnings("unchecked")
-	public static final Class<MethodInvocation>[] AST_FUNCTION_CALL_EXPRESSION = new Class[] {
+	public static final Class<MethodInvocation>[] AST_METHOD_INVOCATION_EXPRESSION = new Class[] {
 			MethodInvocation.class};
 	@SuppressWarnings("unchecked")
-	public static final Class<MethodDeclaration>[] AST_FUNCTION_DEFINITION = new Class[] {
+	public static final Class<MethodDeclaration>[] AST_METHOD_DECLARATION_DEFINITION = new Class[] {
 			MethodDeclaration.class};
 	@SuppressWarnings("unchecked")
 	public static final Class<Statement>[] 			AST_STATEMENT_TYPE = new Class[] {
@@ -168,24 +129,27 @@ public final class ASTUtil extends DebugElement {
 	public static final Class<ArrayAccess>[] 	AST_ARRAY_SUB_TYPE = new Class[] {
 			ArrayAccess.class};
 	@SuppressWarnings("unchecked")
+	public static final Class<ASTNode>[] 				AST_ASSIGNMENT_TYPE = new Class[] {
+	        Assignment.class};
+	@SuppressWarnings("unchecked")
 	public static final Class<ASTNode>[] 				AST_ASSIGNMENT_TYPES = new Class[] {
-			PrefixExpression.class, PostfixExpression.class, Assignment.class, VariableDeclaration.class};
+	        PrefixExpression.class, PostfixExpression.class, Assignment.class, VariableDeclaration.class, MethodInvocation.class};
 
 	
 	
 	private static final Map<ASTNode, Object> AST_NODE_CHILDREN_CACHE = new HashMap<>();
 
 	private static final Map<IPath, CompilationUnit> 		CU_CACHE = new HashMap<>();
-	private static final Map<CompilationUnit, List<Annotation>>	
-	PRAGMA_CACHE = new HashMap<>();
+//	private static final Map<CompilationUnit, List<Annotation>>	
+//	ANNOTATION_CACHE = new HashMap<>();
 
 	private static final DuoKeyMap<ASTNode, Class<? extends ASTNode>[], List<? extends ASTNode>> 
 	ANCESTORS_CACHE = new DuoKeyMap<>();
 	private static final DuoKeyMap<ASTNode, Class<? extends ASTNode>, List<? extends ASTNode>> 
 	DESCENDANTS_CACHE = new DuoKeyMap<>();
 
-	private static final Map<Name, Name> 					
-	AST_NAME_CACHE 			= new HashMap<>();
+//	private static final Map<Name, Name> 					
+//	AST_NAME_CACHE 			= new HashMap<>();
 	private static final DuoKeyMap<IBinding, Integer, Name> 					
 	BINDING_NAME_CACHE 			= new DuoKeyMap<>();
 
@@ -198,7 +162,7 @@ public final class ASTUtil extends DebugElement {
 
 	// TODO: caching all reusable utility method results
 
-	private static IProject selectedProj = null;
+	private static IJavaProject selectedProj = null;
 
 //	private static IIndex index = null;
 
@@ -216,7 +180,7 @@ public final class ASTUtil extends DebugElement {
 //		return index;
 //	}
 
-	public static CompilationUnit getAST(IPath cuPath) {
+	public static CompilationUnit getAST(IPath cuPath) throws IOException {
 		if (cuPath == null) return null;
 		
 		// CoreModelUtil.findTranslationUnit(IFile) always return null!
@@ -252,7 +216,7 @@ public final class ASTUtil extends DebugElement {
 	
 
 	
-//	public static List<Annotation> getPragmas(CompilationUnit cu) {
+//	public static List<Annotation> getAnnotations(CompilationUnit cu) {
 //		if (cu == null) return Collections.<Annotation>emptyList();
 //		
 ////		PRAGMA_CACHE.clear();
@@ -260,21 +224,29 @@ public final class ASTUtil extends DebugElement {
 //		if (ps != null) return ps;
 //		
 //		ps = new ArrayList<>();
-//		for (IASTPreprocessorStatement p : cu.getAllPreprocessorStatements())
+//		for (Annotation p : cu.getAllPreprocessorStatements())
 //			// ps.getParent() returns IASTTranslationUnit
-//			if (AST_PRAGMA[0].isInstance(p)) ps.add((Annotation) p); 
+//			if (AST_ANNOTATION[0].isInstance(p)) ps.add((Annotation) p); 
 //		PRAGMA_CACHE.put(cu, ps);
 //		return ps;
 //	}
 	
-//	/**
-//	 * @param project
-//	 */
-//	public static void setSelectedProject(IProject project) {
-//		ICProject cProj = CoreModel.getDefault().getCModel().getCProject(project.getName());
-//		if (cProj == null) throw new IllegalArgumentException("ONLY supporting C/C++ projects!");
-//		selectedProj = cProj;
-//	}
+	/**
+	 * @return
+	 */
+	public static IJavaProject getSelectedProject() {
+	    return selectedProj;
+	}
+	
+	/**
+	 * @param project
+	 */
+	public static void setSelectedProject(IProject project) {
+		if (project instanceof IJavaProject) {
+		    selectedProj = (IJavaProject) project;
+		} else
+		    throw new IllegalArgumentException("ONLY supporting Java projects!");
+	}
 
 
 	
@@ -321,7 +293,7 @@ public final class ASTUtil extends DebugElement {
 		Boolean isGround = GROUND_FUNCTION_CACHE.get(func);
 		if (isGround != null) return isGround;
 		
-		isGround = getFirstDescendantOfAs(func, AST_FUNCTION_CALL_EXPRESSION[0]) == null;
+		isGround = getFirstDescendantOfAs(func, AST_METHOD_INVOCATION_EXPRESSION[0]) == null;
 		GROUND_FUNCTION_CACHE.put(func, isGround);
 		return isGround;
 	}
@@ -634,8 +606,8 @@ public final class ASTUtil extends DebugElement {
 		
 		final Name f2n = getNameOf(f2);
 		for (MethodInvocation call : 
-			getDescendantsOfAs(f1, AST_FUNCTION_CALL_EXPRESSION[0])) 
-			if (equals(f2n, getEnclosingFunctionCallNameOf(call))) return true;
+			getDescendantsOfAs(f1, AST_METHOD_INVOCATION_EXPRESSION[0])) 
+			if (f2n.equals(getEnclosingFunctionCallNameOf(call))) return true;
 		return false;
 	}
 	
@@ -827,11 +799,11 @@ public final class ASTUtil extends DebugElement {
 		// TODO: caching the last descendant
 		if (ancestor == null) return null;
 		
-		final ASTNode[] children = ASTUtil.getChildrenOf(ancestor);
+		final List<ASTNode> children = ASTUtil.getChildrenOf(ancestor);
 		if (children == null) return ancestor;
-		final int childSize = children.length;
+		final int childSize = children.size();
 		if (childSize <= 0) return ancestor;
-		return getLastDescendantOf(children[childSize - 1]);
+		return getLastDescendantOf(children.get(childSize - 1));
 	}
 	
 	
@@ -843,13 +815,13 @@ public final class ASTUtil extends DebugElement {
 				: descend.getParent();
 	}
 	
-	public static ASTNode getParentOf(final Annotation descend) {
-		if (descend == null) throwNullArgumentException("descendant");
-		
-		final StructuralPropertyDescriptor loc = descend.getLocationInParent();
-		return descend.getTranslationUnit().getNodeSelector(null).findEnclosingNode(
-				loc.getNodeOffset() - 1, loc.getNodeLength() + 1);
-	}
+//	public static ASTNode getParentOf(final Annotation descend) {
+//		if (descend == null) throwNullArgumentException("descendant");
+//		
+//		final StructuralPropertyDescriptor loc = descend.getLocationInParent();
+//		return descend.getTranslationUnit().getNodeSelector(null).findEnclosingNode(
+//				loc.getNodeOffset() - 1, loc.getNodeLength() + 1);
+//	}
 	
 	public static Statement getParentBranchOf(ASTNode descend) {
 		return getAncestorOfAs(descend, ASTUtil.AST_BRANCH_TYPES, false);
@@ -985,33 +957,33 @@ public final class ASTUtil extends DebugElement {
 	
 	
 	
-	public static Name getDefinitionOf(Name name) {
-		if (name == null) return null;
-		
-		// Searching for local definition first
-		Name[] defs = 
-				name.getTranslationUnit().getDefinitions(name.resolveBinding());
-		if (defs != null && defs.length > 0) return defs[0];
-		
-		// Searching for global definition
-//		IIndex index = getIndex(false);
-//		try {
-//			index.acquireReadLock();
-//			// IIndex doesn't find names for IParameter's
-////			defs = index.findNames(
-////					name.resolveBinding(), IIndex.FIND_ALL_OCCURRENCES);	// internal NullPointerException!
-//			for (IIndexBinding bind : index.findBindings(
-//					name.toCharArray(), IndexFilter.ALL, new NullProgressMonitor())) {
-//				defs = index.findReferences(bind);
-//				if (defs != null && defs.length > 0) return defs[0];
-//			}
-//		} catch (InterruptedException | CoreException e) {
-//			DebugElement.throwTodoException(e.toString());
-//		} finally {
-//			index.releaseReadLock();
-//		}
-		return null;
-	}
+//	public static Name getDefinitionOf(Name name) {
+//		if (name == null) return null;
+//		
+//		// Searching for local definition first
+//		Name[] defs = 
+//				name.getTranslationUnit().getDefinitions(name.resolveBinding());
+//		if (defs != null && defs.length > 0) return defs[0];
+//		
+//		// Searching for global definition
+////		IIndex index = getIndex(false);
+////		try {
+////			index.acquireReadLock();
+////			// IIndex doesn't find names for IParameter's
+//////			defs = index.findNames(
+//////					name.resolveBinding(), IIndex.FIND_ALL_OCCURRENCES);	// internal NullPointerException!
+////			for (IIndexBinding bind : index.findBindings(
+////					name.toCharArray(), IndexFilter.ALL, new NullProgressMonitor())) {
+////				defs = index.findReferences(bind);
+////				if (defs != null && defs.length > 0) return defs[0];
+////			}
+////		} catch (InterruptedException | CoreException e) {
+////			DebugElement.throwTodoException(e.toString());
+////		} finally {
+////			index.releaseReadLock();
+////		}
+//		return null;
+//	}
 	
 	public static MethodDeclaration getDefinitionOf(IMethodBinding f) {
 		if (f == null) DebugElement.throwNullArgumentException("function");
@@ -1112,9 +1084,8 @@ public final class ASTUtil extends DebugElement {
 //		f = fbind.getAdapter(IMethodBinding.class);	// IIndexBinding has NO adapters for IMethodBinding!
 		IMethodBinding f = FUNCTION_CACHE.get(fName);
 		if (f == null) {
-			final Name fASTName = toASTName(fName);
-			if (fASTName != null) {
-				fBind = fASTName.resolveBinding();
+			if (fName != null) {
+				fBind = fName.resolveBinding();
 				if (fBind instanceof IMethodBinding) FUNCTION_CACHE.put(fName, f = (IMethodBinding)fBind); 
 			}
 		}
@@ -1129,7 +1100,7 @@ public final class ASTUtil extends DebugElement {
 		if (def == null) WRITING_FUNCTION_CACHE.put(
 				node, 
 				def = (MethodDeclaration) getAncestorOfAs(
-						node, AST_FUNCTION_DEFINITION, false));
+						node, AST_METHOD_DECLARATION_DEFINITION, false));
 		return def;
 	}
 
@@ -1137,7 +1108,7 @@ public final class ASTUtil extends DebugElement {
 	
 	public static MethodInvocation getEnclosingFunctionCallOf(ASTNode node) {
 		return getAncestorOfAsUnless(
-				node, AST_FUNCTION_CALL_EXPRESSION, AST_STATEMENT_TYPE, true);
+				node, AST_METHOD_INVOCATION_EXPRESSION, AST_STATEMENT_TYPE, true);
 	}
 	
 	public static Name getEnclosingFunctionCallNameOf(MethodInvocation call) {
@@ -1164,7 +1135,7 @@ public final class ASTUtil extends DebugElement {
 		return getAncestorOfAsUnless(
 				node, 
 				AST_FOR_TYPE,
-				AST_FUNCTION_DEFINITION, 
+				AST_METHOD_DECLARATION_DEFINITION, 
 				false);
 	}
 	
@@ -1184,7 +1155,7 @@ public final class ASTUtil extends DebugElement {
 		return getAncestorOfAsUnless(
 				innerLoop, 
 				AST_FOR_TYPE,
-				AST_FUNCTION_DEFINITION, 
+				AST_METHOD_DECLARATION_DEFINITION, 
 				false);
 	}
 	
@@ -1299,13 +1270,13 @@ public final class ASTUtil extends DebugElement {
 		return null;
 	}
 	
-	/**
-	 * @param exp
-	 * @return
-	 */
-	public static Name getNameOf(final Name exp) {
-		return (exp != null) ? exp.getName() : null;
-	}
+//	/**
+//	 * @param exp
+//	 * @return
+//	 */
+//	public static Name getNameOf(final Name exp) {
+//		return (exp != null) ? exp.getName() : null;
+//	}
 	
 	public static Name getNameOf(MethodInvocation exp) {
 		return getEnclosingFunctionCallNameOf(exp);
@@ -1366,7 +1337,7 @@ public final class ASTUtil extends DebugElement {
 		if (astName != null) return astName;
 		
 //		final boolean hasRole = role != r_any;
-		int iRole;
+//		int iRole;
 		switch (role) {
 //		case IASTNameOwner.r_declaration:	iRole = IIndex.FIND_DECLARATIONS;		break;
 //		case IASTNameOwner.r_definition:	iRole = IIndex.FIND_DEFINITIONS;		break;
@@ -1403,14 +1374,14 @@ public final class ASTUtil extends DebugElement {
 	public static Collection<Name> getNameOf(IBinding bind) {
 		try {
 			final Set<Name> names = new HashSet<>();
-			Elemental.add(names, ()-> getNameOf(bind, IASTNameOwner.r_definition), AST_EXCEPTION);
-			if (names.isEmpty()) Elemental.add(names, ()-> getNameOf(bind, IASTNameOwner.r_declaration), AST_EXCEPTION);
+//			Elemental.add(names, ()-> getNameOf(bind, IASTNameOwner.r_definition), AST_EXCEPTION);
+//			if (names.isEmpty()) Elemental.add(names, ()-> getNameOf(bind, IASTNameOwner.r_declaration), AST_EXCEPTION);
 			if (names.isEmpty()) Elemental.add(names, ()-> getNameOf(bind, ASTUtil.r_any), AST_EXCEPTION);
 			if (names.isEmpty()) {
 				final ASTNameCollector nc = new ASTNameCollector(bind.getName());
-				for (IASTTranslationUnit ast : getRegisteredAST()) {
-					if (!ast.accept(nc)) DebugElement.throwTodoException("failed AST visiting");
-					names.addAll(Elemental.toList(nc.getNames())); 
+				for (CompilationUnit ast : getRegisteredAST()) {
+				    ast.accept(nc);
+					names.addAll(nc.getNames()); 
 //					for (Name n : Elemental.toList(nc.getNames())) 
 //						Elemental.addSkipNull(names, ()-> n, ()-> n.resolveBinding().equals(bind), AST_EXCEPTION);
 				}
@@ -1445,7 +1416,7 @@ public final class ASTUtil extends DebugElement {
 		if (bind == null) DebugElement.throwNullArgumentException("binding");
 		
 		MethodDeclaration scopeAST = 
-				getWritingFunctionDefinitionOf(toASTName(scope));
+				getWritingFunctionDefinitionOf(scope);
 		if (scopeAST != null) 
 			for (Name descendName : getDescendantsOfAs(scopeAST, Name.class)) 
 				if (descendName.resolveBinding().equals(bind)) return descendName;
@@ -1554,12 +1525,12 @@ public final class ASTUtil extends DebugElement {
 	
 	
 	
-	public static boolean isInTheSameFile(ASTNode node1, ASTNode node2) {
-		if (node1 == node2) return true;
-		if (node1 == null || node2 == null) return false;
-		
-		return node1.getContainingFilename().equals(node2.getContainingFilename());
-	}
+//	public static boolean isInTheSameFile(ASTNode node1, ASTNode node2) {
+//		if (node1 == node2) return true;
+//		if (node1 == null || node2 == null) return false;
+//		
+//		return node1.getContainingFilename().equals(node2.getContainingFilename());
+//	}
 	
 //	/**
 //	 * @param l1
@@ -1573,20 +1544,20 @@ public final class ASTUtil extends DebugElement {
 //		return l1.getFileName().equals(l2.getFileName()) && l1.getNodeOffset() == l2.getNodeOffset();
 //	}
 	
-	/**
-	 * TODO? Name.equals(...) doesn't work as expected?
-	 * TODO? MethodDeclaration.equals(...) doesn't work as expected!
-	 * 
-	 * @param node1
-	 * @param node2
-	 * @return
-	 */
-	public static boolean equals(ASTNode node1, ASTNode node2) {
-		if (node1 == node2) return true;
-		if (node1 == null || node2 == null) return false;
-		
-		return equals(node1.getFileLocation(), node2.getFileLocation());
-	}
+//	/**
+//	 * TODO? Name.equals(...) doesn't work as expected?
+//	 * TODO? MethodDeclaration.equals(...) doesn't work as expected!
+//	 * 
+//	 * @param node1
+//	 * @param node2
+//	 * @return
+//	 */
+//	public static boolean equals(ASTNode node1, ASTNode node2) {
+//		if (node1 == node2) return true;
+//		if (node1 == null || node2 == null) return false;
+//		
+//		return equals(node1.getFileLocation(), node2.getFileLocation());
+//	}
 	
 	/**
 	 * @param name1

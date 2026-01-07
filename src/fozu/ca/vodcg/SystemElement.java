@@ -31,12 +31,14 @@ import fozu.ca.vodcg.util.ASTUtil;
 @SuppressWarnings("removal")
 public abstract class SystemElement extends DebugElement /*extends Elemental */{
 
+	@SuppressWarnings("deprecation")
 	private static final Method METHOD_EQUALS = 
 			getMethod(SystemElement.class, "equals", Object.class);
 //	private static final Method METHOD_HASH_CODE = 
 //			Elemental.getMethod(SystemElement.class, "hashCode");
 //	private static final Method METHOD_IS_CONSTANT = 
 //			getMethod(Element.class, "isConstant");
+	@SuppressWarnings("deprecation")
 	private static final Method METHOD_TO_CONSTANT = 
 			getMethod(SystemElement.class, "toConstant");
 	
@@ -189,6 +191,7 @@ public abstract class SystemElement extends DebugElement /*extends Elemental */{
 		return (T) clone;
 	}
 	
+	@SuppressWarnings("deprecation")
 	protected Object cloneNonConstant() {
 		try {
 			// Calling {@link Object#clone()} default procedure first
@@ -684,6 +687,7 @@ public abstract class SystemElement extends DebugElement /*extends Elemental */{
 		return Arrays.asList(super.hashCode());
 	}
 	
+	@SuppressWarnings("deprecation")
 	final public int hashCode() {
 		if (!isDirty()) return hashCode.hashCode();
 //		assert hashCode == -1;
@@ -715,6 +719,7 @@ public abstract class SystemElement extends DebugElement /*extends Elemental */{
 	
 	abstract protected Boolean cacheConstant();
 	
+	@SuppressWarnings("deprecation")
 	protected Boolean setConstant(Boolean isConst) {
 		/* isConstant -> !isConstant: caused by re-assigned
 		 * !isConstant -> isConstant: non-sense
@@ -794,6 +799,7 @@ public abstract class SystemElement extends DebugElement /*extends Elemental */{
 		setGlobal(true);
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void setGlobal(Boolean isGlobal) {
 		if (this.isGlobal != null && isGlobal != null) {
 			if (!this.isGlobal.equals(isGlobal)) throwTodoException("inconsistent global-ness");
@@ -961,6 +967,7 @@ public abstract class SystemElement extends DebugElement /*extends Elemental */{
 		return e instanceof UncertainException;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public static <T> T throwFunctionalException() 
 			throws UnsupportedOperationException {
 		return throwTodoException("loop iterator must ONLY be an array index");
@@ -980,6 +987,7 @@ public abstract class SystemElement extends DebugElement /*extends Elemental */{
 //		return null;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public <T> T throwReductionException(Method callee) {
 		leave(callee);
 		return DebugElement.throwReductionException();
@@ -1010,6 +1018,7 @@ public abstract class SystemElement extends DebugElement /*extends Elemental */{
 //		return DebugElement.throwTodoException(message);
 //	}
 
+	@SuppressWarnings("deprecation")
 	public static <T> T throwTodoException(Exception e) {
 		return DebugElement.throwTodoException(e);
 	}
@@ -1018,6 +1027,7 @@ public abstract class SystemElement extends DebugElement /*extends Elemental */{
 		return throwTodoException(null, e, callee);
 	}
 	
+	@SuppressWarnings("deprecation")
 	public <T> T throwTodoException(String message, Exception e, Method... callees) {
 		leave(callees);
 		return DebugElement.throwTodoException(message, e);

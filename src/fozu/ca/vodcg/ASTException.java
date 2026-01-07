@@ -5,7 +5,6 @@ package fozu.ca.vodcg;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.cdt.core.dom.ast.IProblemBinding;
 
 import fozu.ca.vodcg.util.ASTUtil;
 

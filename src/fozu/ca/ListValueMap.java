@@ -14,7 +14,7 @@ import java.util.Set;
  * @author Kao, Chen-yi
  *
  */
-public class ListValueMap<K, LV> implements Elemental {
+public class ListValueMap<K, LV> extends Elemental {
 
 	final private Map<K, List<LV>> map = new HashMap<>();
 	

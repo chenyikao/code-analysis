@@ -4,33 +4,30 @@
 package fozu.ca.vodcg.condition;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.eclipse.cdt.core.dom.IName;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.Statement;
 
+import fozu.ca.DebugElement;
 import fozu.ca.DuoKeyMap;
-import fozu.ca.Elemental;
 import fozu.ca.condition.SerialFormat;
+import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.condition.FunctionCall.CallProposition;
+import fozu.ca.vodcg.condition.data.DataType;
+import fozu.ca.vodcg.condition.data.Pointer;
 import fozu.ca.vodcg.condition.version.ConstantCountingVersion;
 import fozu.ca.vodcg.condition.version.FunctionallableRole;
-import fozu.ca.vodcg.condition.version.Version;
 import fozu.ca.vodcg.condition.version.NoSuchVersionException;
 import fozu.ca.vodcg.condition.version.ThreadRoleMatchable;
 import fozu.ca.vodcg.condition.version.UniversalVersion;
+import fozu.ca.vodcg.condition.version.Version;
 import fozu.ca.vodcg.condition.version.VersionEnumerable;
-import fozu.ca.vodcg.Assignable;
-import fozu.ca.vodcg.condition.data.DataType;
-import fozu.ca.vodcg.condition.data.Pointer;
 
 /**
  * A BooleanFunction can be
@@ -49,8 +46,9 @@ implements VersionEnumerable<BooleanFunction> {
 
 	private static final String UNSUPPORTED_OPERATION = "unsupported operation";
 
-	private static final Method 
-	METHOD_REDUCE_ONCE 	= Elemental.getMethod(BooleanFunction.class, "reduceOnce");
+	@SuppressWarnings({ "deprecation", "removal" })
+    private static final Method 
+	METHOD_REDUCE_ONCE 	= DebugElement.getMethod(BooleanFunction.class, "reduceOnce");
 	
 	/**
 	 * A function may derive many boolean ones according to different side-effect calls.
@@ -104,7 +102,7 @@ implements VersionEnumerable<BooleanFunction> {
 	 * 	a partial tautology function making sat locally.
 	 * @see FunctionCall.CallProposition 
 	 */
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
 	private BooleanFunction(Function f, Proposition body) {
 		super(f.getLibrary(), f.getName(), DataType.Bool, f.getScopeManager());
 	
@@ -206,7 +204,7 @@ implements VersionEnumerable<BooleanFunction> {
 		return ALL_BOOL_FUNCTIONS.valueSet();
 	}
 
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
 	@Override
 	public Assignable<?> getAssignable() {
 		return throwTodoException("non-assignable");
@@ -312,14 +310,15 @@ implements VersionEnumerable<BooleanFunction> {
 		return this;
 	}
 
-	@Override
-	public Version<? extends BooleanFunction> peekVersion() {
-		return version;
+	@SuppressWarnings("unchecked")
+    @Override
+	public Version<BooleanFunction> peekVersion() {
+		return (Version<BooleanFunction>) version;
 	}
 
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
 	@Override
-	public Version<? extends BooleanFunction> peekVersion(ThreadRoleMatchable role) {
+	public Version<BooleanFunction> peekVersion(ThreadRoleMatchable role) {
 		return throwTodoException(UNSUPPORTED_OPERATION);
 	}
 
@@ -335,7 +334,7 @@ implements VersionEnumerable<BooleanFunction> {
 		return !versionIsLocked;
 	}
 	
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
 	@Override
 	public void reversion(Version<? extends BooleanFunction> newVersion) throws NoSuchVersionException {
 		throwTodoException(UNSUPPORTED_OPERATION);
@@ -466,7 +465,7 @@ implements VersionEnumerable<BooleanFunction> {
 	 * @see fozu.ca.condition.Function#getVariableReferences()
 	 */
 	@Override
-	protected <T> Set<? extends T> cacheDirectVariableReferences(Class<T> refType) {
+	protected <T> Set<T> cacheDirectVariableReferences(Class<T> refType) {
 		return isReference() 
 				? ref.cacheDirectVariableReferences(refType)
 						: super.cacheDirectVariableReferences(refType) ;
@@ -487,7 +486,7 @@ implements VersionEnumerable<BooleanFunction> {
 		return isReference() ? ref.isGlobal() : super.cacheGlobal();
 	}
 	
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
 	@Override
 	public Boolean isAssigned() {
 		return throwTodoException(UNSUPPORTED_OPERATION);

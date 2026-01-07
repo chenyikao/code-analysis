@@ -9,13 +9,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.jdt.core.dom.IASTDeclarator;
-import org.eclipse.jdt.core.dom.IASTFunctionDeclarator;
-import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
-import org.eclipse.jdt.core.dom.IFunction;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Name;
 
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.condition.ArithmeticExpression;
@@ -199,7 +195,7 @@ public class FunctionAssignable extends Assignable<FunctionalPathVariable> {
 		return getVariableDeclaration() != null 
 				&& ASTUtil.getAncestorOfAsUnless(getVariableDeclaration(), 
 						new Class[]{MethodDeclaration.class},
-						ASTUtil.AST_FUNCTION_DEFINITION, 
+						ASTUtil.AST_METHOD_DECLARATION_DEFINITION, 
 						false) != null;
 	}
 	

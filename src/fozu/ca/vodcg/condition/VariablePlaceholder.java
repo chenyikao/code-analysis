@@ -364,8 +364,9 @@ extends VersionPlaceholder<V> {
 	
 	
 	
-	@Override
-	public Version<? extends V> peekVersion(ThreadRoleMatchable role) {
+	@SuppressWarnings("unchecked")
+    @Override
+	public Version<V> peekVersion(ThreadRoleMatchable role) {
 		if (role == null) return super.peekVersion(role);
 		
 		final Map<FunctionallableRole, Version<? extends V>> vs = peekVersionMap();
@@ -373,7 +374,7 @@ extends VersionPlaceholder<V> {
 //			if (role instanceof ThreadRole) 
 //				return vs.get(role);
 			if (role instanceof FunctionallableRole) 
-				return vs.get((FunctionallableRole) role);
+				return (Version<V>) vs.get((FunctionallableRole) role);
 			throwUnsupportedRoleException();
 		}
 		return null;
@@ -383,8 +384,8 @@ extends VersionPlaceholder<V> {
 	 * @return the current version referenced
 	 */
 	@Override
-	public Version<? extends V> getVersion() {
-		return debugGet(()-> ((SystemElement) this).guard(
+	public Version<V> getVersion() {
+		return (Version<V>) debugGet(()-> ((SystemElement) this).guard(
 				()-> getVersion(getThreadRole()),
 				()-> super.getVersion()));
 	}
@@ -392,17 +393,18 @@ extends VersionPlaceholder<V> {
 	/**
 	 * @return the current version referenced
 	 */
-	@Override
-	public Version<? extends V> getVersion(FunctionallableRole role) {
+	@SuppressWarnings("unchecked")
+    @Override
+	public Version<V> getVersion(FunctionallableRole role) {
 		if (role == null) return super.getVersion();
 
-		Version<? extends V> ver = null;
+		Version<V> ver = null;
 		final Map<FunctionallableRole, Version<? extends V>> map = getVersionMap();
 		if (map.isEmpty()) {	// peekVersion() == null
 			ver = super.getVersion().cloneIfChangeRole(role);
 			
 		} else if (role instanceof FunctionallableRole) try {
-			ver = map.get((FunctionallableRole) role);
+			ver = (Version<V>) map.get((FunctionallableRole) role);
 			if (ver == null) ver = super.getVersion().cloneIfChangeRole(role);
 			
 		} catch (Exception e) {
@@ -589,10 +591,9 @@ extends VersionPlaceholder<V> {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	protected <T> Set<? extends T> cacheDirectVariableReferences(
+	protected <T> Set<T> cacheDirectVariableReferences(
 			Class<T> refType) {
-		if (refType == null) return throwNullArgumentException(
-				"reference type", ()-> Collections.emptySet());
+		if (refType == null) return throwNullArgumentException("reference type");
 		
 		final Set<T> dvrs = new HashSet<>(
 				super.cacheDirectVariableReferences(refType));

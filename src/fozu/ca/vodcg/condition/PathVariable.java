@@ -13,35 +13,33 @@ import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.ArrayAccess;
-import org.eclipse.jdt.core.dom.IASTDeclarator;
+import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ForStatement;
+import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Type;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
-import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.jdt.core.dom.IVariableBinding;
 
-import fozu.ca.Elemental;
+import fozu.ca.DebugElement;
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.ASTException;
-import fozu.ca.vodcg.UncertainException;
-import fozu.ca.vodcg.VODCondGen;
-import fozu.ca.vodcg.condition.data.PlatformType;
-import fozu.ca.vodcg.condition.version.Version;
-import fozu.ca.vodcg.util.ASTUtil;
-import fozu.ca.vodcg.condition.version.EnumeratedVersion;
-import fozu.ca.vodcg.condition.version.NoSuchVersionException;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.IncomparableException;
 import fozu.ca.vodcg.SystemElement;
+import fozu.ca.vodcg.UncertainException;
 import fozu.ca.vodcg.UncertainPlaceholderException;
+import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.condition.data.DataType;
+import fozu.ca.vodcg.condition.data.PlatformType;
 import fozu.ca.vodcg.condition.version.ConstantCountingVersion;
+import fozu.ca.vodcg.condition.version.EnumeratedVersion;
+import fozu.ca.vodcg.condition.version.NoSuchVersionException;
 import fozu.ca.vodcg.condition.version.ThreadRole;
+import fozu.ca.vodcg.condition.version.Version;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * An l-value based memory address history mapping.
@@ -54,10 +52,12 @@ public class PathVariable extends Variable {
 	private static final Map<Assignable<? extends PathVariable>, PathVariable> PV_REGISTRY = 
 			Collections.synchronizedMap(new HashMap<>());
 
-	static private final Method METHOD_CACHE_SCOPE = 
-			Elemental.getMethod(PathVariable.class, "cacheScope");
-	static private final Method METHOD_FROM = 
-			Elemental.getMethod(PathVariable.class, "from", Assignable.class);
+	@SuppressWarnings({ "deprecation", "removal" })
+    static private final Method METHOD_CACHE_SCOPE = 
+	        DebugElement.getMethod(PathVariable.class, "cacheScope");
+	@SuppressWarnings({ "deprecation", "removal" })
+    static private final Method METHOD_FROM = 
+	        DebugElement.getMethod(PathVariable.class, "from", Assignable.class);
 
 	
 	
@@ -104,7 +104,7 @@ public class PathVariable extends Variable {
 	 * @param pv
 	 */
 	protected PathVariable(PathVariable pv) {
-		super(pv.getIName(), pv.getType(), pv.cacheRuntimeAddress(), pv.getScopeManager());
+		super(pv.getASTName(), pv.getType(), pv.cacheRuntimeAddress(), pv.getScopeManager());
 
 		// reusable to sub-classes
 		for (Assignable<? extends PathVariable> asn : pv.asns) addAssignable(asn);
@@ -222,7 +222,7 @@ public class PathVariable extends Variable {
 		if (var == null) throwNullArgumentException("variable");
 		if (scope == null) throwNullArgumentException("function scope");
 		
-		Name varAst = ASTUtil.getNameOfFrom(var, scope.getIName());
+		Name varAst = ASTUtil.getNameOfFrom(var, scope.getASTName());
 		// var != null && varAst == null => var is in external libraries
 		try {
 		return from((Assignable<PathVariable>) (varAst == null ? 
@@ -262,7 +262,7 @@ public class PathVariable extends Variable {
 	
 	
 	
-	@SuppressWarnings({ "removal", "deprecation" })
+	@SuppressWarnings({ "deprecation" })
 	protected boolean addAssignable(Assignable<? extends PathVariable> asn) {
 		assert asn != null;
 		PV_REGISTRY.put(asn, this);
@@ -311,7 +311,7 @@ public class PathVariable extends Variable {
 		return aName;
 	}
 
-	@SuppressWarnings({ "removal", "deprecation" })
+	@SuppressWarnings({ "deprecation" })
 	@Override
 	public PlatformType getType() {
 		PlatformType type = super.getType();
@@ -515,7 +515,7 @@ public class PathVariable extends Variable {
 	/**
 	 * 
 	 */
-	@SuppressWarnings({ "removal", "deprecation" })
+	@SuppressWarnings({ "deprecation" })
 	public void reversionLoopIterator() {
 		throwTodoException(getName() + "_?loop");
 		setName(getName() + "_?loop");

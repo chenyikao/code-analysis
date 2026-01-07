@@ -9,12 +9,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import fozu.ca.vodcg.condition.Proposition;
 import fozu.ca.vodcg.util.ASTRuntimeLocationComputer;
@@ -76,7 +76,7 @@ implements Comparable<VariableOrientedDag> {
 		
 		if (callee == null) throwNullArgumentException("callee");
 		
-		final IVariableBinding calleeBind = callee.getBinding();
+		final IVariableBinding calleeBind = callee.getVariableBinding();
 		if (calleeBind != null) {
 			if (!(calleeBind instanceof IVariableBinding || calleeBind instanceof IMethodBinding)) 
 				throwTodoException("unsupported callee");
@@ -136,12 +136,6 @@ implements Comparable<VariableOrientedDag> {
 //	
 //}
 
-	/**
-	 * @param callee
-	 * @param condGen
-	 * @return a non-null collection.
-	 */
-	@SuppressWarnings("deprecation")
 	public static VariableOrientedDag from(Assignable<?> callee, VODCondGen condGen) 
 			throws ASTException {
 		if (callee == null) throwNullArgumentException("callee assignable");
@@ -154,7 +148,7 @@ implements Comparable<VariableOrientedDag> {
 		if (vod.isMain()) return vod;
 		
 		// tail paths
-		final Name callerName = ASTUtil.getNameOf(vod.caller);
+//		final Name callerName = ASTUtil.getNameOf(vod.caller);
 //		final IBinding hafBind = hafName.resolveBinding();
 //		TODO? while (true) {
 //		try {
@@ -308,7 +302,7 @@ implements Comparable<VariableOrientedDag> {
 	/**
 	 * @return the file location of callee
 	 */
-	public StructuralPropertyDescriptor getCalleeFileLocation() {
+	public IPath getCalleeFileLocation() {
 		return callee.getFileLocation();
 	}
 	
@@ -319,10 +313,10 @@ implements Comparable<VariableOrientedDag> {
 	public int getCalleeRangeLocation() {
 		final ASTNode loc = callee.getBinding() instanceof IMethodBinding 
 				? ASTUtil.getAncestorOfAsUnless(callee.getTopNode(), 
-						ASTUtil.AST_FUNCTION_CALL_EXPRESSION,
+						ASTUtil.AST_METHOD_INVOCATION_EXPRESSION,
 						ASTUtil.AST_STATEMENT_TYPE,
 						false)
-				: callee.getFileLocation();
+				: callee.getASTAddress();
 		return loc.getStartPosition() + loc.getLength();
 	}
 	
@@ -412,7 +406,7 @@ implements Comparable<VariableOrientedDag> {
 		final Assignable<?> ref1 = getCallee(), ref2 = vod2.getCallee();
 		final boolean isR1R2 = ref1 == ref2;
 //		final boolean isR1R2 = ref1.equals(ref2);
-		if (ASTUtil.equals(func1, func2)) {	
+		if (func1.equals(func2)) {	
 			if (isR1R2) return 0;
 			else {
 				final Proposition cond1 = getCalleeCond(), 

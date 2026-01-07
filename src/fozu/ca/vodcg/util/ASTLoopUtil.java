@@ -1,7 +1,6 @@
 package fozu.ca.vodcg.util;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,31 +9,17 @@ import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Assignment;
-import org.eclipse.jdt.core.dom.Assignment.Operator;
-import org.eclipse.jdt.core.dom.ExpressionStatement;
-import org.eclipse.jdt.core.dom.IASTDeclaration;
-import org.eclipse.jdt.core.dom.IASTDeclarationStatement;
-import org.eclipse.jdt.core.dom.IASTDeclarator;
-import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
-import org.eclipse.jdt.core.dom.IASTExpressionStatement;
 import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.IASTFunctionDefinition;
-import org.eclipse.jdt.core.dom.IASTInitializer;
-import org.eclipse.jdt.core.dom.IASTInitializerClause;
-import org.eclipse.jdt.core.dom.IASTLiteralExpression;
+import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.ParenthesizedExpression;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.IASTSimpleDeclaration;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
-import org.eclipse.jdt.core.dom.IASTUnaryExpression;
-import org.eclipse.jdt.core.dom.InfixExpression;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
@@ -70,7 +55,7 @@ public final class ASTLoopUtil {
 	private static final Map<ForStatement, ArithmeticExpression[]> 	
 	LOOP_BOUND_CACHE 		= new HashMap<>();
 	private static final Map<ForStatement, Map<org.eclipse.jdt.core.dom.Expression, ArithmeticExpression>> 			
-	LOOP_INCREMENT_CACHE	= new HashMap<>();
+	LOOP_INCREMENT_CACHE   	= new HashMap<>();
 	
 	// TODO: caching all reusable utility method results
 	
@@ -243,18 +228,18 @@ public final class ASTLoopUtil {
 	 * @param condGen 
 	 * @return
 	 */
-	public static Expression getCanonicalTestBoundOf(
+	public static org.eclipse.jdt.core.dom.Expression getCanonicalTestBoundOf(
 			ForStatement loop, VODCondGen condGen) {
-		return (Expression) getCanonicalTestOpToVarOrBoundOf(loop, true, condGen);
+		return (org.eclipse.jdt.core.dom.Expression) getCanonicalTestOpToVarOrBoundOf(loop, true, condGen);
 	}
 	
 	@SuppressWarnings("removal")
-    public static int getCanonicalTestOperatorToVarOf(
+    public static InfixExpression.Operator getCanonicalTestOperatorToVarOf(
 			ForStatement loop, VODCondGen condGen) {
 		Object op = getCanonicalTestOpToVarOrBoundOf(loop, false, condGen);
-		if (op instanceof Integer) return (int) op;
+		if (op instanceof InfixExpression.Operator) return (InfixExpression.Operator) op;
 		DebugElement.throwTodoException("Non-canonical loop?");
-		return -1;
+		return null;
 	}
 	
 	private static Object getCanonicalTestOpToVarOrBoundOf(
@@ -271,14 +256,14 @@ public final class ASTLoopUtil {
 				final org.eclipse.jdt.core.dom.Expression oprd1 = condBin.getLeftOperand(), 
 						oprd2 = condBin.getRightOperand(), 
 						it = getCanonicalIteratorOf(loop);
-				if (ASTAssignableComputer.getDependentOnBy(oprd1, it) != null) {	// var relational-op b
+				if (new ASTDependencyComputer(oprd1).getDependentOnBy(it) != null) {	// var relational-op b
 					tb = oprd2; 
 					if (op == InfixExpression.Operator.LESS) top = InfixExpression.Operator.GREATER;
 					else if (op == InfixExpression.Operator.LESS_EQUALS) top = InfixExpression.Operator.GREATER_EQUALS;
 					else if (op == InfixExpression.Operator.GREATER) top = InfixExpression.Operator.LESS;
 					else if (op == InfixExpression.Operator.GREATER_EQUALS) top = InfixExpression.Operator.LESS_EQUALS;
 				}
-				else if (ASTAssignableComputer.getDependentOnBy(oprd2, it) != null) {	// b relational-op var
+				else if (new ASTDependencyComputer(oprd2).getDependentOnBy(it) != null) {	// b relational-op var
 					tb = oprd1; top = op;
 				}
 				// tb keeps null if loop is not canonical 
@@ -444,7 +429,7 @@ public final class ASTLoopUtil {
 		return (ForStatement) ASTUtil.getAncestorOfAsUnless(
 				innerLoop, 
 				ASTUtil.AST_FOR_TYPE,
-				ASTUtil.AST_FUNCTION_DEFINITION, 
+				ASTUtil.AST_METHOD_DECLARATION_DEFINITION, 
 				false);
 	}
 	
@@ -474,7 +459,7 @@ public final class ASTLoopUtil {
 	 * @return
 	 */
 	public static boolean isLoopIteratorConstant(Name i) {
-		final org.eclipse.jdt.core.dom.Expression exp = (org.eclipse.jdt.core.dom.Expression) i.getParent().getParent();	//bypassing IASTIdExpression
+		final ASTNode asm = ASTUtil.getAncestorOfAs(i, ASTUtil.AST_ASSIGNMENT_TYPES, false);
 		ForStatement loop;
 
 		/*	for (init-expr; test-expr; incr-expr) structured-block
@@ -484,10 +469,10 @@ public final class ASTLoopUtil {
 		 * 					TODO: random-access-iterator-type var = lb
 		 * 					TODO: pointer-type var = lb
 		 */ 
-		if (ASTAssignableComputer.isPlainBinaryAssignment(exp)) {	// when exp is the assignment part of init-expr
+		if (ASTAssignableComputer.isPlainBinaryAssignment(asm)) {	// when exp is the assignment part of init-expr
 			//bypassing the IASTExpressionStatement initializer statement
-			loop = (ForStatement) exp.getParent().getParent();	
-			return ASTAssignableComputer.isConstantAssignment((Assignment) exp) 
+			loop = (ForStatement) asm.getParent().getParent();	
+			return ASTAssignableComputer.isConstantAssignment((Assignment) asm) 
 					&& isConditionedConstantly(loop) && iteratesConstantly(loop);
 		}
 
@@ -495,10 +480,11 @@ public final class ASTLoopUtil {
 		 * 					var relational-op b
 		 * 					b relational-op var
 		 */
-		if (ASTUtil.isBinaryRelation(exp)) {	// exp is test-expr
-			loop = (ForStatement) exp.getParent();
+		if (asm instanceof org.eclipse.jdt.core.dom.Expression 
+		        && ASTUtil.isBinaryRelation((org.eclipse.jdt.core.dom.Expression) asm)) {	// exp is test-expr
+			loop = (ForStatement) asm.getParent();
 			return isInitializedConstantly(loop) 
-					&& isRelatedConstantly((Assignment) exp) && iteratesConstantly(loop);
+					&& isRelatedConstantly((Assignment) asm) && iteratesConstantly(loop);
 		}
 
 		/* 		incr-expr 	One of the following:
@@ -521,11 +507,12 @@ public final class ASTLoopUtil {
 		 *					for-loop other than in incr-expr. Unless the variable is specified lastprivate
 		 *					or linear on the loop construct, its value after the loop is unspecified.
 		 */ 
-		if (ASTAssignableComputer.isRewritingAssignment(exp)) {	// exp is incr-expr, which only concerns linear increments
-			loop = (ForStatement) exp.getParent();
+		if (asm instanceof Assignment && ASTAssignableComputer.isRewritingAssignment(
+		        (Assignment) asm)) {	// exp is incr-expr, which only concerns linear increments
+			loop = (ForStatement) asm.getParent();
 			return isInitializedConstantly(loop) 
 					&& isConditionedConstantly(loop) 
-					&& (exp instanceof Assignment)?increasesConstantly((Assignment) exp):true;
+					&& (asm instanceof Assignment)?increasesConstantly((Assignment) asm):true;
 		}
 		
 		return false;
@@ -603,10 +590,10 @@ public final class ASTLoopUtil {
 		 *					var = incr + var
 		 * 					var = var - incr
 		 */
-		else if (ASTAssignableComputer.isPlainBinaryAssignment(exp) && incrExp instanceof Assignment) {
+		else if (ASTAssignableComputer.isPlainBinaryAssignment(exp) && incrExp instanceof InfixExpression) {
 			Assignment incrAdd = (Assignment) incrExp;
 			// a constant (IASTLiteralExpression) has no name (Name)
-			return ASTUtil.isConstant(incrAdd.getOperator()) || 
+			return ASTUtil.isConstant(incrAdd.getLeftHandSide()) || 
 					ASTUtil.isConstant(incrAdd.getRightHandSide());
 		}
 		
@@ -630,7 +617,8 @@ public final class ASTLoopUtil {
 	@SuppressWarnings({ "removal", "unchecked" })
     public static Map<org.eclipse.jdt.core.dom.Expression, ArithmeticExpression> getIncrementsOf(
             ForStatement loop, final ASTAddressable runTimeAddr, VODCondGen condGen) {
-        final Map<org.eclipse.jdt.core.dom.Expression, ArithmeticExpression> increments = LOOP_INCREMENT_CACHE.computeIfAbsent(loop, key -> new HashMap<>());
+        final Map<org.eclipse.jdt.core.dom.Expression, ArithmeticExpression> increments = 
+                LOOP_INCREMENT_CACHE.computeIfAbsent(loop, key -> new HashMap<>());
         if (!increments.isEmpty()) {
             return increments;
         }
@@ -694,17 +682,25 @@ public final class ASTLoopUtil {
         return increments;
     }
 
-	public static Int getIncrementOf(ForStatement loop, Expression initializer, final ASTAddressable runTimeAddr, VODCondGen condGen) {
+	public static ArithmeticExpression getIncrementOf(
+	        ForStatement loop, org.eclipse.jdt.core.dom.Expression initializer, final ASTAddressable runTimeAddr, VODCondGen condGen) {
         if (loop == null) return null;
         
-        final Map<Expression, ArithmeticExpression> increments = ASTLoopUtil.getIncrementsOf(loop, runTimeAddr, condGen);
+        final Map<org.eclipse.jdt.core.dom.Expression, ArithmeticExpression> increments = 
+                ASTLoopUtil.getIncrementsOf(loop, runTimeAddr, condGen);
         return initializer == null 
                 ? increments.values().iterator().next() 
                 : increments.get(initializer);
 	}
 	
-	public static Int setIncrementOf(ForStatement loop, Int incr) {
-		return LOOP_INCREMENT_CACHE.put(loop, incr);
+	public static ArithmeticExpression setIncrementOf(
+	        ForStatement loop, org.eclipse.jdt.core.dom.Expression loopInit, ArithmeticExpression incr) {
+	    Map<org.eclipse.jdt.core.dom.Expression, ArithmeticExpression> incrCache = LOOP_INCREMENT_CACHE.get(loop);
+	    if (incrCache == null) {
+            incrCache = new HashMap<>();
+            LOOP_INCREMENT_CACHE.put(loop, incrCache);
+        }
+		return incrCache.put(loopInit, incr);
 	}
 
 

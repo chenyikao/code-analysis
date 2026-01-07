@@ -4,22 +4,15 @@
 package fozu.ca.vodcg.util;
 
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
-import org.eclipse.cdt.core.index.IIndexName;
-import org.eclipse.core.runtime.CoreException;
 
 import fozu.ca.DebugElement;
-import fozu.ca.Elemental;
 import fozu.ca.TrioKeyMap;
 import fozu.ca.vodcg.IncomparableException;
 import fozu.ca.vodcg.VODCondGen;
@@ -179,8 +172,8 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 	public int compare(ASTNode subject, ASTNode target) {
 		try {
 			return compare(
-					ASTUtil.getAncestorsOfUntil(subject, ASTUtil.AST_FUNCTION_DEFINITION), 
-					ASTUtil.getAncestorsOfUntil(target, ASTUtil.AST_FUNCTION_DEFINITION));
+					ASTUtil.getAncestorsOfUntil(subject, ASTUtil.AST_METHOD_DECLARATION_DEFINITION), 
+					ASTUtil.getAncestorsOfUntil(target, ASTUtil.AST_METHOD_DECLARATION_DEFINITION));
 			
 		} catch (CoreException | InterruptedException e) {
 			return DebugElement.throwUnhandledException(e);
@@ -241,7 +234,7 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 	 * @param host2 - the same assumption to {@link host1}
 	 * @return
 	 */
-	protected static Integer compareAsGlobal(ASTNode host1, ASTNode host2) {
+	public static Integer compareAsGlobal(ASTNode host1, ASTNode host2) {
 		if (host1 == null) return host2 == null ? 0 : Integer.MIN_VALUE;
 		if (host2 == null) return host1 == null ? 0 : Integer.MAX_VALUE;
 		return null;
@@ -355,9 +348,9 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 
 	public boolean isIn(ASTNode subject, ASTNode target) {
 		List<ASTNode> subjectFunc = 
-				ASTUtil.getAncestorsOfUntil(subject, ASTUtil.AST_FUNCTION_DEFINITION);
+				ASTUtil.getAncestorsOfUntil(subject, ASTUtil.AST_METHOD_DECLARATION_DEFINITION);
 		return (subjectFunc == null) ? false : subjectFunc.containsAll(
-				ASTUtil.getAncestorsOfUntil(target, ASTUtil.AST_FUNCTION_DEFINITION)); 
+				ASTUtil.getAncestorsOfUntil(target, ASTUtil.AST_METHOD_DECLARATION_DEFINITION)); 
 	}
 
 	public boolean isAfter(ASTNode subject, ASTNode target) {
@@ -400,13 +393,13 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 	
 	/**
 	 * @param me
-	 * @param includesPragma
+	 * @param includesAnnotation
 	 * TODO: @param includesComment 
 	 * @return the last descendant (direct biggest small sibling) node of {@code me} in AST.
 	 * 	Or the parent node of {@code me} if {@code me} is already the smallest sibling.
 	 */
 	@SuppressWarnings({ "removal", "unchecked" })
-	public ASTNode previousOf(final ASTNode me, final boolean includesPragma) {
+	public ASTNode previousOf(final ASTNode me, final boolean includesAnnotation) {
 		if (me == null) DebugElement.throwInvalidityException("me");
 
 		final ASTNode parent = ASTUtil.getParentOf(me);
@@ -414,7 +407,7 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 		assert parent != null && parentLoc != null;
 		
 		if (parentLoc.isSimpleProperty() || parentLoc.isChildProperty()) 
-			return previousOf(parent, includesPragma);
+			return previousOf(parent, includesAnnotation);
 		
 		// regular child node s should be in AST order
 		ASTNode pre = null;
@@ -434,9 +427,9 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 				? parent							// when sbl is the first child
 				: ASTUtil.getLastDescendantOf(pre);	// or going deeper
 		
-		if (includesPragma) {
-			final ASTNode pp = previousPragmaOfAfter(me, pre, me.getTranslationUnit()); 
-			pre = pp == null ? pre : pp;
+		if (includesAnnotation) {
+//			final ASTNode pp = previousAnnotationOfAfter(me, pre, (CompilationUnit) me.getRoot()); 
+//			pre = pp == null ? pre : pp;
 		}
 
 		/* TODO: comments are NOT included as regular child nodes. 
@@ -451,23 +444,23 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 //	 * 
 //	 * @param me
 //	 * @param pre
-//	 * @param tu
+//	 * @param cu
 //	 * @param CondGen 
 //	 * @return
 //	 */
 //	@SuppressWarnings("removal")
-//	public IASTPreprocessorPragmaStatement previousPragmaOfAfter(
-//			final ASTNode me, ASTNode pre, IASTTranslationUnit tu) {
+//	public Annotation previousAnnotationOfAfter(
+//			final ASTNode me, ASTNode pre, CompilationUnit cu) {
 //		if (me == null) DebugElement.throwInvalidityException("me");
 //		
-//		if (tu == null) tu = me.getTranslationUnit();
-//		for (IASTPreprocessorPragmaStatement p : ASTUtil.getPragmas(tu)) 
+//		if (cu == null) cu = (CompilationUnit) me.getRoot();
+//		for (Annotation p : ASTUtil.getAnnotations(cu)) 
 //			if (ASTUtil.isInTheSameFile(p, me)) 
 //				if (pre == null || 
 //				(Elemental.tests(isBeforeLocally(pre, p)) && Elemental.tests(isBeforeLocally(p, me))))
 //					pre = p;
-//		return pre instanceof IASTPreprocessorPragmaStatement ?
-//				(IASTPreprocessorPragmaStatement) pre : null;
+//		return pre instanceof Annotation ?
+//				(Annotation) pre : null;
 //	}
 	
 	

@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.eclipse.jdt.core.dom.IASTBinaryExpression;
 import org.eclipse.jdt.core.dom.InfixExpression;
 
 import fozu.ca.DebugElement;
@@ -153,9 +152,11 @@ public class OrderRelation extends Proposition {
 	final static private Map<Operator, DuoKeyMap<Expression,Expression,Proposition>> 
 	OPERATION_CACHE = new EnumMap<>(Operator.class);
 	
-	private static final Method METHOD_GET = Elemental.getMethod(OrderRelation.class, "from", 
+	@SuppressWarnings("removal")
+    private static final Method METHOD_GET = DebugElement.getMethod(OrderRelation.class, "from", 
 			Operator.class, Expression.class, Expression.class, Supplier.class);
-	private static final Method METHOD_AND_BY_REDUCE = Elemental.getMethod(OrderRelation.class, "andByReduce", 
+	@SuppressWarnings("removal")
+    private static final Method METHOD_AND_BY_REDUCE = DebugElement.getMethod(OrderRelation.class, "andByReduce", 
 			OrderRelation.class);
 	
 	
@@ -358,8 +359,7 @@ public class OrderRelation extends Proposition {
 				operands : (Set<Expression>) checkType(operands, new HashSet<>());
 	}
 	
-	@SuppressWarnings("removal")
-    static private List<Expression> checkOperands(List<Expression> operands) {
+	static private List<Expression> checkOperands(List<Expression> operands) {
 		if (operands == null || operands.isEmpty()) throwNullArgumentException("operands");
 		
 		final int size = operands.size();
@@ -372,8 +372,7 @@ public class OrderRelation extends Proposition {
 				operands : (List<Expression>) checkType(operands, new ArrayList<>());
 	}
 	
-	@SuppressWarnings("removal")
-    static private List<Expression> checkOperands(Expression lhs, Expression rhs) {
+	static private List<Expression> checkOperands(Expression lhs, Expression rhs) {
 		assert lhs != null && rhs != null; 
 		if (lhs instanceof Number && rhs instanceof Number) 
 			throwReductionException();
@@ -381,8 +380,7 @@ public class OrderRelation extends Proposition {
 		return checkOperands(Arrays.asList(lhs, rhs));
 	}
 	
-	@SuppressWarnings("removal")
-    static private Collection<Expression> checkType(Collection<Expression> operands, Collection<Expression> checkOperands) {
+	static private Collection<Expression> checkType(Collection<Expression> operands, Collection<Expression> checkOperands) {
 		assert operands != null && checkOperands.isEmpty() && getType(operands) == null;
 		PlatformType t = null;
 		for (Expression e : operands) {

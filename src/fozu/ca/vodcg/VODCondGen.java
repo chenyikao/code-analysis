@@ -1,11 +1,10 @@
 package fozu.ca.vodcg;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -437,7 +436,6 @@ implements Comparator<ForStatement> {
 	public static String getPlatformPositiveInfinityReal() {return "MAX_REAL";}
 	public static String getPlatformNegativeInfinityReal() {return "MIN_REAL";}
 	
-	@SuppressWarnings("deprecation")
 	public static String getPlatformLibraryFunction(
 			SerialFormat format, String library, String id) throws IllegalStateException {
 		if (format == null || id == null) return null;
@@ -653,7 +651,7 @@ implements Comparator<ForStatement> {
 //				new TreeSet<>(tv));
 		
 		for (Assignable<?> ovRef : Assignable.fromOf(
-				ov.getWritingFunctionDefinition(), ov.getBinding(), ov.cacheRuntimeAddress(), this)) {
+				ov.getWritingFunctionDefinition(), ov.getVariableBinding(), ov.cacheRuntimeAddress(), this)) {
 			ovRef.setWorkRemaining();
 			if (ovRef == tv || tests(ovRef.writesBefore(tv)))
 				ovWrs.add(ovRef);
@@ -725,9 +723,10 @@ implements Comparator<ForStatement> {
 	 * Preparing project IndexManager -> Traversing the initial writing history of TV (path).
 	 * 
 	 * @param tvPath - the path to target variable
+	 * @throws IOException 
 	 */
 	@SuppressWarnings("deprecation")
-    public void setTargetVariable(VariablePath tvPath) {
+    public void setTargetVariable(VariablePath tvPath) throws IOException {
 		if (tvPath == null) throwNullArgumentException("TV path");
 		
 		NavigableSet<Assignable<?>> tvWrs = null;
@@ -793,9 +792,9 @@ implements Comparator<ForStatement> {
 
 	
 	
-	static private <T> boolean containsLinearly(Collection<T> objs, T obj) {
-		return Arrays.asList(objs).contains(obj);
-	}
+//	static private <T> boolean containsLinearly(Collection<T> objs, T obj) {
+//		return Arrays.asList(objs).contains(obj);
+//	}
 	
 	/* (non-Javadoc)
 	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
@@ -853,6 +852,10 @@ implements Comparator<ForStatement> {
 		return null;
 	}
 	
+	public IPath getMain() {
+	    return mainPath;
+	}
+	
 	public void setMain(IPath mainPath) {
 		if (mainPath == null) throwInvalidityException("Main path");
 		this.mainPath = mainPath;
@@ -883,7 +886,7 @@ implements Comparator<ForStatement> {
 	 * @return true only if f is the <em>current main being compiled</em> but not any else
 	 */
 	public boolean isMainFunction(MethodDeclaration f) {
-		return ASTUtil.isMainFunction(f) && isInMainTranslationUnit(f);
+		return ASTUtil.isMainFunction(f) /*&& isInMainTranslationUnit(f)*/;
 	}
 
 //	public boolean isMainFunction(IIndexName f) {
@@ -1021,7 +1024,7 @@ implements Comparator<ForStatement> {
 		if (start == null) start = LocalDateTime.now();
 	}
 	
-	public void setStart(IProgressMonitor monitor, String task, VariablePath tvPath) {
+	public void setStart(IProgressMonitor monitor, String task, VariablePath tvPath) throws IOException {
 		reset();
 		setStart();
 		setTargetVariable(tvPath);

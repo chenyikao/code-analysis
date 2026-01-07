@@ -4,20 +4,12 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import org.eclipse.jdt.core.dom.CastExpression;
-import org.eclipse.jdt.core.dom.IASTCastExpression;
-import org.eclipse.jdt.core.dom.IASTDeclSpecifier;
-import org.eclipse.jdt.core.dom.IASTNamedTypeSpecifier;
-import org.eclipse.jdt.core.dom.IASTPointerOperator;
-import org.eclipse.jdt.core.dom.IASTSimpleDeclSpecifier;
-import org.eclipse.jdt.core.dom.IASTTypeId;
-import org.eclipse.jdt.core.dom.Type;
 
 import fozu.ca.Mappable;
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.VODCondGen;
-import fozu.ca.vodcg.condition.data.PlatformType;
-import fozu.ca.vodcg.condition.data.PointerType;
 import fozu.ca.vodcg.condition.data.DataType;
+import fozu.ca.vodcg.condition.data.PlatformType;
 
 /**
  * Special kind of function call to the <em>language (C/C++, Z3, etc.) built-in</em>

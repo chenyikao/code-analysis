@@ -7,12 +7,11 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import org.eclipse.cdt.core.dom.ast.IASTBinaryExpression;
-import org.eclipse.cdt.core.dom.ast.IASTUnaryExpression;
-import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
 
+import fozu.ca.DebugElement;
 import fozu.ca.DuoKeyMultiPartitionMap;
 import fozu.ca.DuoKeySetMultiPartitionMap;
 import fozu.ca.Elemental;
@@ -167,16 +166,17 @@ public class Arithmetic extends Relation implements ArithmeticExpression {
 
 
 	
-	private static final Method 
-	METHOD_FROM = Elemental.getMethod(Arithmetic.class, "from", 
+	@SuppressWarnings("removal")
+    private static final Method 
+	METHOD_FROM = DebugElement.getMethod(Arithmetic.class, "from", 
 			Operator.class, ArithmeticExpression.class, ArithmeticExpression.class),
-	METHOD_FROM_2 = Elemental.getMethod(Arithmetic.class, "from", 
+	METHOD_FROM_2 = DebugElement.getMethod(Arithmetic.class, "from", 
 			Operator.class, Expression.class, Expression.class),
-	METHOD_IS_ZERO = Elemental.getMethod(Arithmetic.class, "isZero"),
-	METHOD_IS_POSITIVE = Elemental.getMethod(Arithmetic.class, "isPositive"),
-	METHOD_IS_INFINITY = Elemental.getMethod(Arithmetic.class, "isInfinity", 
+	METHOD_IS_ZERO = DebugElement.getMethod(Arithmetic.class, "isZero"),
+	METHOD_IS_POSITIVE = DebugElement.getMethod(Arithmetic.class, "isPositive"),
+	METHOD_IS_INFINITY = DebugElement.getMethod(Arithmetic.class, "isInfinity", 
 			boolean.class),
-	METHOD_IS_LESS_THAN = Elemental.getMethod(Arithmetic.class, "isLessThan", 
+	METHOD_IS_LESS_THAN = DebugElement.getMethod(Arithmetic.class, "isLessThan", 
 			Arithmetic.class);
 
 	private boolean resetsIsZero = true;	// caching flag per operation
@@ -284,10 +284,24 @@ public class Arithmetic extends Relation implements ArithmeticExpression {
 	 * @return
 	 */
 	public static Arithmetic from(PrefixExpression.Operator expOp, Expression operand) {
-		
 		Operator op = null;
 		if (expOp == PrefixExpression.Operator.MINUS) op = Operator.Subtract;
 		else if (expOp == PrefixExpression.Operator.PLUS) op = Operator.Add;
+		
+		return (op != null) ? new Arithmetic(op, operand) : null;
+	}
+	
+	/**
+	 * Non-assignments have NO side-effects of their own to propagate outwards.
+	 * 
+	 * @param expOp - to be checked if it's a non-assignment
+	 * @param operand
+	 * @return
+	 */
+	public static Arithmetic from(PostfixExpression.Operator expOp, Expression operand) {
+		Operator op = null;
+		if (expOp == PostfixExpression.Operator.DECREMENT) op = Operator.Subtract;
+		else if (expOp == PostfixExpression.Operator.INCREMENT) op = Operator.Add;
 		
 		return (op != null) ? new Arithmetic(op, operand) : null;
 	}
@@ -300,8 +314,7 @@ public class Arithmetic extends Relation implements ArithmeticExpression {
 	 * @param rhs
 	 * @return
 	 */
-	@SuppressWarnings("removal")
-    public static Expression from(InfixExpression.Operator expOp, Expression lhs, Expression rhs) {
+	public static Expression from(InfixExpression.Operator expOp, Expression lhs, Expression rhs) {
 		if (lhs == null) throwNullArgumentException("lhs!");
 		if (rhs == null) throwNullArgumentException("rhs!");
 		

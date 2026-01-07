@@ -44,7 +44,8 @@ public enum DataType implements PlatformType {
 
 	
 	
-	public static PlatformType from(ITypeBinding type) {
+	@SuppressWarnings("deprecation")
+    public static PlatformType from(ITypeBinding type) {
 		if (type == null) DebugElement.throwNullArgumentException("type");
 
         if (type.isEnum())
@@ -56,34 +57,41 @@ public enum DataType implements PlatformType {
                     fozu.ca.vodcg.condition.data.Int.from(type.getDimensions(), null));
         }
         
-		switch (type.getQualifiedName()) {
-		case "bool", "java.lang.Boolean":         return Bool;
-		
-		case "char", "java.lang.Character",
-		"java.lang.String":					      return Char;
-		
-		case "int", "java.lang.Integer",
-		"byte", "java.lang.Byte",
-		"short", "java.lang.Short",
-		"long", "java.lang.Long",
-		"java.math.BigInteger",
-		"java.util.concurrent.atomic.AtomicInteger",
-		"java.util.concurrent.atomic.AtomicLong": return Int;
-		
-		case "float", "java.lang.Float",
-		"double", "java.lang.Double",
-		"java.math.BigDecimal":                   return Real;
-		
-		case "null", "void":                      return Void;
-		
-		default:
-		}
-		
-		if (type.isTypeVariable()) return DebugElement.throwTodoException("type variable");
-
+        if (type.isTypeVariable()) return DebugElement.throwTodoException("type variable");
+        
+        final PlatformType t = from(type.getQualifiedName());
+        if (t != null) return t;
+        
 		PointerType dt = new PointerType(false);
 //		dt.pointTo(from(((IPointerType) type).getType()));
 		return dt;
+	}
+	
+	@SuppressWarnings("deprecation")
+    public static PlatformType from(final java.lang.String type) {
+        switch (type) {
+        case "bool", "java.lang.Boolean":         return Bool;
+        
+        case "char", "java.lang.Character",
+        "java.lang.String":                       return Char;
+        
+        case "int", "java.lang.Integer",
+        "byte", "java.lang.Byte",
+        "short", "java.lang.Short",
+        "long", "java.lang.Long",
+        "java.math.BigInteger",
+        "java.util.concurrent.atomic.AtomicInteger",
+        "java.util.concurrent.atomic.AtomicLong": return Int;
+        
+        case "float", "java.lang.Float",
+        "double", "java.lang.Double",
+        "java.math.BigDecimal":                   return Real;
+        
+        case "null", "void":                      return Void;
+        
+        default:
+            return DebugElement.throwTodoException("Unsupported type: " + type);            
+        }
 	}
 	
 	public static PlatformType from(Name name) {
@@ -91,7 +99,8 @@ public enum DataType implements PlatformType {
 		return from(ASTUtil.getBindingOf(name));
 	}
 	
-	public static PlatformType from(IBinding bind) {
+	@SuppressWarnings("deprecation")
+    public static PlatformType from(IBinding bind) {
 		if (bind == null) DebugElement.throwNullArgumentException("binding");
 		
 		if (bind instanceof IVariableBinding) 
@@ -105,7 +114,8 @@ public enum DataType implements PlatformType {
 		return null;
 	}
 	
-	public static PlatformType from(final Type type) 
+	@SuppressWarnings("deprecation")
+    public static PlatformType from(final Type type) 
 			throws ASTException {
 		if (type == null) SystemElement.throwNullArgumentException("declaration type");
 		
@@ -297,7 +307,8 @@ public enum DataType implements PlatformType {
 	 * Ignoring {@link #Array} and {@link #Pointer}.
 	 * @see fozu.ca.vodcg.condition.data.Type#toZ3SmtString(boolean, boolean, boolean)
 	 */
-	@Override
+	@SuppressWarnings("deprecation")
+    @Override
 	public java.lang.String toZ3SmtString(
 			boolean printsVariableDeclaration, boolean printsFunctionDefinition) {
 		switch (this) {
@@ -312,7 +323,8 @@ public enum DataType implements PlatformType {
 		}
 	}
 	
-	public java.lang.String toZ3SmtPointableTypeOperator() {
+	@SuppressWarnings("deprecation")
+    public java.lang.String toZ3SmtPointableTypeOperator() {
 		switch (this) {
 		case Int: 		return "i2pt";
 		case Real:		return "r2pt";

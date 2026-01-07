@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.dom.Statement;
 
-import fozu.ca.Elemental;
+import fozu.ca.DebugElement;
 import fozu.ca.Emptable;
 import fozu.ca.condition.SerialFormat;
 import fozu.ca.vodcg.ASTAddressable;
@@ -36,18 +36,23 @@ public abstract class ConditionElement extends SystemElement
 implements ArgumentMatchable, Emptable, Cloneable, ThreadPrivatizable {
 
 	private static final String PREDICATE = "predicate";
-	private static final Method METHOD_GET_DIRECT_FUNCTION_REFERENCES = 
-			Elemental.getMethod(ConditionElement.class, "getDirectFunctionReferences");
-	private static final Method METHOD_GET_FUNCTION_REFERENCES = 
-			Elemental.getMethod(ConditionElement.class, "getFunctionReferences", Set.class);
-	private static final Method METHOD_GET_ARITHMETIC_GUARDS = 
-			Elemental.getMethod(ConditionElement.class, "getArithmeticGuards");
-	private static final Method METHOD_GET_SCOPE = 
-			Elemental.getMethod(ConditionElement.class, "getScope");
+	@SuppressWarnings({ "deprecation", "removal" })
+    private static final Method METHOD_GET_DIRECT_FUNCTION_REFERENCES = 
+	        DebugElement.getMethod(ConditionElement.class, "getDirectFunctionReferences");
+	@SuppressWarnings({ "deprecation", "removal" })
+    private static final Method METHOD_GET_FUNCTION_REFERENCES = 
+	        DebugElement.getMethod(ConditionElement.class, "getFunctionReferences", Set.class);
+	@SuppressWarnings({ "deprecation", "removal" })
+    private static final Method METHOD_GET_ARITHMETIC_GUARDS = 
+	        DebugElement.getMethod(ConditionElement.class, "getArithmeticGuards");
+	@SuppressWarnings({ "deprecation", "removal" })
+    private static final Method METHOD_GET_SCOPE = 
+	        DebugElement.getMethod(ConditionElement.class, "getScope");
 //	private static final Method METHOD_IS_GLOBAL = 
 //			Elemental.getMethod(ConditionElement.class, "isGlobal");
-	private static final Method METHOD_TO_STRING = 
-			Elemental.getMethod(ConditionElement.class, "toString");
+	@SuppressWarnings({ "deprecation", "removal" })
+    private static final Method METHOD_TO_STRING = 
+	        DebugElement.getMethod(ConditionElement.class, "toString");
 //	private static final Method METHOD_REDUCE_ONCE = 
 //			Elemental.getMethod(ConditionElement.class, "reduceOnce");
 	
@@ -94,7 +99,7 @@ implements ArgumentMatchable, Emptable, Cloneable, ThreadPrivatizable {
 	 * @return a thread-private version explicitly expressing element.
 	 * @throws NoSuchVersionException
 	 */
-	@SuppressWarnings({ "unchecked", "removal" })
+	@SuppressWarnings({ "unchecked" })
 	public <T extends ConditionElement> T cloneReversion(
 			Statement blockStat, final FunctionallableRole role, final Version<? extends PathVariable> ver) 
 					throws NoSuchVersionException {
@@ -152,12 +157,12 @@ implements ArgumentMatchable, Emptable, Cloneable, ThreadPrivatizable {
 	}
 	
 //	abstract public String getIDSuffix(SerialFormat format);
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
 	public String getIDSuffix(SerialFormat format) {
 		return throwTodoException("not identifiable element");
 	}
 	
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
 	public String getName() {
 		return throwTodoException("not namable element");
 	}
@@ -217,7 +222,6 @@ implements ArgumentMatchable, Emptable, Cloneable, ThreadPrivatizable {
 	/**
 	 * @return a non-null set
 	 */
-	@SuppressWarnings("removal")
 	public final Set<ArithmeticGuard> getArithmeticGuards() {
 		try {
 			guardThrow(()-> 
@@ -256,7 +260,7 @@ implements ArgumentMatchable, Emptable, Cloneable, ThreadPrivatizable {
 	/**
 	 * @return Neither null nor indirect {@link Pointer}s.
 	 */
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
 	public final <T> Set<? extends T> getDirectVariableReferences(
 			Class<T> refType) {
 		return debugGet(()-> guard(()-> get(()-> (Set<T>) cacheDirectVariableReferences(refType),
@@ -536,7 +540,7 @@ implements ArgumentMatchable, Emptable, Cloneable, ThreadPrivatizable {
 	
 	
 	
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
 	@Override
 	public void setGlobal() {
 		super.setGlobal();
@@ -620,7 +624,7 @@ implements ArgumentMatchable, Emptable, Cloneable, ThreadPrivatizable {
 	 * @param newSe
 	 * @return
 	 */
-	@SuppressWarnings({ "unlikely-arg-type", "removal" })
+	@SuppressWarnings({ "unlikely-arg-type", "deprecation" })
 	protected <T extends SideEffectElement> boolean suitsSideEffect(T newSe) {
 		if (newSe == null) throwNullArgumentException("new side-effect");	// TODO?{sideEffect = null; return false;}
 		
@@ -665,7 +669,7 @@ implements ArgumentMatchable, Emptable, Cloneable, ThreadPrivatizable {
 	/**
 	 * @return true if the global scope is changed.
 	 */
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
 	private boolean setsGlobalScope() {
 		if (debugTests(()-> isGlobal())) {	
 			// including global VOPConditions scope if provided
@@ -767,7 +771,7 @@ implements ArgumentMatchable, Emptable, Cloneable, ThreadPrivatizable {
 	 * @param disambiguousTerm - an ambiguous keyword or symbol candidate
 	 * @return
 	 */
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
 	public String disambiguateString(SerialFormat format, 
 			String originalTerm, String disambiguousTerm) {
 		if (VODCondGen.isAmbiguous(this, originalTerm, format)) {
@@ -834,7 +838,7 @@ implements ArgumentMatchable, Emptable, Cloneable, ThreadPrivatizable {
 		}
 	}
 
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
 	public String toZ3String() {
 		throwTodoException("supportting Z3 native format");
 		return null;
@@ -902,7 +906,7 @@ implements ArgumentMatchable, Emptable, Cloneable, ThreadPrivatizable {
 	
 
 	
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "deprecation" })
 	protected void throwCircularDependencyException(ConditionElement ce2, 
 			ConditionElement dependingOn, StringBuilder dependingOnString) {
 		throwTodoException(

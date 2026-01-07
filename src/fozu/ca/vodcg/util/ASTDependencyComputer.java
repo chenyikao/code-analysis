@@ -16,7 +16,7 @@ import fozu.ca.vodcg.VODCondGen;
  * @author Kao, Chen-yi (Timmy)
  * 
  */
-public class ASTDependencyComputer<T> extends ASTNodeFinder<Expression> {
+public class ASTDependencyComputer extends ASTNodeFinder<Expression> {
 	
 	private Expression dependentOnBy = null;
 
@@ -45,7 +45,7 @@ public class ASTDependencyComputer<T> extends ASTNodeFinder<Expression> {
 	public boolean preVisit2(ASTNode lValue) {
 		final Expression exp = this.getVisitTarget();
 		
-		if (ASTUtil.equals(exp, lValue)) 
+		if (exp.equals(lValue)) 
 			dependentOnBy = (Expression) lValue;
 		
 		if (exp instanceof Name && lValue instanceof Name 

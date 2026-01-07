@@ -15,12 +15,8 @@ import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
-import org.eclipse.jdt.core.dom.ast.IASTBinaryExpression;
-import org.eclipse.jdt.core.dom.ast.IASTDeclarator;
-import org.eclipse.jdt.core.dom.ast.IASTEqualsInitializer;
-import org.eclipse.jdt.core.dom.ast.IASTInitializerClause;
-import org.eclipse.jdt.core.dom.ast.IASTInitializerList;
-import org.eclipse.jdt.core.dom.ast.IASTUnaryExpression;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.Assignable;
@@ -83,43 +79,45 @@ implements AssignableExpression {
 	 * @param rhs
 	 * @param condGen 
 	 */
-	static public Proposition from(org.eclipse.jdt.core.dom.Expression lhs, org.eclipse.jdt.core.dom.Expression rhs, final ASTAddressable rtAddr, VODCondGen condGen) {
+	static public Proposition from(
+			org.eclipse.jdt.core.dom.Expression lhs, org.eclipse.jdt.core.dom.Expression rhs, final ASTAddressable rtAddr, VODCondGen condGen) {
 //		this(Function.getFunctionScopeOf(lhs, condGen), condGen);
 		return from(Expression.fromRecursively(lhs, rtAddr, condGen), 
 					Expression.fromRecursively(rhs, rtAddr, condGen));
 	}
 	
-//	static public Proposition from(IASTEqualsInitializer init, final ASTAddressable rtAddr, VODCondGen condGen) {
-//		if (init == null) throwNullArgumentException("initializer");
-//		
-////		this(Function.getFunctionScopeOf(init, condGen), condGen);
-//		try {
-//			final IASTInitializerClause ic = init.getInitializerClause();
-//			final Assignable<?> lhsAsn = Assignable.from((IASTDeclarator) init.getParent(), rtAddr, condGen);
-//			if (ic instanceof IASTInitializerList) {
-//				Proposition e = null;
-//				@SuppressWarnings("unchecked")
-//				final ConstArrayDeclaration lhs = (ConstArrayDeclaration) ConstArrayDeclaration.from((Assignable<PathVariable>) lhsAsn);
-//				int i = 0;
-//				for (IASTInitializerClause lic : ((IASTInitializerList) ic).getClauses()) {
-//					final Expression rhs = Expression.fromRecursively(lic, rtAddr, condGen);
-//					final Equality eq = fromAssignment(lhs.getAssigned(i++, rhs), rhs);
-//					e = e == null ? eq : e.and(eq);
+	static public Proposition from(
+			VariableDeclaration vd, final ASTAddressable rtAddr, VODCondGen condGen) {
+		if (vd == null) throwNullArgumentException("initializer");
+		
+//		this(Function.getFunctionScopeOf(init, condGen), condGen);
+		try {
+			final org.eclipse.jdt.core.dom.Expression init = vd.getInitializer();
+			final Assignable<?> lhsAsn = Assignable.from(vd, rtAddr, condGen);
+			if (vd instanceof VariableDeclarationFragment) {
+				Proposition e = null;
+				@SuppressWarnings("unchecked")
+				final ConstArrayDeclaration lhs = (ConstArrayDeclaration) ConstArrayDeclaration.from((Assignable<PathVariable>) lhsAsn);
+				int i = 0;
+//				for (IASTInitializerClause lic : ((VariableDeclarationFragment) vd).getClauses()) {
+					final Expression rhs = Expression.fromRecursively(init, rtAddr, condGen);
+					final Equality eq = fromAssignment(lhs.getAssigned(i++, rhs), rhs);
+					e = e == null ? eq : e.and(eq);
 //				}
-//				return e;
-//				
-//			} else return fromAssignment(
-//					PathVariablePlaceholder.from(lhsAsn), Expression.fromRecursively(ic, rtAddr, condGen));
-//		
-//		} catch (Exception e) {
-//			return throwTodoException(e);
-//		}
-//		
-////		org.eclipse.jdt.core.dom.Expression asgOprd = asg.getOperand();
-////		Expression operand = Expression.from(asgOprd, sideEffect);
-////		if (operand instanceof PathVariable) 
-////			((PathVariable) operand).reversion(LValue.from(asgOprd), scope);
-//	}
+				return e;
+				
+			} else return fromAssignment(
+					PathVariablePlaceholder.from(lhsAsn), Expression.fromRecursively(init, rtAddr, condGen));
+		
+		} catch (Exception e) {
+			return throwTodoException(e);
+		}
+		
+//		org.eclipse.jdt.core.dom.Expression asgOprd = asg.getOperand();
+//		Expression operand = Expression.from(asgOprd, sideEffect);
+//		if (operand instanceof PathVariable) 
+//			((PathVariable) operand).reversion(LValue.from(asgOprd), scope);
+	}
 	
 //	public static Proposition from(ArithmeticExpression lhs, ArithmeticExpression rhs) {
 //		if (lhs == null) throwNullArgumentException("lhs");
@@ -150,6 +148,7 @@ implements AssignableExpression {
 	 * @param pvp
 	 * @return
 	 */
+	@SuppressWarnings("deprecation")
 	public static Proposition from(PrefixExpression.Operator expOp, PathVariablePlaceholder pvp) {
 		if (pvp == null) throwNullArgumentException("delegate"); 
 		if (pvp.isDirectlyFunctional()) {
@@ -192,6 +191,7 @@ implements AssignableExpression {
 	 * @param pvp
 	 * @return
 	 */
+	@SuppressWarnings("deprecation")
 	public static Proposition from(PostfixExpression.Operator expOp, PathVariablePlaceholder pvp) {
 		if (pvp == null) throwNullArgumentException("delegate"); 
 		if (pvp.isDirectlyFunctional()) {
@@ -235,13 +235,14 @@ implements AssignableExpression {
 	 * @param rhs
 	 * @return
 	 */
+	@SuppressWarnings("deprecation")
 	public static Proposition from(InfixExpression.Operator expOp, Expression lhs, final Expression rhs) {
 		if (lhs == null) throwNullArgumentException("lhs");
 		if (rhs == null) throwNullArgumentException("rhs");
 		
 		// ==: non-assignment-equality binary relational proposition
 		if (expOp == InfixExpression.Operator.EQUALS) return from(lhs, rhs);
-		return fromFunctional(expOp, lhs, rhs);
+		return throwTodoException("unsupported infix-expression");
 	}
 		
 	/**
@@ -272,6 +273,7 @@ implements AssignableExpression {
 		return null;
 	}
 	
+	@SuppressWarnings("deprecation")
 	private static Equality fromAssignment(Expression lhs, Expression rhs) {
 		final Proposition p = from(lhs, rhs);
 		if (lhs instanceof AssignableExpression) 
@@ -295,7 +297,7 @@ implements AssignableExpression {
 	 * 		? FunctionalIntInputVersion.from(pvd.getAssignable()).getFuncCallView().toProposition()
 	 * 		: Equality.from(unaryOp, pvd);
 	 */
-	@SuppressWarnings({ "unchecked", "removal" })
+	@SuppressWarnings({ "deprecation" })
 	private static Proposition fromFunctional(Assignment.Operator expOp, Expression lhs, final Expression rhs) {
 		assert lhs != null && rhs != null;
 		try {
@@ -428,6 +430,7 @@ implements AssignableExpression {
 	
 	
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public Expression getAssignerIf() {
 		return isBinary() 
@@ -445,6 +448,7 @@ implements AssignableExpression {
 //		return isA;
 //	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public Assignable<?> getAssignable() {
 		if (isBinary()) {
@@ -458,6 +462,7 @@ implements AssignableExpression {
 		return throwTodoException("unsupported assignment");
 	}
 	
+	@SuppressWarnings("deprecation")
 	public Expression getAssigned() {
 		if (tests(isAssigned())) {
 			return isBinary() 
@@ -469,6 +474,7 @@ implements AssignableExpression {
 		return null;
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public Boolean isAssigned() {
 //		if (hasAssignable()) return AssignableExpression.super.isAssigned();

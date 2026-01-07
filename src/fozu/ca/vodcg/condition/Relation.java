@@ -18,10 +18,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.eclipse.cdt.core.dom.ast.IASTFileLocation;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.dom.Statement;
-import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
+import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
 import fozu.ca.MappableList;
 import fozu.ca.MultiPartitionable;
@@ -87,24 +87,33 @@ implements Cloneable, MultiPartitionable, Comparator<MultiPartitionable.Key> {
 //	protected static final UnsupportedOperationException UNSUPPORTED_EXCEPTION = 
 //			new UnsupportedOperationException("Unsupported for a final relation!");
 
-	private final static Method METHOD_GET_FILE_LOCATION = 
-			Elemental.getMethod(Relation.class, "getFileLocation");
-	private final static Method METHOD_GET_POINTERS = 
-			Elemental.getMethod(Relation.class, "getPointers");
-	private final static Method METHOD_CACHE_DIRECT_SIDE_EFFECT = 
-			Elemental.getMethod(Relation.class, "cacheDirectSideEffect");
-	private static final Method METHOD_CACHE_FUNCTION_SCOPE = 
-			Elemental.getMethod(Relation.class, "cacheFunctionScope");
-	private static final Method METHOD_CACHE_SCOPE = 
-			Elemental.getMethod(Relation.class, "cacheScope");
-	private final static Method METHOD_DEPENDS_ON = 
-			Elemental.getMethod(Relation.class, "dependsOn", Expression.class);
-	private final static Method METHOD_DEPENDS_ON_2 = 
-			Elemental.getMethod(Relation.class, "dependsOn", Relation.class, StringBuffer.class, boolean.class);
-	private final static Method METHOD_REDUCE_ONCE = 
-			Elemental.getMethod(Relation.class, "reduceOnce", Collection.class);
-	private final static Method METHOD_REDUCE_ONCE_2 = 
-			Elemental.getMethod(Relation.class, "reduceOnce", List.class);
+	@SuppressWarnings("removal")
+    private final static Method METHOD_GET_FILE_LOCATION = 
+	        DebugElement.getMethod(Relation.class, "getFileLocation");
+	@SuppressWarnings("removal")
+    private final static Method METHOD_GET_POINTERS = 
+	        DebugElement.getMethod(Relation.class, "getPointers");
+	@SuppressWarnings("removal")
+    private final static Method METHOD_CACHE_DIRECT_SIDE_EFFECT = 
+	        DebugElement.getMethod(Relation.class, "cacheDirectSideEffect");
+	@SuppressWarnings("removal")
+    private static final Method METHOD_CACHE_FUNCTION_SCOPE = 
+	        DebugElement.getMethod(Relation.class, "cacheFunctionScope");
+	@SuppressWarnings("removal")
+    private static final Method METHOD_CACHE_SCOPE = 
+	        DebugElement.getMethod(Relation.class, "cacheScope");
+	@SuppressWarnings("removal")
+    private final static Method METHOD_DEPENDS_ON = 
+	        DebugElement.getMethod(Relation.class, "dependsOn", Expression.class);
+	@SuppressWarnings("removal")
+    private final static Method METHOD_DEPENDS_ON_2 = 
+	        DebugElement.getMethod(Relation.class, "dependsOn", Relation.class, StringBuffer.class, boolean.class);
+	@SuppressWarnings("removal")
+    private final static Method METHOD_REDUCE_ONCE = 
+	        DebugElement.getMethod(Relation.class, "reduceOnce", Collection.class);
+	@SuppressWarnings("removal")
+    private final static Method METHOD_REDUCE_ONCE_2 = 
+	        DebugElement.getMethod(Relation.class, "reduceOnce", List.class);
 
 	/**
 	 * Empty operand collection supplier
@@ -384,7 +393,7 @@ implements Cloneable, MultiPartitionable, Comparator<MultiPartitionable.Key> {
 	
 	
 	@Override
-	public StructuralPropertyDescriptor getFileLocation() {
+	public IPath getFileLocation() {
 		if (!enters(METHOD_GET_FILE_LOCATION)) {
 			enter(METHOD_GET_FILE_LOCATION);
 			
@@ -392,7 +401,7 @@ implements Cloneable, MultiPartitionable, Comparator<MultiPartitionable.Key> {
 				if (oprd == null) throwNullArgumentException("operand");
 				if (oprd == this) continue;	// bypassing special relation
 				
-				StructuralPropertyDescriptor loc = oprd.getFileLocation();
+				IPath loc = oprd.getFileLocation();
 				if (loc != null) return loc;
 			}
 			
@@ -1038,7 +1047,7 @@ implements Cloneable, MultiPartitionable, Comparator<MultiPartitionable.Key> {
 			return;
 		}
 		
-		StringBuffer rosb = new StringBuffer();
+		StringBuilder rosb = new StringBuilder();
 		Relation ro = dependsOn(rel2, rosb, false);
 		if (ro != null) {
 			String opStr = op == null ? "has" : op.toString();
@@ -1119,7 +1128,7 @@ implements Cloneable, MultiPartitionable, Comparator<MultiPartitionable.Key> {
 	 * @param rel2
 	 * @return null if not depend on {@code rel2} in any situation.
 	 */
-	public Relation dependsOn(Relation rel2, final StringBuffer dependsOnString) {
+	public Relation dependsOn(Relation rel2, final StringBuilder dependsOnString) {
 		return dependsOn(rel2, dependsOnString, false);
 	}
 	
@@ -1132,7 +1141,7 @@ implements Cloneable, MultiPartitionable, Comparator<MultiPartitionable.Key> {
 	 * 	{@code dependsPropositionally}.
 	 */
 	private Relation dependsOn(Relation rel2, 
-			final StringBuffer dependOnString, boolean ignoresPredicate) {
+			final StringBuilder dependOnString, boolean ignoresPredicate) {
 		if (rel2 == null || enters(METHOD_DEPENDS_ON_2)
 				|| (ignoresPredicate && (this instanceof Predicate || rel2 instanceof Predicate))
 				|| isEmpty() || rel2.isEmpty()) {
@@ -1235,7 +1244,7 @@ implements Cloneable, MultiPartitionable, Comparator<MultiPartitionable.Key> {
 	 * 	{@code rel2}.
 	 */
 	private Relation relatesOn(Relation rel2, 
-			final StringBuffer relatesOnString, boolean relatesPropositionally) {
+			final StringBuilder relatesOnString, boolean relatesPropositionally) {
 		if (rel2 == null) return null;
 		
 		Relation on = dependsOn(rel2, relatesOnString, relatesPropositionally);
@@ -1253,7 +1262,7 @@ implements Cloneable, MultiPartitionable, Comparator<MultiPartitionable.Key> {
 	 * @return some common relation or sub-relation if both this relation and 
 	 * 	{@code rel2} are non-{@link Predicate}'s.
 	 */
-	public Relation relatesOn(Relation rel2, final StringBuffer relatesOnString) {
+	public Relation relatesOn(Relation rel2, final StringBuilder relatesOnString) {
 		return relatesOn(rel2, relatesOnString, false);
 	}
 	
@@ -1263,7 +1272,7 @@ implements Cloneable, MultiPartitionable, Comparator<MultiPartitionable.Key> {
 	 * 	{@code rel2} are non-{@link Predicate}'s.
 	 */
 	public Relation relatesPropositionallyOn(
-			Relation rel2, final StringBuffer relatesOnString) {
+			Relation rel2, final StringBuilder relatesOnString) {
 		return relatesOn(rel2, relatesOnString, true);
 	}
 

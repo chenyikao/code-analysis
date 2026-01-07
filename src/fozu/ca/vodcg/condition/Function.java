@@ -13,19 +13,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.eclipse.cdt.core.dom.IName;
-import org.eclipse.jdt.core.dom.IASTFunctionCallExpression;
-import org.eclipse.jdt.core.dom.IASTFunctionDeclarator;
-import org.eclipse.jdt.core.dom.IASTFunctionDefinition;
-import org.eclipse.jdt.core.dom.IASTName;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.IASTParameterDeclaration;
-import org.eclipse.jdt.core.dom.IASTReturnStatement;
-import org.eclipse.jdt.core.dom.IASTStandardFunctionDeclarator;
 import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.jdt.core.dom.IFunction;
 import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.IParameter;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
@@ -33,6 +23,7 @@ import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 
+import fozu.ca.DebugElement;
 import fozu.ca.DuoKeyMap;
 import fozu.ca.Elemental;
 import fozu.ca.condition.SerialFormat;
@@ -112,10 +103,12 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 
 
 	
-	private static final Method METHOD_SET_BODY = 
-			Elemental.getMethod(Function.class, "setBody", Expression.class);
-	private static final Method METHOD_TRAVERSAL_OF = 
-			Elemental.getMethod(Function.class, "initiateTraversalOf");
+	@SuppressWarnings("removal")
+    private static final Method METHOD_SET_BODY = 
+	        DebugElement.getMethod(Function.class, "setBody", Expression.class);
+	@SuppressWarnings("removal")
+    private static final Method METHOD_TRAVERSAL_OF = 
+	        DebugElement.getMethod(Function.class, "initiateTraversalOf");
 
 	private static final Map<IBinding, Function> C_FUNCTIONS 				= new HashMap<>();
 	private static final DuoKeyMap<String, String, Function> LIB_FUNCTIONS 	= new DuoKeyMap<>();
@@ -371,7 +364,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 		
 		// matching - functions under construction
 		if (f == null) for (Function tf : STRUCTURAL_TRAVERSED_FUNCTIONS) 
-			if (ASTUtil.equals(tf.getIName(), cName, true)) {
+			if (ASTUtil.equals(tf.getASTName(), cName, true)) {
 				f = tf;
 				break;
 			}
@@ -525,7 +518,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 			return getParameter(getParameterIndex(param));
 			
 		} catch (IndexOutOfBoundsException e) {
-			return throwNullArgumentException(null, null, e);
+			return throwNullArgumentException(null, e);
 		}
 	}
 	
@@ -807,7 +800,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 	}
 	
 	@Override
-	protected <T> Set<? extends T> cacheDirectVariableReferences(Class<T> refType) {
+	protected <T> Set<T> cacheDirectVariableReferences(Class<T> refType) {
 		final Set<T> vrs = new HashSet<>();
 		addAllSkipNull(vrs, ()-> getBody().cacheDirectVariableReferences(refType));
 		return vrs;
@@ -1353,7 +1346,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 		
 		// TODO? extracting arguments from caller function of callScope
 		final BooleanFunction bf = BooleanFunction.from(this, sideEffect);
-		final Name bfAstName = bf.getIName();
+		final Name bfAstName = bf.getASTName();
 		final CallProposition cp = bfAstName != null
 				? bf.getCallProposition(bfAstName, null, callScope)
 				: bf.getCallProposition(bf.getName(), null, callScope);

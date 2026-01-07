@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.Statement;
 
+import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.ASTException;
 import fozu.ca.vodcg.SystemElement;
@@ -30,8 +31,9 @@ import fozu.ca.vodcg.condition.version.ThreadRoleMatchable;
 public class ConditionalExpression 
 extends Expression implements ArithmeticExpression {
 
-	static private final Method METHOD_REDUCE_ONCE = 
-			Elemental.getMethod(ConditionalExpression.class, "reduceOnce");
+	@SuppressWarnings("removal")
+    static private final Method METHOD_REDUCE_ONCE = 
+	        DebugElement.getMethod(ConditionalExpression.class, "reduceOnce");
 
 	
 	
@@ -146,7 +148,7 @@ extends Expression implements ArithmeticExpression {
 	 * @see fozu.ca.vodcg.condition.ConditionElement#getVariableReferences()
 	 */
 	@Override
-	protected <T> Set<? extends T> cacheDirectVariableReferences(Class<T> refType) {
+	protected <T> Set<T> cacheDirectVariableReferences(Class<T> refType) {
 		final Set<T> vrs = new HashSet<>();
 		if (cond != null) vrs.addAll(cond.getDirectVariableReferences(refType));
 		if (trueExp != null) vrs.addAll(trueExp.getDirectVariableReferences(refType));
@@ -290,14 +292,15 @@ extends Expression implements ArithmeticExpression {
 //	private final static Method METHOD_EXPRESSION_TRAVERSAL = 
 //			getMethod(ConditionalExpression.class, "initiatesExpressionTraversal");
 //	/* (non-Javadoc)
-/fozu.ca@see fozu.ca.condition.ArithmeticExpression#initiatesExpressionTraversal()
+//	 * @see fozu.ca.condition.ArithmeticExpression#initiatesExpressionTraversal()
 //	 */
 //	@Override
 //	public boolean initiatesExpressionComputation() {
 //		return initiatesElementalTraversal(METHOD_EXPRESSION_TRAVERSAL);
 //	}
 //
-//	/* (non-Javadoc)fozu.ca* @see fozu.ca.condition.ArithmeticExpression#initiateExpressionTraversal()
+//	/* (non-Javadoc)
+//	 * @see fozu.ca.condition.ArithmeticExpression#initiateExpressionTraversal()
 //	 */
 //	@Override
 //	public void initiateExpressionComputation() {
