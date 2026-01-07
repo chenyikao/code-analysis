@@ -10,23 +10,22 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Statement;
-import org.eclipse.jdt.core.dom.IFunction;
+import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.Statement;
 
 import fozu.ca.Elemental;
+import fozu.ca.vodcg.condition.ArithmeticExpression;
 import fozu.ca.vodcg.condition.FunctionCall;
+import fozu.ca.vodcg.condition.FunctionalPathVariable;
+import fozu.ca.vodcg.condition.PathVariable;
 import fozu.ca.vodcg.condition.version.FunctionalVersion;
 import fozu.ca.vodcg.condition.version.NoSuchVersionException;
-import fozu.ca.vodcg.condition.FunctionalPathVariable;
-import fozu.ca.vodcg.parallel.OmpDirective;
-import fozu.ca.vodcg.util.ASTLoopUtil;
-import fozu.ca.vodcg.condition.ArithmeticExpression;
-import fozu.ca.vodcg.condition.PathVariable;
 import fozu.ca.vodcg.condition.version.ThreadRole;
 import fozu.ca.vodcg.condition.version.Version;
+import fozu.ca.vodcg.parallel.OmpDirective;
+import fozu.ca.vodcg.util.ASTLoopUtil;
 
 /**
  * Assignable is given a type argument to distinguish Assignable<PathVariable> and Assignable<FunctionalPathVariable>

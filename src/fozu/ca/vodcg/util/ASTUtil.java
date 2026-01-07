@@ -13,85 +13,53 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.jdt.core.CCorePlugin;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.ArrayAccess;
+import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.ChildListPropertyDescriptor;
+import org.eclipse.jdt.core.dom.Comment;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.DoStatement;
+import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.ForStatement;
+import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.IVariableBinding;
+import org.eclipse.jdt.core.dom.IfStatement;
+import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.ParenthesizedExpression;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.IVariableBinding;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTGenericVisitor;
-import org.eclipse.jdt.core.dom.ASTNameCollector;
-import org.eclipse.jdt.core.dom.ASTSignatureUtil;
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.DOMException;
-import org.eclipse.jdt.core.dom.EScopeKind;
-import org.eclipse.jdt.core.dom.ArrayAccess;
-import org.eclipse.jdt.core.dom.ChildListPropertyDescriptor;
-import org.eclipse.jdt.core.dom.Assignment;
-import org.eclipse.jdt.core.dom.SwitchCase;
-import org.eclipse.jdt.core.dom.SwitchStatement;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
-import org.eclipse.jdt.core.dom.Comment;
-import org.eclipse.jdt.core.dom.DoStatement;
-import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
-import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.IASTFileLocation;
-import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.IfStatement;
-import org.eclipse.jdt.core.dom.InfixExpression;
-import org.eclipse.jdt.core.dom.IASTInitializerClause;
-import org.eclipse.jdt.core.dom.IASTLiteralExpression;
-import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.IASTNameOwner;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.IASTNodeLocation;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.IASTPreprocessorStatement;
 import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
-import org.eclipse.jdt.core.dom.IASTSwitchStatement;
-import org.eclipse.jdt.core.dom.IASTTranslationUnit;
-import org.eclipse.jdt.core.dom.IASTUnaryExpression;
+import org.eclipse.jdt.core.dom.SwitchCase;
+import org.eclipse.jdt.core.dom.SwitchStatement;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.WhileStatement;
-import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.jdt.core.dom.IEnumeration;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.IParameter;
-import org.eclipse.jdt.core.dom.IProblemBinding;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.dom.Modifier;
-import org.eclipse.jdt.core.index.IIndex;
-import org.eclipse.jdt.core.index.IIndexBinding;
-import org.eclipse.jdt.core.index.IIndexManager;
-import org.eclipse.jdt.core.index.IndexFilter;
-import org.eclipse.jdt.core.model.CoreModel;
-import org.eclipse.jdt.core.model.CoreModelUtil;
-import org.eclipse.jdt.core.model.ICProject;
-import org.eclipse.jdt.core.model.ITranslationUnit;
-import org.eclipse.jdt.internal.compiler.GenericAstVisitor;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 
 import fozu.ca.DebugElement;
 import fozu.ca.DuoKeyMap;
@@ -103,7 +71,7 @@ import fozu.ca.vodcg.SystemElement;
  * @author Kao, Chen-yi
  *
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({ "deprecation", "removal" })
 public final class ASTUtil extends DebugElement {
 
 	static final int prime = 31;
@@ -158,7 +126,7 @@ public final class ASTUtil extends DebugElement {
 			ArrayAccess.class};
 	@SuppressWarnings("unchecked")
 	public static final Class<ASTNode>[] 				AST_ASSIGNMENT_TYPES = new Class[] {
-			PrefixExpression.class, PostfixExpression.class, Assignment.class, VariableDeclaration.class};
+			PrefixExpression.class, PostfixExpression.class, Assignment.class, VariableDeclaration.class, MethodInvocation.class};
 
 	
 	
@@ -1453,14 +1421,14 @@ public final class ASTUtil extends DebugElement {
 	public static Collection<Name> getNameOf(IBinding bind) {
 		try {
 			final Set<Name> names = new HashSet<>();
-			Elemental.add(names, ()-> getNameOf(bind, IASTNameOwner.r_definition), AST_EXCEPTION);
-			if (names.isEmpty()) Elemental.add(names, ()-> getNameOf(bind, IASTNameOwner.r_declaration), AST_EXCEPTION);
+//			Elemental.add(names, ()-> getNameOf(bind, IASTNameOwner.r_definition), AST_EXCEPTION);
+//			if (names.isEmpty()) Elemental.add(names, ()-> getNameOf(bind, IASTNameOwner.r_declaration), AST_EXCEPTION);
 			if (names.isEmpty()) Elemental.add(names, ()-> getNameOf(bind, ASTUtil.r_any), AST_EXCEPTION);
 			if (names.isEmpty()) {
 				final ASTNameCollector nc = new ASTNameCollector(bind.getName());
-				for (IASTTranslationUnit ast : getRegisteredAST()) {
+				for (CompilationUnit ast : getRegisteredAST()) {
 					if (!ast.accept(nc)) DebugElement.throwTodoException("failed AST visiting");
-					names.addAll(Elemental.toList(nc.getNames())); 
+					names.addAll(nc.getNames()); 
 //					for (Name n : Elemental.toList(nc.getNames())) 
 //						Elemental.addSkipNull(names, ()-> n, ()-> n.resolveBinding().equals(bind), AST_EXCEPTION);
 				}

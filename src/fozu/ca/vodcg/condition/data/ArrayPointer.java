@@ -14,10 +14,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
-import org.eclipse.jdt.core.dom.ArrayCreation;
 import org.eclipse.jdt.core.dom.ArrayAccess;
+import org.eclipse.jdt.core.dom.ArrayCreation;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.Statement;
 
@@ -55,7 +54,6 @@ import fozu.ca.vodcg.condition.version.Version;
  * @author Kao, Chen-yi
  *
  */
-@SuppressWarnings("deprecation")
 public class ArrayPointer extends Pointer {
 
 //	private static final Map<Stack<ArrayAccess>, Array> ALL_ARRAYS = 
@@ -105,7 +103,6 @@ public class ArrayPointer extends Pointer {
 	 * @param superArray
 	 * @param i
 	 */
-	@SuppressWarnings("removal")
 	private ArrayPointer(final ArrayPointer superArray, final ArithmeticExpression i) 
 			throws NoSuchVersionException {
 		super(Operator.POINT, superArray, superArray.getScopeManager());
@@ -119,7 +116,6 @@ public class ArrayPointer extends Pointer {
 //		setAssigned(superArray.isAssigned());
 	}
 	
-	@SuppressWarnings("removal")
 	private static ArrayPointer from(
 			final PathVariablePlaceholder pvp, final ArrayCreation ac) {
 		assert pvp != null && ac != null;
@@ -179,7 +175,6 @@ public class ArrayPointer extends Pointer {
 				: null;
 	}
 
-	@SuppressWarnings("removal")
 	public static Pointer fromEnclosing(final Assignable<?> asn) {
 		if (asn == null) throwNullArgumentException("assignable");
 
@@ -187,7 +182,7 @@ public class ArrayPointer extends Pointer {
 				asn.getEnclosingArraySubscriptExpression();
 		final Pointer ap = exp != null
 				? fromRecursively(exp, asn.getRuntimeAddress(), asn.getCondGen())
-				: from(asn.getPathVariablePlaceholder(), (ArrayCreation) asn.getDeclarator());
+				: from(asn.getPathVariablePlaceholder(), (ArrayCreation) asn.getExpressionView());
 		if (ap == null) throwTodoException("unsupported array");
 //		ap.setAssigned(asn);
 		return ap;
@@ -306,7 +301,6 @@ public class ArrayPointer extends Pointer {
 //		return (ArrayPointer) fromRecursively(enclosings.get(enclosings.size() - 1), getCondGen());
 //	}
 
-	@SuppressWarnings("removal")
 	@Override
 	public Statement getPrivatizingBlock() {
 		Statement pb = super.getPrivatizingBlock();
@@ -356,7 +350,6 @@ public class ArrayPointer extends Pointer {
 	/**
 	 * Adding <code>e</code> means next-pointing <code>e</code>.
 	 */
-	@SuppressWarnings("removal")
 	@Override
 	protected boolean add(Collection<Expression> oprds, Expression e) {
 //		final ArithmeticExpression np = nextPointing();
@@ -378,7 +371,6 @@ public class ArrayPointer extends Pointer {
 	 * @param j
 	 * @return
 	 */
-	@SuppressWarnings("removal")
 	public ArrayPointer endDimension(ArithmeticExpression j) {
 		try {
 			return new ArrayPointer(this, j);
@@ -419,7 +411,6 @@ public class ArrayPointer extends Pointer {
 //		return super.derives(matchable2);
 //	}
 
-	@SuppressWarnings("removal")
 	@Override
 	public Boolean dependsOn(Expression e) {
 		if (index != null) {
@@ -545,7 +536,8 @@ public class ArrayPointer extends Pointer {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T extends Addressable> T previous() {
-		return (T) applySkipNull(pAsn-> from(pAsn),
+		return (T) applySkipNull(
+				((java.util.function.Function<Assignable<?>, Pointer>) pAsn-> from(pAsn)),
 				()-> getAssignable().previous());
 	}
 	

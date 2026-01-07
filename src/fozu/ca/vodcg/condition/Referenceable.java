@@ -3,22 +3,20 @@ package fozu.ca.vodcg.condition;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.cdt.core.dom.ast.IASTFileLocation;
-import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.cdt.core.index.IIndexName;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import fozu.ca.condition.SerialFormat;
-import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.ASTAddressable;
+import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.SystemElement;
 import fozu.ca.vodcg.VODCondGen;
+import fozu.ca.vodcg.condition.data.DataType;
 import fozu.ca.vodcg.condition.data.PlatformType;
 import fozu.ca.vodcg.util.ASTUtil;
-import fozu.ca.vodcg.condition.data.DataType;
 
 /**
  * @author Kao, Chen-yi
@@ -59,7 +57,7 @@ implements ASTAddressable {
 	 * @param condGen
 	 */
 	protected Referenceable(String name, PlatformType type, VODCondGen condGen) {
-		this(name, null, null, type, null, condGen);	// non-AST (general) Function's need no Name's
+		this(name, null, /*null,*/ type, null, condGen);	// non-AST (general) Function's need no Name's
 //		if (type == null) throw ILLEGAL_TYPE_EXCEPTION;
 	}
 	
@@ -71,7 +69,7 @@ implements ASTAddressable {
 	protected Referenceable(Name name, PlatformType type, final ASTAddressable rtAddr, VODCondGen condGen) {
 		this(	name.toString(), 
 				name, 
-				null, 
+//				null, 
 				type != null ? type : DataType.from(name), 
 				rtAddr, 
 				condGen);
@@ -80,7 +78,7 @@ implements ASTAddressable {
 	protected Referenceable(Name name, IBinding bind, final ASTAddressable rtAddr, VODCondGen condGen) {
 		this(	name == null ? bind.getName() : name.toString(),
 				name,
-				null,
+//				null,
 				bind == null ? null : DataType.from(bind), 
 				rtAddr, 
 				condGen);
@@ -242,7 +240,7 @@ implements ASTAddressable {
 	protected Boolean cacheConstant() {
 		try {
 			return applySkipNull(
-					name-> Assignable.from(name, cacheRuntimeAddress(), getCondGen()).isConstant(), 
+					((TryFunction<Name, Boolean>) name-> Assignable.from(name, cacheRuntimeAddress(), getCondGen()).isConstant()), 
 					()-> getASTName());
 		} catch (Exception e) {
 			return throwUnhandledException(e);

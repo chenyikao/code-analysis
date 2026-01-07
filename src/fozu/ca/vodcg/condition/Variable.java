@@ -12,9 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.eclipse.cdt.core.dom.IName;
-import org.eclipse.cdt.core.dom.ast.IASTName;
-import org.eclipse.cdt.core.dom.ast.IVariable;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.Name;

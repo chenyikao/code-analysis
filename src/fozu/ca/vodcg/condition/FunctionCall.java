@@ -8,10 +8,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.IASTFunctionCallExpression;
-import org.eclipse.jdt.core.dom.IASTInitializerClause;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 
 import fozu.ca.DuoKeyMap;
 import fozu.ca.condition.SerialFormat;
@@ -443,15 +442,32 @@ extends Reference<F> implements ArithmeticExpression {
 		if (exp == null) throwNullArgumentException("expression");
 
 		final Name fName = ASTUtil.getNameOf(exp);
-		if (fName == null) throwTodoException("unsupported function call");
+		if (fName == null) throwTodoException("unsupported method invocation");
 
 		return from(Function.from(ASTUtil.getMethodBindingOf(fName), rtAddr, condGen), 
 				fName,
-				Arrays.asList(exp.getArguments()),
+				Arrays.asList(exp.arguments()),
 				Function.getFunctionScopeOf(exp, rtAddr, condGen), 
 				sideEffect);
 	}
 
+	@SuppressWarnings("removal")
+	public static FunctionCall<? extends Function> fromRecursively(
+			SuperMethodInvocation exp, Supplier<Proposition> sideEffect, final ASTAddressable rtAddr, 
+			VODCondGen condGen) 
+					throws ASTException {
+		if (exp == null) throwNullArgumentException("expression");
+		
+		final Name fName = ASTUtil.getNameOf(exp);
+		if (fName == null) throwTodoException("unsupported super-method invocation");
+		
+		return from(Function.from(ASTUtil.getMethodBindingOf(fName), rtAddr, condGen), 
+				fName,
+				Arrays.asList(exp.arguments()),
+				Function.getFunctionScopeOf(exp, rtAddr, condGen), 
+				sideEffect);
+	}
+	
 
 	
 	protected void checkCircularDependency() {

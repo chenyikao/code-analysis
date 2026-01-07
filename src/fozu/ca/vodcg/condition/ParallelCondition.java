@@ -352,18 +352,18 @@ public class ParallelCondition extends Condition implements Addressable {
 	
 	
 	
-	/**
-	 * @return Disjunction of sub-directive race conditions.
-	 */
-	public Proposition generateRaceAssertion() {
-		Proposition result = null;
-		for (OmpDirective dir : getDirectives()) {
-			Proposition dirRace = dir.generateRaceAssertion();
-			if (result == null) result = dirRace;
-			else if (dirRace != null) result = result.or(()-> dirRace);
-		}
-		return result;
-	}
+//	/**
+//	 * @return Disjunction of sub-directive race conditions.
+//	 */
+//	public Proposition generateRaceAssertion() {
+//		Proposition result = null;
+//		for (OmpDirective dir : getDirectives()) {
+//			Proposition dirRace = dir.generateRaceAssertion();
+//			if (result == null) result = dirRace;
+//			else if (dirRace != null) result = result.or(()-> dirRace);
+//		}
+//		return result;
+//	}
 
 
 

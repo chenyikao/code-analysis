@@ -9,17 +9,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.cdt.core.dom.IName;
-import org.eclipse.cdt.core.dom.ast.IASTFileLocation;
-import org.eclipse.cdt.core.dom.ast.IASTFunctionDefinition;
-import org.eclipse.cdt.core.dom.ast.IASTName;
-import org.eclipse.cdt.core.dom.ast.IBinding;
-import org.eclipse.cdt.core.dom.ast.IFunction;
-import org.eclipse.cdt.core.dom.ast.IVariable;
-import org.eclipse.cdt.core.index.IIndex;
-import org.eclipse.cdt.core.index.IndexFilter;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;

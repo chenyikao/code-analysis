@@ -16,29 +16,34 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.eclipse.jdt.core.dom.IASTDeclaration;
-import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.index.IIndex;
-import org.eclipse.jdt.core.index.IIndexBinding;
-import org.eclipse.jdt.core.index.IIndexName;
-import org.eclipse.jdt.core.index.IndexFilter;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.swt.widgets.Display;
 
 import fozu.ca.DuoKeyMap;
 import fozu.ca.Elemental;
 import fozu.ca.TrioKeyMap;
-import fozu.ca.condition.SerialFormat;import fozu.ca.vodcg.condition.ConditionElement;import fozu.ca.vodcg.condition.Function;import fozu.ca.vodcg.condition.Function.Parameter;import fozu.ca.vodcg.condition.PathVariable;import fozu.ca.vodcg.condition.VODConditions;import fozu.ca.vodcg.condition.data.ArrayType;import fozu.ca.vodcg.condition.data.Char;import fozu.ca.vodcg.condition.data.DataType;import fozu.ca.vodcg.condition.data.FiniteNumberGuard;import fozu.ca.vodcg.condition.data.PlatformType;import fozu.ca.vodcg.condition.data.PointerType;
+import fozu.ca.condition.SerialFormat;
+import fozu.ca.vodcg.condition.ConditionElement;
+import fozu.ca.vodcg.condition.Function;
+import fozu.ca.vodcg.condition.Function.Parameter;
+import fozu.ca.vodcg.condition.PathVariable;
+import fozu.ca.vodcg.condition.VODConditions;
+import fozu.ca.vodcg.condition.data.ArrayType;
+import fozu.ca.vodcg.condition.data.Char;
+import fozu.ca.vodcg.condition.data.DataType;
+import fozu.ca.vodcg.condition.data.FiniteNumberGuard;
+import fozu.ca.vodcg.condition.data.PlatformType;
+import fozu.ca.vodcg.condition.data.PointerType;
 import fozu.ca.vodcg.util.ASTRuntimeLocationComputer;
 import fozu.ca.vodcg.util.ASTUtil;
 
@@ -455,7 +460,7 @@ implements Comparator<ForStatement> {
 	public static String getPlatformConditions(SerialFormat format) {
 		switch (format) {
 		case Z3_SMT:
-			return Char.toDefinitionString(SerialFormat.Z3_SMT) + "fozu.ca
+			return Char.toDefinitionString(SerialFormat.Z3_SMT) + 
 					fozu.ca.vodcg.condition.data.String.toDeclarationString(SerialFormat.Z3_SMT) + "\n" +
 					FiniteNumberGuard.toZ3SmtDeclaration();
 			

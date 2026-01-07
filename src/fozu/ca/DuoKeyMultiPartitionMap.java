@@ -19,7 +19,6 @@ extends MultiPartitionMap<KP, DuoKeyMultiPartitionMap<K1, K2, KP, KB, V>> {
 	 * @param pk1
 	 * @return non-null partition map
 	 */
-	@SuppressWarnings("unchecked")
 	protected DuoKeyMultiPartitionMap<K1, K2, KP, KB, V> 
 	getMap(MultiPartitionable.Key pk1, MultiPartitionable.Key pk2) {
 		return pk1 == null 

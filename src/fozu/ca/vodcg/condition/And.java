@@ -12,8 +12,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import fozu.ca.*;
-import fozu.ca.vodcg.condition.ReductionOperations.ReductionOctet;;
+import fozu.ca.vodcg.VODCondGen;
+import fozu.ca.vodcg.condition.ReductionOperations.ReductionOctet;
 
 /**
  * @author Kao, Chen-yi

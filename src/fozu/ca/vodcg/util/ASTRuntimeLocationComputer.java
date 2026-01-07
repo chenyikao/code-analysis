@@ -4,27 +4,14 @@
 package fozu.ca.vodcg.util;
 
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.eclipse.jdt.core.dom.IASTFileLocation;
-import org.eclipse.jdt.core.dom.IASTFunctionDefinition;
-import org.eclipse.jdt.core.dom.IASTMacroExpansionLocation;
-import org.eclipse.jdt.core.dom.IASTName;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.IASTNodeLocation;
-import org.eclipse.jdt.core.dom.IASTNodeSelector;
-import org.eclipse.jdt.core.dom.IASTPreprocessorPragmaStatement;
-import org.eclipse.jdt.core.dom.IASTTranslationUnit;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
-import org.eclipse.cdt.core.index.IIndexName;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import fozu.ca.DebugElement;
-import fozu.ca.Elemental;
 import fozu.ca.TrioKeyMap;
 import fozu.ca.vodcg.IncomparableException;
 import fozu.ca.vodcg.VODCondGen;
@@ -248,7 +235,7 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 	 * @param host2 - the same assumption to {@link host1}
 	 * @return
 	 */
-	protected static Integer compareAsGlobal(ASTNode host1, ASTNode host2) {
+	public static Integer compareAsGlobal(ASTNode host1, ASTNode host2) {
 		if (host1 == null) return host2 == null ? 0 : Integer.MIN_VALUE;
 		if (host2 == null) return host1 == null ? 0 : Integer.MAX_VALUE;
 		return null;

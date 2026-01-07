@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.eclipse.jdt.core.dom.IASTBinaryExpression;
 import org.eclipse.jdt.core.dom.InfixExpression;
 
 import fozu.ca.DebugElement;

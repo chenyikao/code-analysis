@@ -439,7 +439,7 @@ public abstract class Elemental {
 	 */
 	@SafeVarargs
 	public static <T> void consumeNonNull(
-			final Consumer<T> con, final Supplier<T> inputSup, Supplier<Boolean>... conjTesters) throws Exception {
+			final Consumer<T> con, final Supplier<T> inputSup, Supplier<Boolean>... conjTesters) {
 		if (inputSup == null) throwNullArgumentException("input supplier");
 		
 		if (!tests(testsSkipNullException(conjTesters))) return;
