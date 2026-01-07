@@ -665,35 +665,35 @@ implements Comparator<ForStatement> {
 		assert ov != null && tv != null;
 		
 		if (ovWrs == null) ovWrs = new TreeSet<>(tv);
-		IIndex tvIndex = ASTUtil.getIndex(false);
-		try {
-			tvIndex.acquireReadLock();
-			
-//			IIndexName[] ovRefs = tvIndex.findReferences(
-//					ov.getName().resolveBinding());				// internal NullPointerException!
-			for (IIndexBinding ovRef : tvIndex.findBindings(
-					ov.getName().toCharArray(), IndexFilter.ALL, new NullProgressMonitor())) {
-				IIndexName[] ovRefs = tvIndex.findReferences(ovRef);
-				if (ovRefs != null) for (
-						int i = 0, ovRefsSize = ovRefs.length; i < ovRefsSize; i++) {
-					Assignable<?> ovRefLv = Assignable.from(ovRefs[i], false, this);
-					ovRefLv.setWorkRemaining();
-					if (ovRefLv != null && !containsLinearly(ovWrs, ovRefLv)) {
-						if (ov.equalsVariable(ovRefLv) && tests(ovRefLv.writesBefore(tv))) 
-							ovWrs.add(ovRefLv); 
-//						else if (!Elemental.testsNot(ovRefLv.isAssigned()))		// check when assigned or not sure
-//							tv.isIncomparableTo(ovRefLv, "Incomparable ovRef : " + ovRefLv);
-					}
-					ovRefLv.setWorkRemaining(0, 
-							String.valueOf(i + 1) + "/" + ovRefsSize + "[" + ovRefLv.getShortNameAddress() + "]", 
-							"Found global WH");
-				}
-			}
-		} catch (Exception e) {
-//			e.printStackTrace();
-		} finally {
-			tvIndex.releaseReadLock();
-		}
+//		IIndex tvIndex = ASTUtil.getIndex(false);
+//		try {
+//			tvIndex.acquireReadLock();
+//			
+////			IIndexName[] ovRefs = tvIndex.findReferences(
+////					ov.getName().resolveBinding());				// internal NullPointerException!
+//			for (IIndexBinding ovRef : tvIndex.findBindings(
+//					ov.getName().toCharArray(), IndexFilter.ALL, new NullProgressMonitor())) {
+//				IIndexName[] ovRefs = tvIndex.findReferences(ovRef);
+//				if (ovRefs != null) for (
+//						int i = 0, ovRefsSize = ovRefs.length; i < ovRefsSize; i++) {
+//					Assignable<?> ovRefLv = Assignable.from(ovRefs[i], false, this);
+//					ovRefLv.setWorkRemaining();
+//					if (ovRefLv != null && !containsLinearly(ovWrs, ovRefLv)) {
+//						if (ov.equalsVariable(ovRefLv) && tests(ovRefLv.writesBefore(tv))) 
+//							ovWrs.add(ovRefLv); 
+////						else if (!Elemental.testsNot(ovRefLv.isAssigned()))		// check when assigned or not sure
+////							tv.isIncomparableTo(ovRefLv, "Incomparable ovRef : " + ovRefLv);
+//					}
+//					ovRefLv.setWorkRemaining(0, 
+//							String.valueOf(i + 1) + "/" + ovRefsSize + "[" + ovRefLv.getShortNameAddress() + "]", 
+//							"Found global WH");
+//				}
+//			}
+//		} catch (Exception e) {
+////			e.printStackTrace();
+//		} finally {
+//			tvIndex.releaseReadLock();
+//		}
 		return ovWrs;
 	}
 

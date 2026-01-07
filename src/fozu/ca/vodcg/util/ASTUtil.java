@@ -188,7 +188,7 @@ public final class ASTUtil extends DebugElement {
 
 	private static IProject selectedProj = null;
 
-	private static IIndex index = null;
+//	private static IIndex index = null;
 
 	
 	
@@ -1365,28 +1365,29 @@ public final class ASTUtil extends DebugElement {
 //		case IASTNameOwner.r_reference:		iRole = IIndex.FIND_REFERENCES;			break;
 //		case IASTNameOwner.r_unclear:		iRole = IIndex.FIND_POTENTIAL_MATCHES;	break;
 		case r_any:
-		default:							iRole = IIndex.FIND_ALL_OCCURRENCES;
+		default:							
+//			iRole = IIndex.FIND_ALL_OCCURRENCES;
 		}
 		
-		IIndex index = getIndex(false);
-		try {
-			index.acquireReadLock();
-			
-			// IIndex doesn't find names for IParameter's
-			Name[] bindNames = index.findNames(bind, iRole);
-			if (bindNames != null) for (Name name : bindNames) {
-				astName = toASTName(name);
-				if (astName != null) {
-					assert astName.resolveBinding().equals(bind); break;
-//					if (!hasRole || role == astName.getRoleOfName(true)) break;
-				}
-			}
-			
-		} catch (Exception e) {
-			throwASTException(bind, e);
-		} finally {
-			index.releaseReadLock();
-		}
+//		IIndex index = getIndex(false);
+//		try {
+//			index.acquireReadLock();
+//			
+//			// IIndex doesn't find names for IParameter's
+//			Name[] bindNames = index.findNames(bind, iRole);
+//			if (bindNames != null) for (Name name : bindNames) {
+//				astName = toASTName(name);
+//				if (astName != null) {
+//					assert astName.resolveBinding().equals(bind); break;
+////					if (!hasRole || role == astName.getRoleOfName(true)) break;
+//				}
+//			}
+//			
+//		} catch (Exception e) {
+//			throwASTException(bind, e);
+//		} finally {
+//			index.releaseReadLock();
+//		}
 		BINDING_NAME_CACHE.put(bind, role, astName);
 		return astName;
 	}

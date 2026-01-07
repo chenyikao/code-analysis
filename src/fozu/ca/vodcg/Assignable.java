@@ -699,8 +699,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	 */
 	public static boolean isAssignableBinding(IBinding bind) {
 		return bind instanceof IVariableBinding 
-				|| bind instanceof IMethodBinding
-				|| bind instanceof IMacroBinding;
+				|| bind instanceof IMethodBinding;
 	}
 	
 	
@@ -2462,7 +2461,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	 * 	an array pointer with arguments
 	 */
 	public boolean isArray() {
-		return variableDeclarationView instanceof ArrayType 
+		return variableDeclarationView.getName().resolveTypeBinding().isArray() 
 				|| tests(()-> 
 		getEnclosingArraySubscriptExpression()
 		.getArrayExpression().contains(nameView));

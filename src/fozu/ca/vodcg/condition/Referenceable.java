@@ -29,7 +29,7 @@ implements ASTAddressable {
 
 	private String name;
 	private Name cName;
-	private IIndexName enclosingDefinition = null;	// optional
+//	private IIndexName enclosingDefinition = null;	// optional
 
 	private PlatformType type;	// for caching type
 	
@@ -41,11 +41,11 @@ implements ASTAddressable {
 	 * @param condGen
 	 */
 	private Referenceable(String name, Name cName, 
-			IIndexName enclosingDefinition, PlatformType type, 
+			/*IIndexName enclosingDefinition,*/ PlatformType type, 
 			final ASTAddressable rtAddr, VODCondGen condGen) {
 		super(rtAddr, condGen);
 
-		this.enclosingDefinition = enclosingDefinition;
+//		this.enclosingDefinition = enclosingDefinition;
 		if (name != null) setName(name);
 		if (cName != null) setName(cName);
 		if (type != null) initType(type);
@@ -105,7 +105,7 @@ implements ASTAddressable {
 	protected Referenceable(String name, Referenceable subject, VODCondGen condGen) {
 		this(	name != null ? name : (subject != null ? subject.name : null),
 				subject != null ? subject.cName : null, 
-				subject != null ? subject.enclosingDefinition : null, 
+//				subject != null ? subject.enclosingDefinition : null, 
 				subject != null ? subject.type : null, 
 				subject != null ? subject.getRuntimeAddress() : null, 
 				condGen);
