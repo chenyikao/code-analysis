@@ -25,9 +25,9 @@ public class ASTException extends IllegalArgumentException {
 		super("non-AST binding? " + bind, cause);
 	}
 	
-	public ASTException(IProblemBinding bind, Throwable cause) {
-		super("AST binding problem? " + bind + 
-				" " + ASTUtil.toStringOf(bind.getASTNode()), cause);
-	}
+//	public ASTException(IProblemBinding bind, Throwable cause) {
+//		super("AST binding problem? " + bind + 
+//				" " + ASTUtil.toStringOf(bind.getASTNode()), cause);
+//	}
 
 }

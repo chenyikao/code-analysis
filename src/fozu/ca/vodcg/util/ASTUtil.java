@@ -1683,9 +1683,9 @@ public final class ASTUtil extends DebugElement {
 	
 	public static <T> T throwASTException(IBinding bind, Exception cause) 
 			throws ASTException {
-		throw bind instanceof IProblemBinding
+		throw /*bind instanceof IProblemBinding
 		? new ASTException((IProblemBinding) bind, cause)
-		: new ASTException(bind, cause);
+		:*/ new ASTException(bind, cause);
 	}
 
 }
