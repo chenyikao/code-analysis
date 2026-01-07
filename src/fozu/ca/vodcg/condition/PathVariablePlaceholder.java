@@ -16,18 +16,14 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.eclipse.jdt.core.dom.IASTDeclarator;
-import org.eclipse.jdt.core.dom.IASTFileLocation;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.dom.ForStatement;
+import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
-import org.eclipse.jdt.core.dom.IASTNameOwner;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
-import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.jdt.core.dom.IVariable;
 
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.ASTAddressable;
@@ -293,24 +289,24 @@ implements Comparable<PathVariablePlaceholder>, Comparator<PathVariablePlacehold
 		return from(Assignable.from(svDeclaration, rtAddr, condGen));
 	}
 	
-	/**
-	 * @param var
-	 * @param scope - pre-cached function scope for some function parameter var
-	 * @param condGen 
-	 * @return
-	 */
-	public static PathVariablePlaceholder from(
-			ILocalVariable var, fozu.ca.vodcg.condition.Function scope, VODCondGen condGen) 
-					throws ASTException, IncomparableException, 
-					UncertainPlaceholderException, NoSuchVersionException {
-		if (scope == null) throwNullArgumentException("function scope");
-		
-		final Name varAst = ASTUtil.getNameOfFrom(var, scope.getIName());
-		// var != null && varAst == null => var is in external libraries
-		return varAst == null 
-				? from(Assignable.from(var, condGen)) 
-				: from(Assignable.from(varAst, scope.getRuntimeAddress(), condGen));
-	}
+//	/**
+//	 * @param var
+//	 * @param scope - pre-cached function scope for some function parameter var
+//	 * @param condGen 
+//	 * @return
+//	 */
+//	public static PathVariablePlaceholder from(
+//			ILocalVariable var, fozu.ca.vodcg.condition.Function scope, VODCondGen condGen) 
+//					throws ASTException, IncomparableException, 
+//					UncertainPlaceholderException, NoSuchVersionException {
+//		if (scope == null) throwNullArgumentException("function scope");
+//		
+//		final Name varAst = ASTUtil.getNameOfFrom(var, scope.getIName());
+//		// var != null && varAst == null => var is in external libraries
+//		return varAst == null 
+//				? from(Assignable.from(var, condGen)) 
+//				: from(Assignable.from(varAst, scope.getRuntimeAddress(), condGen));
+//	}
 	
 	/**
 	 * @param varBind
@@ -324,8 +320,9 @@ implements Comparable<PathVariablePlaceholder>, Comparator<PathVariablePlacehold
 			Name varName, VariableDeclaration varDecl, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
 		try {
-			return applySkipNullThrow(asn-> from(asn), ()-> 
-			Assignable.from(varBind, varName, varDecl, rtAddr, condGen));
+			return applySkipNullThrow(
+					asn-> from(asn), 
+					()-> Assignable.from(varBind, varName, varDecl, rtAddr, condGen));
 			
 		} catch (ASTException e) {	// assignable may be un-resolvable!
 			return ASTUtil.throwASTException(varBind, e);

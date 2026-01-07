@@ -4,11 +4,11 @@
 package fozu.ca.vodcg.condition;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.IASTInitializerClause;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.Statement;
 
@@ -89,9 +89,15 @@ public interface ArithmeticExpression extends NumericExpression, ThreadRoleMatch
 	 * @param condGen
 	 * @return an increment map of <incrementor, increment>
 	 */
-	@SuppressWarnings("unchecked")
-    public static ArithmeticExpression fromIncrementOf(ForStatement loop, Expression initializer, final ASTAddressable runTimeAddr, VODCondGen condGen) {
-	    return ASTLoopUtil.getIncrementOf(loop, initializer, runTimeAddr, condGen);
+	@SuppressWarnings({ "unchecked", "removal" })
+    public static ArithmeticExpression fromIncrementOf(ForStatement loop, final ASTAddressable runTimeAddr, VODCondGen condGen) {
+		if (loop == null) DebugElement.throwNullArgumentException("loop");
+		
+		final List<org.eclipse.jdt.core.dom.Expression> initializers = loop.initializers();
+	    return initializers.size() == 1 
+	    		? ASTLoopUtil.getIncrementOf(loop, initializers.get(0), runTimeAddr, condGen)
+	    		: DebugElement.throwTodoException(
+	    				"unsupported multiple initializers: " + initializers);
 	}
 		
 	

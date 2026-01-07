@@ -13,10 +13,12 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.BooleanLiteral;
 import org.eclipse.jdt.core.dom.DoStatement;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.Name;
@@ -28,19 +30,6 @@ import org.eclipse.jdt.core.dom.SwitchCase;
 import org.eclipse.jdt.core.dom.SwitchStatement;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.WhileStatement;
-import org.eclipse.jdt.core.dom.Assignment.Operator;
-import org.eclipse.jdt.core.dom.Block;
-import org.eclipse.jdt.core.dom.BooleanLiteral;
-import org.eclipse.jdt.core.dom.IASTBinaryExpression;
-import org.eclipse.jdt.core.dom.IASTCompoundStatement;
-import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
-import org.eclipse.jdt.core.dom.IASTIdExpression;
-import org.eclipse.jdt.core.dom.IASTInitializerClause;
-import org.eclipse.jdt.core.dom.IASTLiteralExpression;
-import org.eclipse.jdt.core.dom.IASTUnaryExpression;
-import org.eclipse.jdt.core.dom.IEnumeration;
-import org.eclipse.jdt.core.dom.IEnumerator;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 
 import fozu.ca.Addressable;
 import fozu.ca.DuoKeyMultiPartitionMap;
@@ -53,7 +42,6 @@ import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.Assignment;
 import fozu.ca.vodcg.SystemElement;
 import fozu.ca.vodcg.VODCondGen;
-import fozu.ca.vodcg.condition.Expression;
 import fozu.ca.vodcg.condition.FunctionCall.CallProposition;
 import fozu.ca.vodcg.condition.ReductionOperations.ReductionOctet;
 import fozu.ca.vodcg.condition.data.ArithmeticGuard;
@@ -2461,7 +2449,9 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 		// TODO? returnTodoException("ignoreDependency(Operator.And, p2)")
 		// extracting the common and(()->...) from roForall
 		try {
-			return applySkipNull(result-> and(()-> result), ()-> fa.getProposition().reduceByOperands(ros, true));
+			return applySkipNull(
+					((TryFunction<Proposition, Proposition>) result-> and(()-> result)), 
+					()-> fa.getProposition().reduceByOperands(ros, true));
 		} catch (Exception e) {
 			return throwUnhandledException(e);
 		}

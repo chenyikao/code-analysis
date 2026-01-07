@@ -9,23 +9,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.eclipse.jdt.core.dom.IASTBinaryExpression;
-import org.eclipse.jdt.core.dom.IASTDeclarator;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
-import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
-import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.IASTFunctionCallExpression;
-import org.eclipse.jdt.core.dom.IASTInitializerList;
-import org.eclipse.jdt.core.dom.IASTName;
-import org.eclipse.jdt.core.dom.IASTNode;
-import org.eclipse.jdt.core.dom.IASTUnaryExpression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
@@ -40,12 +33,6 @@ import fozu.ca.vodcg.condition.VariablePlaceholder;
 import fozu.ca.vodcg.util.ASTAssignableComputer;
 import fozu.ca.vodcg.util.ASTLoopUtil;
 import fozu.ca.vodcg.util.ASTUtil;
-import fozu.ca.vodcg.util.IASTDeclaration;
-import fozu.ca.vodcg.util.IASTDeclarationStatement;
-import fozu.ca.vodcg.util.IASTEqualsInitializer;
-import fozu.ca.vodcg.util.IASTInitializer;
-import fozu.ca.vodcg.util.IASTSimpleDeclaration;
-import fozu.ca.vodcg.util.ASTLoopUtil.Fragment;
 
 /**
  * @author Kao, Chen-yi
@@ -62,9 +49,9 @@ public class Assignment extends SystemElement {
 	private final Set<Assignable<?>> asds = new HashSet<>();
 	private final Set<Assignable<?>> asns = new HashSet<>();
 	
-	private Assignment(org.eclipse.jdt.core.dom.Assignment clause, final ASTAddressable dynaAddr, VODCondGen condGen) {
+	private Assignment(org.eclipse.jdt.core.dom.Expression exp, final ASTAddressable dynaAddr, VODCondGen condGen) {
 		super(dynaAddr, condGen);
-		asmAsm = clause;
+		asmAsm = exp;
 	}
 
 	private Assignment(VariableDeclaration init, final ASTAddressable dynaAddr, VODCondGen condGen) {
@@ -103,25 +90,25 @@ public class Assignment extends SystemElement {
 	}
 	
 	/**
-	 * @param clause
+	 * @param exp
 	 * @param assigned - possibly a function call argument
 	 * @param condGen
 	 * @return
 	 */
 	public static Assignment from(
-			final org.eclipse.jdt.core.dom.Assignment clause, final Assignable<?> assigned, final VODCondGen condGen) 
+			final org.eclipse.jdt.core.dom.Expression exp, final Assignable<?> assigned, final VODCondGen condGen) 
 			throws UncertainPlaceholderException {
-		if (clause == null) throwNullArgumentException("clause");
+		if (exp == null) throwNullArgumentException("clause");
 		if (assigned == null) throwNullArgumentException("assigned");
 
 		final ASTAddressable dynaAddr = assigned.cacheRuntimeAddress();
 		final org.eclipse.jdt.core.dom.Expression asdExp = assigned.getExpressionView();
-		if (ASTAssignableComputer.isAssignedIn(asdExp, clause)
-				|| ASTAssignableComputer.isAssigningIn(asdExp, clause)) 
-			return new Assignment(clause, dynaAddr, condGen);
+		if (ASTAssignableComputer.isAssignedIn(asdExp, exp)
+				|| ASTAssignableComputer.isAssigningIn(asdExp, exp)) 
+			return new Assignment(exp, dynaAddr, condGen);
 		
-		if (ASTAssignableComputer.isLikeAssignment(clause)) 
-			return from(ASTUtil.getEnclosingFunctionCallOf(clause), assigned, condGen);
+		if (ASTAssignableComputer.isLikeAssignment(exp)) 
+			return from(ASTUtil.getEnclosingFunctionCallOf(exp), assigned, condGen);
 		
 		return null;
 	}
@@ -152,7 +139,7 @@ public class Assignment extends SystemElement {
 				for (Assignable<?> p : Assignable.fromOf(
 						((PathVariablePlaceholder) param).getAssignable()
 						.getWritingFunctionDefinition(), 
-						param.getName(), arg.cacheRuntimeAddress(), condGen)) 
+						call.getName(), arg.cacheRuntimeAddress(), condGen)) 
 					if (tests(p.isAssigned())) return p.getFirstAssignment();	//new Assignment(call, condGen);
 			} else	
 				// non-AST parameter causing function call assignment
@@ -365,6 +352,7 @@ public class Assignment extends SystemElement {
         return throwTodoException("unsupported assignment");
     }
     
+	@SuppressWarnings("unchecked")
 	private void collectAssignables() 
 			throws ASTException, UncertainException {
 		assert !(asmAsm != null && asmDcl != null);
@@ -406,8 +394,8 @@ public class Assignment extends SystemElement {
 		
 		// non-AST function call assignment
 		else if (asmAsm instanceof MethodInvocation) {
-			final org.eclipse.jdt.core.dom.Assignment[] args = 
-					((MethodInvocation) asmAsm).getArguments();
+			final List<Expression> args = (List<Expression>)
+					((MethodInvocation) asmAsm).arguments();
 			if (args != null) for (org.eclipse.jdt.core.dom.Assignment arg : args) {
 				final Assignable<?> argAsn = Assignable.from(arg, null, cg);
 				if (argAsn == null) continue;

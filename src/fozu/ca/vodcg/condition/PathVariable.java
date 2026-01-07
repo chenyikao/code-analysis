@@ -13,35 +13,33 @@ import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.ArrayAccess;
-import org.eclipse.jdt.core.dom.IASTDeclarator;
+import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ForStatement;
+import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Type;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
-import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.jdt.core.dom.IVariableBinding;
 
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.ASTException;
-import fozu.ca.vodcg.UncertainException;
-import fozu.ca.vodcg.VODCondGen;
-import fozu.ca.vodcg.condition.data.PlatformType;
-import fozu.ca.vodcg.condition.version.Version;
-import fozu.ca.vodcg.util.ASTUtil;
-import fozu.ca.vodcg.condition.version.EnumeratedVersion;
-import fozu.ca.vodcg.condition.version.NoSuchVersionException;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.IncomparableException;
 import fozu.ca.vodcg.SystemElement;
+import fozu.ca.vodcg.UncertainException;
 import fozu.ca.vodcg.UncertainPlaceholderException;
+import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.condition.data.DataType;
+import fozu.ca.vodcg.condition.data.PlatformType;
 import fozu.ca.vodcg.condition.version.ConstantCountingVersion;
+import fozu.ca.vodcg.condition.version.EnumeratedVersion;
+import fozu.ca.vodcg.condition.version.NoSuchVersionException;
 import fozu.ca.vodcg.condition.version.ThreadRole;
+import fozu.ca.vodcg.condition.version.Version;
+import fozu.ca.vodcg.util.ASTUtil;
 
 /**
  * An l-value based memory address history mapping.

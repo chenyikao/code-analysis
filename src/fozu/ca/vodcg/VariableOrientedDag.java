@@ -9,17 +9,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.cdt.core.dom.IName;
-import org.eclipse.cdt.core.dom.ast.IASTFileLocation;
-import org.eclipse.cdt.core.dom.ast.IASTFunctionDefinition;
-import org.eclipse.cdt.core.dom.ast.IASTName;
-import org.eclipse.cdt.core.dom.ast.IBinding;
-import org.eclipse.cdt.core.dom.ast.IFunction;
-import org.eclipse.cdt.core.dom.ast.IVariable;
-import org.eclipse.cdt.core.index.IIndex;
-import org.eclipse.cdt.core.index.IndexFilter;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -328,7 +317,7 @@ implements Comparable<VariableOrientedDag> {
 	public int getCalleeCompletedLocation() {
 		final StructuralPropertyDescriptor loc = callee.getBinding() instanceof IMethodBinding 
 				? ASTUtil.getAncestorOfAsUnless(callee.getTopNode(), 
-						ASTUtil.AST_FUNCTION_CALL_EXPRESSION,
+						ASTUtil.AST_METHOD_INVOCATION_EXPRESSION,
 						ASTUtil.AST_STATEMENT_TYPE,
 						false).getFileLocation()
 				: callee.getFileLocation();
@@ -421,7 +410,7 @@ implements Comparable<VariableOrientedDag> {
 		final Assignable<?> ref1 = getCallee(), ref2 = vod2.getCallee();
 		final boolean isR1R2 = ref1 == ref2;
 //		final boolean isR1R2 = ref1.equals(ref2);
-		if (ASTUtil.equals(func1, func2)) {	
+		if (func1.equals(func2)) {	
 			if (isR1R2) return 0;
 			else {
 				final Proposition cond1 = getCalleeCond(), 

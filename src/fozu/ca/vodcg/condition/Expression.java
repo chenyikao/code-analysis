@@ -2,7 +2,6 @@ package fozu.ca.vodcg.condition;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,24 +18,8 @@ import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.BooleanLiteral;
 import org.eclipse.jdt.core.dom.CastExpression;
 import org.eclipse.jdt.core.dom.CharacterLiteral;
-import org.eclipse.jdt.core.dom.IASTArraySubscriptExpression;
-import org.eclipse.jdt.core.dom.IASTBinaryExpression;
-import org.eclipse.jdt.core.dom.IASTCastExpression;
-import org.eclipse.jdt.core.dom.ConditionalExpression;
 import org.eclipse.jdt.core.dom.FieldAccess;
-import org.eclipse.jdt.core.dom.IASTFieldReference;
-import org.eclipse.jdt.core.dom.IASTFileLocation;
-import org.eclipse.jdt.core.dom.IASTFunctionCallExpression;
-import org.eclipse.jdt.core.dom.IASTIdExpression;
-import org.eclipse.jdt.core.dom.IASTInitializer;
-import org.eclipse.jdt.core.dom.IASTInitializerClause;
-import org.eclipse.jdt.core.dom.IASTLiteralExpression;
-import org.eclipse.jdt.core.dom.IASTName;
-import org.eclipse.jdt.core.dom.IASTTypeIdExpression;
-import org.eclipse.jdt.core.dom.IASTUnaryExpression;
 import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.jdt.core.dom.IEnumeration;
-import org.eclipse.jdt.core.dom.IEnumerator;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
@@ -46,9 +29,10 @@ import org.eclipse.jdt.core.dom.NumberLiteral;
 import org.eclipse.jdt.core.dom.ParenthesizedExpression;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
-import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
+import org.eclipse.jdt.core.dom.SuperFieldAccess;
+import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 import org.eclipse.jdt.core.dom.TypeLiteral;
 
 import fozu.ca.Elemental;
@@ -59,12 +43,12 @@ import fozu.ca.vodcg.ASTAddressable;
 import fozu.ca.vodcg.ASTException;
 import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.SynchronousReadSet;
+import fozu.ca.vodcg.SystemElement;
 import fozu.ca.vodcg.UncertainException;
 import fozu.ca.vodcg.UncertainPlaceholderException;
 import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.condition.Proposition.Operator;
 import fozu.ca.vodcg.condition.data.ArithmeticGuard;
-import fozu.ca.vodcg.condition.data.ArrayPointer;
 import fozu.ca.vodcg.condition.data.Char;
 import fozu.ca.vodcg.condition.data.DataType;
 import fozu.ca.vodcg.condition.data.Int;
@@ -274,7 +258,7 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 				break;
 				
 			case ASTNode.CONDITIONAL_EXPRESSION:
-				ConditionalExpression cexp = (ConditionalExpression) exp;
+				org.eclipse.jdt.core.dom.ConditionalExpression cexp = (org.eclipse.jdt.core.dom.ConditionalExpression) exp;
 				e = ConditionalExpression.from(
 						Proposition.fromRecursively((ASTNode) cexp.getExpression(), rtAddr, condGen), 
 						fromRecursively(cexp.getThenExpression(), rtAddr, condGen),
@@ -302,8 +286,8 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 //					+ " at " + ASTUtil.toLocationOf(clause));
 				
 				// for propositional expression, i.e., j++
-				e = debugCallDepth(null, ()-> 
-				Proposition.fromRecursivelyWithoutBranching(clause, null, condGen)); 
+				e = debugCallDepth((SystemElement) null, ()-> 
+				Proposition.fromRecursivelyWithoutBranching(exp, null, condGen)); 
 			}
 			
 			if (e != null) {
@@ -338,16 +322,17 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 			return from((ITypeBinding) nameBind, name.getFileLocation());
 	
 		// ID TODO: or other side-effect suitable's
-		final Expression e = PathVariablePlaceholder.from(nameBind, name, name, rtAddr, condGen);
-		if (e == null) throwTodoException("unsupported ID: " 
-		+ ASTUtil.toStringOf(name) + " bound to " + nameBind);
+//		final Expression e = PathVariablePlaceholder.from(nameBind, name, name, rtAddr, condGen);
+//		if (e == null) 
+			return throwTodoException("unsupported ID: " 
+					+ ASTUtil.toStringOf(name) + " bound to " + nameBind);
 //		else if (!e.enters(METHOD_FROM_RECURSIVELY)) {	// letting the entering one complete the side-effect
 //			e.enter(METHOD_FROM_RECURSIVELY);
 //			e.andSideEffect();
 //			e.leave(METHOD_FROM_RECURSIVELY);
 //		}
 		
-		return e;
+//		return e;
 	}
 	
 	
@@ -387,17 +372,18 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 			return from((ITypeBinding) refBind, refExp.getFileLocation());
 		
 		// ID TODO: or other side-effect suitable's
-		final Expression e = PathVariablePlaceholder.from(
-				refBind, refName, refExp, rtAddr, condGen);
-		if (e == null) throwTodoException("unsupported reference: " 
-		+ ASTUtil.toStringOf(refExp) + " bound to " + refBind);
+//		final Expression e = PathVariablePlaceholder.from(
+//				refBind, refName, refExp, rtAddr, condGen);
+//		if (e == null) 
+		return throwTodoException("unsupported reference: " 
+					+ ASTUtil.toStringOf(refExp) + " bound to " + refBind);
 //		else if (!e.enters(METHOD_FROM_RECURSIVELY)) {	// letting the entering one complete the side-effect
 //			e.enter(METHOD_FROM_RECURSIVELY);
 //			e.andSideEffect();
 //			e.leave(METHOD_FROM_RECURSIVELY);
 //		}
 		
-		return e;
+//		return e;
 	}
 
 	
@@ -517,7 +503,7 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 		}
 			
 		// unary arithmetics
-		return Arithmetic.from(unary, op, 
+		return Arithmetic.from(op, 
 				fromRecursively(oprd, rtAddr, condGen));
 	}
 
@@ -545,7 +531,7 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 		}
 		
 		// unary arithmetics
-		return Arithmetic.from(unary, op, 
+		return Arithmetic.from(op, 
 				fromRecursively(oprd, rtAddr, condGen));
 	}
 	

@@ -11,15 +11,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
-import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.Statement;
 
 import fozu.ca.DebugElement;
-import fozu.ca.Elemental;
 import fozu.ca.condition.SerialFormat;
 import fozu.ca.solver.CarryInRangeDegrader;
 import fozu.ca.vodcg.ASTAddressable;
@@ -127,7 +124,6 @@ implements ASTAddressable, AppendableVersion<S>, AssignableExpression, ThreadRol
 		init(role);
 	}
 	
-	@SuppressWarnings("removal")
 	private void init(FunctionallableRole role) throws NoSuchVersionException {
 		if (role == null) throwNullArgumentException("role");
 		if (!matches(role)) throwTodoException("unmatchable role");
@@ -170,7 +166,6 @@ implements ASTAddressable, AppendableVersion<S>, AssignableExpression, ThreadRol
 		return from(addr, role, constructor, false, false);
 	}
 
-	@SuppressWarnings("removal")
 	private static <S extends Referenceable> Version<S> from(
 			final VersionEnumerable<S> addr, final FunctionallableRole role,
 			final TrySupplier<? extends Version<S>, NoSuchVersionException> constructor, 
@@ -317,15 +312,13 @@ implements ASTAddressable, AppendableVersion<S>, AssignableExpression, ThreadRol
 	
 	
 	
-	@Override
-	public <T> void consumeSkipNullException(
-			Consumer<T> con, Supplier<T> inputSup, 
-			@SuppressWarnings("unchecked") Supplier<Boolean>... conjTesters) {
-		runSkipNull(()-> 
-		getAssignable().guard(()-> consumeSkipNullException(con, inputSup, conjTesters)));
-	}
+//	public <T> void consumeSkipNullException(
+//			Consumer<T> con, Supplier<T> inputSup, 
+//			@SuppressWarnings("unchecked") Supplier<Boolean>... conjTesters) {
+//		runSkipNull(()-> 
+//		getAssignable().guard(()-> consumeSkipNullException(con, inputSup, conjTesters)));
+//	}
 
-	@SuppressWarnings("removal")
 	@Override
 	public Version<S> append(TrySupplier<Version<S>, NoSuchVersionException> subVer) {
 		if (subVer == null) return this;
@@ -376,7 +369,6 @@ implements ASTAddressable, AppendableVersion<S>, AssignableExpression, ThreadRol
 		return role;
 	}
 	
-	@SuppressWarnings("removal")
 	protected void setRole(FunctionallableRole newRole) {
 		if (newRole == null) throwNullArgumentException("new role");
 		
@@ -406,7 +398,6 @@ implements ASTAddressable, AppendableVersion<S>, AssignableExpression, ThreadRol
 //				rhs.cloneIfChangeRole(getThreadRole()));
 //	}
 	
-	@SuppressWarnings("removal")
 	@Override
 	public void setAssigned(Boolean isAssigned) {
 		if (addr == null) addr = getAddress();
@@ -443,7 +434,7 @@ implements ASTAddressable, AppendableVersion<S>, AssignableExpression, ThreadRol
 		return getAddress() != null;
 	}
 	
-	@SuppressWarnings({ "unchecked", "removal" })
+	@SuppressWarnings({ })
 	public void setAddress(VersionEnumerable<S> addr) {
 		if (addr == null) throwNullArgumentException("addressable");
 		if (this.addr != null && this.addr != addr) throwTodoException("inconsistent addressable");
@@ -502,7 +493,7 @@ implements ASTAddressable, AppendableVersion<S>, AssignableExpression, ThreadRol
 	
 
 	
-	@SuppressWarnings({ "unchecked", "removal" })
+	@SuppressWarnings({ "unchecked" })
 	@Override
 	protected <T> Set<T> cacheDirectVariableReferences(Class<T> refType) {
 		if (refType == null) return throwNullArgumentException(
@@ -535,7 +526,6 @@ implements ASTAddressable, AppendableVersion<S>, AssignableExpression, ThreadRol
 		return getID(format, getThreadRole());
 	}
 	
-	@SuppressWarnings("removal")
 	protected final String getID(final SerialFormat format, final FunctionallableRole role) {
 		String id = getName() + getIDSuffix(format);
 		
@@ -587,7 +577,6 @@ implements ASTAddressable, AppendableVersion<S>, AssignableExpression, ThreadRol
 		return getSubject().getID(format) + getIDSuffixWithoutVersion(format);
 	}
 	
-	@SuppressWarnings("removal")
 	public final String getIDSuffixWithoutVersion(SerialFormat format) {
 		return "_" + debugGet(()-> getAddress().getShortAddress(format),
 				()-> getSubject().getIDSuffix(format));
@@ -600,7 +589,6 @@ implements ASTAddressable, AppendableVersion<S>, AssignableExpression, ThreadRol
 				e-> throwTodoException(e));
 	}
 	
-	@SuppressWarnings("removal")
 	@Override
 	public FunctionallableRole getThreadRole() {
 		FunctionallableRole r = peekRole();
@@ -638,7 +626,7 @@ implements ASTAddressable, AppendableVersion<S>, AssignableExpression, ThreadRol
 	 * @param newSub
 	 * @throws NoSuchVersionException 
 	 */
-	@SuppressWarnings({ "unchecked", "removal" })
+	@SuppressWarnings({ "unchecked" })
 	public void subversion(Version<? extends S> newSub) {
 		if (newSub == this) return;
 		if (newSub == null) throwNullArgumentException("subversion");
@@ -731,7 +719,6 @@ implements ASTAddressable, AppendableVersion<S>, AssignableExpression, ThreadRol
 
 	
 	
-	@SuppressWarnings("removal")
 	@Override
 	public void setName(Name newName) {
 		final ASTNode oriAddr = getSkipNull(()-> getAddress().getASTAddress());

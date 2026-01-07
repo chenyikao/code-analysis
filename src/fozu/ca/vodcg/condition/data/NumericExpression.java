@@ -145,11 +145,11 @@ public interface NumericExpression {
 		return Elemental.getSkipNull(sup);
 	}
 	
-	@SuppressWarnings("removal")
-    public default Method getMethod(
-			Class<?> clazz, java.lang.String name, Class<?>... parameterTypes) {
-		return DebugElement.getMethod(clazz, name, parameterTypes);
-	}
+//	@SuppressWarnings("removal")
+//    public default Method getMethod(
+//			Class<?> clazz, java.lang.String name, Class<?>... parameterTypes) {
+//		return DebugElement.getMethod(clazz, name, parameterTypes);
+//	}
 	
 	
 	
@@ -313,10 +313,10 @@ public interface NumericExpression {
 	/**
 	 * @return isPositive() || isZero()
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "removal" })
 	public default Boolean isPositiveOrZero() {
 		return trySkipNullException(
-				getMethod(NumericExpression.class, "isPositiveOrZero"),
+				DebugElement.getMethod(NumericExpression.class, "isPositiveOrZero"),
 				()-> ((ConditionElement) this).hasPositiveOrZeroGuards() ? true : null,
 				()-> toNonSelfConstant().isPositiveOrZero(),
 				()-> Boolean.TRUE.equals(isZero()) ? true : null,	// isZero() is faster
@@ -326,11 +326,11 @@ public interface NumericExpression {
 	/**
 	 * @return getPositiveInfinity() != null && !(isNegative() || isZero() || ...)
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "removal" })
 	public default Boolean isPositiveInfinity() throws ReenterException {
 		if (getPositiveInfinity() == null) return false;	// non-supporting type
 		return trySkipNullException(
-				getMethod(NumericExpression.class, "isPositiveInfinity"),
+				DebugElement.getMethod(NumericExpression.class, "isPositiveInfinity"),
 				()-> isBounded() ? false : null,
 				()-> ((ConditionElement) this).hasPositiveGuards() ? false : null,
 				()-> ((ConditionElement) this).hasNegativeGuards() ? false : null,
@@ -343,11 +343,11 @@ public interface NumericExpression {
 	/**
 	 * @return isNegativeInfinity() || !isPositiveOrZero()
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "removal" })
 	public default Boolean isNegative() 
 			throws ReenterException {
 		return trySkipNullException(
-				getMethod(NumericExpression.class, "isNegative"),
+				DebugElement.getMethod(NumericExpression.class, "isNegative"),
 				()-> ((ConditionElement) this).hasPositiveGuards() ? false : null,
 				()-> ((ConditionElement) this).hasNegativeGuards() ? true : null,
 				()-> toNonSelfConstant().isNegative(),
@@ -358,12 +358,12 @@ public interface NumericExpression {
 	/**
 	 * @return getNegativeInfinity() != null && !(isPositive() || isZero() || ...)
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "removal" })
 	public default Boolean isNegativeInfinity() 
 			throws ReenterException {
 		if (getNegativeInfinity() == null) return false;	// non-supporting type
 		return trySkipNullException(
-				getMethod(NumericExpression.class, "isNegativeInfinity"),
+				DebugElement.getMethod(NumericExpression.class, "isNegativeInfinity"),
 				()-> isBounded() ? false : null,
 				()-> ((ConditionElement) this).hasPositiveOrZeroGuards() ? false : null,
 				()-> ((ConditionElement) this).hasNegativeGuards() ? false : null,
@@ -380,12 +380,12 @@ public interface NumericExpression {
 	 * @param ne2
 	 * @return
 	 */
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({ "unchecked", "removal" })
 	public default Boolean isLessThan(NumericExpression ne2) 
 			throws ReenterException {
 		if (ne2 == null) return Elemental.throwNullArgumentException("numeric expression");
 		return trySkipNullException(
-				getMethod(NumericExpression.class, "isLessThan", NumericExpression.class), 
+				DebugElement.getMethod(NumericExpression.class, "isLessThan", NumericExpression.class), 
 				()-> toNonSelfConstant().isLessThan(ne2),
 				()-> applyConst(this::isLessThan, ne2::toNonSelfConstant),
 				()-> Boolean.TRUE.equals(isPositiveInfinity()) ? false : null,
@@ -399,12 +399,12 @@ public interface NumericExpression {
 	 * @param ne2
 	 * @return equals(ae2) || isLessThan(ae2)
 	 */
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({ "unchecked", "removal" })
 	public default Boolean isLessEqual(NumericExpression ne2) 
 			throws ReenterException {
 		if (ne2 == null) return Elemental.throwNullArgumentException("numeric expression");
 		return trySkipNullException(
-				getMethod(NumericExpression.class, "isLessEqual", NumericExpression.class),
+				DebugElement.getMethod(NumericExpression.class, "isLessEqual", NumericExpression.class),
 				()-> toNonSelfConstant().isLessEqual(ne2),
 				()-> applyConst(this::isLessEqual, ne2::toNonSelfConstant),
 				()-> equals(ne2) || isLessThan(ne2),	// equals(ae2) is faster, in case of !equals(ae2)
@@ -418,12 +418,12 @@ public interface NumericExpression {
 	 * 	Since objectly non-equal doesn't mean logically non-equal, for example, 
 	 * 	tran = 314159265.0 is objectly non-equal but logically equal
 	 */
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({ "unchecked", "removal" })
 	public default Boolean equals(NumericExpression ne2) 
 			throws ReenterException {
 		if (ne2 == null) return Elemental.throwNullArgumentException("numeric expression");
 		return trySkipNullException(
-				getMethod(NumericExpression.class, "equals", NumericExpression.class),
+				DebugElement.getMethod(NumericExpression.class, "equals", NumericExpression.class),
 				// lhs ::= rhs -> lhs == rhs
 				()-> toNonSelfConstant().equals(ne2),
 				()-> applyConst(this::equals, ne2::toNonSelfConstant),
@@ -440,11 +440,11 @@ public interface NumericExpression {
 	}
 	
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "removal" })
 	public default Expression negate() 
 			throws ReenterException, UnsupportedOperationException {
 		final NumericExpression result = trySkipNullException(
-				getMethod(NumericExpression.class, "negate"),
+				DebugElement.getMethod(NumericExpression.class, "negate"),
 				()-> Boolean.TRUE.equals(isZero()) ? this : null,
 				()-> applyConst(con-> (NumericExpression) con.negate(), ()-> toNonSelfConstant()),
 				()-> Boolean.TRUE.equals(isPositiveInfinity()) ? getNegativeInfinity() : null,

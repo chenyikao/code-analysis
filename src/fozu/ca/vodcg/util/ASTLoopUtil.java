@@ -1,7 +1,6 @@
 package fozu.ca.vodcg.util;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,31 +9,17 @@ import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Assignment;
-import org.eclipse.jdt.core.dom.Assignment.Operator;
-import org.eclipse.jdt.core.dom.ExpressionStatement;
-import org.eclipse.jdt.core.dom.IASTDeclaration;
-import org.eclipse.jdt.core.dom.IASTDeclarationStatement;
-import org.eclipse.jdt.core.dom.IASTDeclarator;
-import org.eclipse.jdt.core.dom.IASTEqualsInitializer;
-import org.eclipse.jdt.core.dom.IASTExpressionStatement;
 import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.IASTFunctionDefinition;
-import org.eclipse.jdt.core.dom.IASTInitializer;
-import org.eclipse.jdt.core.dom.IASTInitializerClause;
-import org.eclipse.jdt.core.dom.IASTLiteralExpression;
+import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.ParenthesizedExpression;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.IASTSimpleDeclaration;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
-import org.eclipse.jdt.core.dom.IASTUnaryExpression;
-import org.eclipse.jdt.core.dom.InfixExpression;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import fozu.ca.DebugElement;
 import fozu.ca.Elemental;
@@ -271,14 +256,14 @@ public final class ASTLoopUtil {
 				final org.eclipse.jdt.core.dom.Expression oprd1 = condBin.getLeftOperand(), 
 						oprd2 = condBin.getRightOperand(), 
 						it = getCanonicalIteratorOf(loop);
-				if (ASTAssignableComputer.getDependentOnBy(oprd1, it) != null) {	// var relational-op b
+				if (new ASTDependencyComputer(oprd1).getDependentOnBy(it) != null) {	// var relational-op b
 					tb = oprd2; 
 					if (op == InfixExpression.Operator.LESS) top = InfixExpression.Operator.GREATER;
 					else if (op == InfixExpression.Operator.LESS_EQUALS) top = InfixExpression.Operator.GREATER_EQUALS;
 					else if (op == InfixExpression.Operator.GREATER) top = InfixExpression.Operator.LESS;
 					else if (op == InfixExpression.Operator.GREATER_EQUALS) top = InfixExpression.Operator.LESS_EQUALS;
 				}
-				else if (ASTAssignableComputer.getDependentOnBy(oprd2, it) != null) {	// b relational-op var
+				else if (new ASTDependencyComputer(oprd2).getDependentOnBy(it) != null) {	// b relational-op var
 					tb = oprd1; top = op;
 				}
 				// tb keeps null if loop is not canonical 
@@ -444,7 +429,7 @@ public final class ASTLoopUtil {
 		return (ForStatement) ASTUtil.getAncestorOfAsUnless(
 				innerLoop, 
 				ASTUtil.AST_FOR_TYPE,
-				ASTUtil.AST_FUNCTION_DEFINITION, 
+				ASTUtil.AST_METHOD_DECLARATION_DEFINITION, 
 				false);
 	}
 	

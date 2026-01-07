@@ -7,10 +7,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import org.eclipse.cdt.core.dom.ast.IASTBinaryExpression;
-import org.eclipse.cdt.core.dom.ast.IASTUnaryExpression;
-import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
 
 import fozu.ca.DuoKeyMultiPartitionMap;
@@ -284,10 +282,24 @@ public class Arithmetic extends Relation implements ArithmeticExpression {
 	 * @return
 	 */
 	public static Arithmetic from(PrefixExpression.Operator expOp, Expression operand) {
-		
 		Operator op = null;
 		if (expOp == PrefixExpression.Operator.MINUS) op = Operator.Subtract;
 		else if (expOp == PrefixExpression.Operator.PLUS) op = Operator.Add;
+		
+		return (op != null) ? new Arithmetic(op, operand) : null;
+	}
+	
+	/**
+	 * Non-assignments have NO side-effects of their own to propagate outwards.
+	 * 
+	 * @param expOp - to be checked if it's a non-assignment
+	 * @param operand
+	 * @return
+	 */
+	public static Arithmetic from(PostfixExpression.Operator expOp, Expression operand) {
+		Operator op = null;
+		if (expOp == PostfixExpression.Operator.DECREMENT) op = Operator.Subtract;
+		else if (expOp == PostfixExpression.Operator.INCREMENT) op = Operator.Add;
 		
 		return (op != null) ? new Arithmetic(op, operand) : null;
 	}

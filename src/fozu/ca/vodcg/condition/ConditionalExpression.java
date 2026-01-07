@@ -290,14 +290,15 @@ extends Expression implements ArithmeticExpression {
 //	private final static Method METHOD_EXPRESSION_TRAVERSAL = 
 //			getMethod(ConditionalExpression.class, "initiatesExpressionTraversal");
 //	/* (non-Javadoc)
-/fozu.ca@see fozu.ca.condition.ArithmeticExpression#initiatesExpressionTraversal()
+//	 * @see fozu.ca.condition.ArithmeticExpression#initiatesExpressionTraversal()
 //	 */
 //	@Override
 //	public boolean initiatesExpressionComputation() {
 //		return initiatesElementalTraversal(METHOD_EXPRESSION_TRAVERSAL);
 //	}
 //
-//	/* (non-Javadoc)fozu.ca* @see fozu.ca.condition.ArithmeticExpression#initiateExpressionTraversal()
+//	/* (non-Javadoc)
+//	 * @see fozu.ca.condition.ArithmeticExpression#initiateExpressionTraversal()
 //	 */
 //	@Override
 //	public void initiateExpressionComputation() {

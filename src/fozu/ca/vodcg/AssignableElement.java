@@ -37,7 +37,7 @@ public interface AssignableElement {
 		return getAsn(sup, ()-> null);
 	}
 	
-	@SuppressWarnings({ "unchecked", "removal" })
+	@SuppressWarnings({ "unchecked" })
 	public static <T> T getAsn(Supplier<T> sup, Supplier<T> nullAlt) {
 		try {
 			return Elemental.getNonNullSupplier(sup);
@@ -73,8 +73,7 @@ public interface AssignableElement {
 	
 //	public AssignableElement previousAssigned();
 
-	@SuppressWarnings("removal")
-    public default <T> T throwUnsupportedException() {
+	public default <T> T throwUnsupportedException() {
 		return SystemElement.throwTodoException(
 				"unsupported assignable element");
 	}

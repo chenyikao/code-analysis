@@ -163,14 +163,15 @@ extends ArithmeticExpression, AssignableElement, ThreadPrivatizable {
 		getAssignable().isFunctional()));
 	}
 	
-	public default boolean isUnsigned() throws IncomparableException {
-		return getAsnNonNull(()-> 
-		getAssignable().isUnsigned());
-	}
+//	public default boolean isUnsigned() throws IncomparableException {
+//		return getAsnNonNull(()-> 
+//		getAssignable().isUnsigned());
+//	}
 	
 	/**
 	 * @return true only possibly if it's type is numeric. 
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public default Boolean isZero() 
 			throws ASTException {
@@ -316,6 +317,7 @@ extends ArithmeticExpression, AssignableElement, ThreadPrivatizable {
 		getAssignable().getPrivatizingBlock());
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public default <T> T throwUnsupportedException() {
 		return DebugElement.throwTodoException(

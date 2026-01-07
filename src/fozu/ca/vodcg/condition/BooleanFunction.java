@@ -4,33 +4,30 @@
 package fozu.ca.vodcg.condition;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.eclipse.cdt.core.dom.IName;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.Statement;
 
 import fozu.ca.DuoKeyMap;
 import fozu.ca.Elemental;
 import fozu.ca.condition.SerialFormat;
+import fozu.ca.vodcg.Assignable;
 import fozu.ca.vodcg.VODCondGen;
 import fozu.ca.vodcg.condition.FunctionCall.CallProposition;
+import fozu.ca.vodcg.condition.data.DataType;
+import fozu.ca.vodcg.condition.data.Pointer;
 import fozu.ca.vodcg.condition.version.ConstantCountingVersion;
 import fozu.ca.vodcg.condition.version.FunctionallableRole;
-import fozu.ca.vodcg.condition.version.Version;
 import fozu.ca.vodcg.condition.version.NoSuchVersionException;
 import fozu.ca.vodcg.condition.version.ThreadRoleMatchable;
 import fozu.ca.vodcg.condition.version.UniversalVersion;
+import fozu.ca.vodcg.condition.version.Version;
 import fozu.ca.vodcg.condition.version.VersionEnumerable;
-import fozu.ca.vodcg.Assignable;
-import fozu.ca.vodcg.condition.data.DataType;
-import fozu.ca.vodcg.condition.data.Pointer;
 
 /**
  * A BooleanFunction can be

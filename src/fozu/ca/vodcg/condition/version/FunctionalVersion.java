@@ -81,7 +81,6 @@ import fozu.ca.vodcg.util.ASTUtil;
  * @author Kao, Chen-yi
  *
  */
-@SuppressWarnings("deprecation")
 public class FunctionalVersion extends ArrayAccessVersion<FunctionalPathVariable> 
 implements UbiquitousVersion<FunctionalPathVariable> {
 
@@ -585,7 +584,6 @@ implements UbiquitousVersion<FunctionalPathVariable> {
 //		return arg1 == null || arg2 == null || super.checksArguments(arg1, arg2);
 //	}
 	
-	@SuppressWarnings("unchecked")
 	private List<ExpressionRange<? extends Expression>> getArgumentRanges(Statement loop) {
 		if (!argRanges.isEmpty()) return argRanges;
 		
@@ -1008,7 +1006,6 @@ implements UbiquitousVersion<FunctionalPathVariable> {
 				Collections::emptySet);
 	}
 	
-	@SuppressWarnings("removal")
 	private ArithmeticExpression getLoopEnumer(ArithmeticExpression astIndex, final Statement loop) {
 		assert loop != null;
 		if (!hasLoopEnumer()) return null;
@@ -1075,7 +1072,7 @@ implements UbiquitousVersion<FunctionalPathVariable> {
 	/**
 	 * @return a non-null list.
 	 */
-	@SuppressWarnings({ "unchecked", "removal" })
+	@SuppressWarnings({ "unchecked" })
 	public List<ExpressionRange<Version<Variable>>> getLoopRanges() {
 		final ASTAddressable da = cacheRuntimeAddress();
 		final VODCondGen condGen = getCondGen();
@@ -1106,7 +1103,6 @@ implements UbiquitousVersion<FunctionalPathVariable> {
 	 * @param loop
 	 * @return
 	 */
-	@SuppressWarnings("removal")
 	public ForStatement getPreLoop(ForStatement loop) {
 		throwTodoException("Get the first l-value within loop first!");
 		return null;
@@ -1146,7 +1142,7 @@ implements UbiquitousVersion<FunctionalPathVariable> {
 	 * 1) Updating parent versions for both functional and non-functional subversion's
 	 * 2) Adding side-effect with inter-version equivalence: f(args) = f(old_args)
 	 * 
-	 * @fozu.caozu.ca.condition.version.UbiquitousVersion#checkUbiquitous()
+	 * @see fozu.ca.condition.version.UbiquitousVersion#checkUbiquitous()
 	 */
 	@SuppressWarnings("unchecked")
 	public void checkUbiquitous() {
@@ -1159,13 +1155,14 @@ implements UbiquitousVersion<FunctionalPathVariable> {
 		
 		// 1)
 		try {
-		if (!tests(plv.isConstant())) consumeNonNull(
-				fv -> ((FunctionalVersion) fv).checkUbiquitous(),
-				()-> from((FunctionalAssignable) plv, getAstArguments(), ploops));
+			if (!tests(plv.isConstant())) consumeNonNull(
+					fv -> ((FunctionalVersion) fv).checkUbiquitous(),
+					from((FunctionalAssignable) plv, getAstArguments(), ploops));
+			
+			// 2)
+			final VariablePlaceholder<PathVariable> vd = PathVariablePlaceholder.from(asn);
+			vd.andSideEffectThrow(()-> Equality.from(vd, PathVariablePlaceholder.from(plv)));
 
-		// 2)
-		final VariablePlaceholder<PathVariable> vd = PathVariablePlaceholder.from(asn);
-		vd.andSideEffectThrow(()-> Equality.from(vd, PathVariablePlaceholder.from(plv)));
 		} catch (Exception e) {
 			throwTodoException(e);
 		}
@@ -1173,7 +1170,6 @@ implements UbiquitousVersion<FunctionalPathVariable> {
 
 	
 	
-	@SuppressWarnings("removal")
 	@Override
 	public <E extends VersionEnumerable<? super FunctionalPathVariable>> 
 	EnumeratedVersion<FunctionalPathVariable, E> 
@@ -1281,7 +1277,6 @@ implements UbiquitousVersion<FunctionalPathVariable> {
 		return true;
 	}
 	
-	@SuppressWarnings("removal")
 	public boolean isIteratorOf(final Statement loop) {
 		if (loop instanceof ForStatement) try {
 			final ForStatement forLoop = (ForStatement) loop;
@@ -1340,7 +1335,6 @@ implements UbiquitousVersion<FunctionalPathVariable> {
 	
 
 	
-	@SuppressWarnings("removal")
 	public Proposition generateRaceAssertion() {
 		final List<FunctionalVersion> sas = getSelfAssigners();
 		if (sas.isEmpty()) return null;
@@ -1495,7 +1489,6 @@ implements UbiquitousVersion<FunctionalPathVariable> {
 				prop : throwNullArgumentException("trinity");
 	}
 
-	@SuppressWarnings("unchecked")
 	private Proposition toPrecondition(Statement loop) {
 		assert getLoops().contains(loop);
 		final Assignable<?> preFv = getAdjacentAssignable().previousAssigned();
@@ -1508,7 +1501,6 @@ implements UbiquitousVersion<FunctionalPathVariable> {
 		return null;
 	}
 	
-	@SuppressWarnings("unchecked")
 	private Proposition toPostcondition(Statement loop) {
 		assert getLoops().contains(loop);
 		final Assignable<?> postFv = getAdjacentAssignable().nextLocallyAssigned();
