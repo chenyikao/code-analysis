@@ -2975,10 +2975,8 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		if (nameView != null) {
 			IBinding bind = ASTUtil.getBindingOf(nameView);
 			if (bind instanceof IVariableBinding) {
-				ITypeBinding type = ((IVariableBinding) bind).getType();
-				if (type instanceof IQualifierType 
-						&& ((IQualifierType) type).isConst())
-					return true;
+				IVariableBinding varBind = (IVariableBinding) bind;
+				return varBind.isEffectivelyFinal() || varBind.isEnumConstant();
 			}
 		}
 		

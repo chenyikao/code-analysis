@@ -75,7 +75,7 @@ import org.eclipse.jdt.core.dom.IEnumeration;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.IParameter;
 import org.eclipse.jdt.core.dom.IProblemBinding;
-import org.eclipse.jdt.core.dom.IType;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.index.IIndex;
 import org.eclipse.jdt.core.index.IIndexBinding;
