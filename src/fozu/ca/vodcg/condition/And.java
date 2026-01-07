@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import fozu.ca.*;
+import fozu.ca.vodcg.condition.ReductionOperations.ReductionOctet;;
 
 /**
  * @author Kao, Chen-yi

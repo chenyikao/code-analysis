@@ -926,22 +926,22 @@ public final class ASTUtil extends DebugElement {
 		if (defs != null && defs.length > 0) return defs[0];
 		
 		// Searching for global definition
-		IIndex index = getIndex(false);
-		try {
-			index.acquireReadLock();
-			// IIndex doesn't find names for IParameter's
-//			defs = index.findNames(
-//					name.resolveBinding(), IIndex.FIND_ALL_OCCURRENCES);	// internal NullPointerException!
-			for (IIndexBinding bind : index.findBindings(
-					name.toCharArray(), IndexFilter.ALL, new NullProgressMonitor())) {
-				defs = index.findReferences(bind);
-				if (defs != null && defs.length > 0) return defs[0];
-			}
-		} catch (InterruptedException | CoreException e) {
-			DebugElement.throwTodoException(e.toString());
-		} finally {
-			index.releaseReadLock();
-		}
+//		IIndex index = getIndex(false);
+//		try {
+//			index.acquireReadLock();
+//			// IIndex doesn't find names for IParameter's
+////			defs = index.findNames(
+////					name.resolveBinding(), IIndex.FIND_ALL_OCCURRENCES);	// internal NullPointerException!
+//			for (IIndexBinding bind : index.findBindings(
+//					name.toCharArray(), IndexFilter.ALL, new NullProgressMonitor())) {
+//				defs = index.findReferences(bind);
+//				if (defs != null && defs.length > 0) return defs[0];
+//			}
+//		} catch (InterruptedException | CoreException e) {
+//			DebugElement.throwTodoException(e.toString());
+//		} finally {
+//			index.releaseReadLock();
+//		}
 		return null;
 	}
 	
