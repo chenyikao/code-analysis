@@ -54,6 +54,7 @@ import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.IfStatement;
+import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.IASTInitializerClause;
 import org.eclipse.jdt.core.dom.IASTLiteralExpression;
 import org.eclipse.jdt.core.dom.Name;
@@ -110,7 +111,7 @@ public final class ASTUtil extends DebugElement {
 			prime * (prime * (prime /* IASTNameOwner.r_declaration 
 					+ IASTNameOwner.r_definition*/) /*+ IASTNameOwner.r_reference*/) /*+ IASTNameOwner.r_unclear*/;
 	
-	static final String MAIN_METHOD_NAME = "main";
+	public static final String MAIN_METHOD_NAME = "main";
 	
 	public static final List<Class<? extends Exception>> DEFAULT_EXCEPTION = Arrays.asList(Exception.class);
 	public static final List<Class<? extends Exception>> AST_EXCEPTION = Arrays.asList(ASTException.class);
@@ -386,12 +387,12 @@ public final class ASTUtil extends DebugElement {
 	 * @return
 	 */
 	public static boolean isBinaryRelation(Expression exp) {
-		if (exp instanceof Assignment) {
-			int op = ((Assignment) exp).getOperator();
-			return (op == Assignment.op_greaterEqual ||
-					op == Assignment.op_greaterThan ||
-					op == Assignment.op_lessEqual ||
-					op == Assignment.op_lessThan);
+		if (exp instanceof InfixExpression) {
+			InfixExpression.Operator op = ((InfixExpression) exp).getOperator();
+			return (op == InfixExpression.Operator.GREATER_EQUALS ||
+					op == InfixExpression.Operator.GREATER ||
+					op == InfixExpression.Operator.LESS_EQUALS ||
+					op == InfixExpression.Operator.LESS);
 		}
 		return false;
 	}

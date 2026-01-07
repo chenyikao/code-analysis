@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.Assignment.Operator;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.IASTDeclaration;
 import org.eclipse.jdt.core.dom.IASTDeclarationStatement;
@@ -63,7 +64,7 @@ public final class ASTLoopUtil {
 	LOOP_INITIAL_BOUND_CACHE 	= new HashMap<>();
 	private static final Map<ForStatement, org.eclipse.jdt.core.dom.Expression> 	
 	LOOP_TEST_BOUND_CACHE 		= new HashMap<>();
-	private static final Map<ForStatement, Integer> 		
+	private static final Map<ForStatement, InfixExpression.Operator> 		
 	LOOP_TEST_OP_TO_VAR_CACHE 	= new HashMap<>();
 
 	private static final Map<ForStatement, ArithmeticExpression[]> 	
@@ -260,22 +261,22 @@ public final class ASTLoopUtil {
 			ForStatement loop, boolean wantsBound, VODCondGen condGen) {
 		if (isNonCanonical(loop)) return null;
 
-		Expression tb = LOOP_TEST_BOUND_CACHE.get(loop);
-		Integer top = LOOP_TEST_OP_TO_VAR_CACHE.get(loop);
+		org.eclipse.jdt.core.dom.Expression tb = LOOP_TEST_BOUND_CACHE.get(loop);
+		InfixExpression.Operator top = LOOP_TEST_OP_TO_VAR_CACHE.get(loop);
 		if (tb == null || top == null) {
-			final org.eclipse.jdt.core.dom.Expression condExp = loop.getConditionExpression();
-			if (condExp instanceof Assignment) {
-				final Assignment condBin = (Assignment) condExp;
-				final int op = condBin.getOperator();
-				final Expression oprd1 = condBin.getOperand1(), oprd2 = condBin.getOperand2(), 
+			final org.eclipse.jdt.core.dom.Expression condExp = ASTUtil.unbracket(loop.getExpression());
+			if (condExp instanceof InfixExpression) {
+				final InfixExpression condBin = (InfixExpression) condExp;
+				final InfixExpression.Operator op = condBin.getOperator();
+				final org.eclipse.jdt.core.dom.Expression oprd1 = condBin.getLeftOperand(), 
+						oprd2 = condBin.getRightOperand(), 
 						it = getCanonicalIteratorOf(loop);
 				if (ASTAssignableComputer.getDependentOnBy(oprd1, it) != null) {	// var relational-op b
-					tb = oprd2; switch (op) {
-					case Assignment.op_lessThan: top = Assignment.op_greaterThan; break;
-					case Assignment.op_lessEqual: top = Assignment.op_greaterEqual; break;
-					case Assignment.op_greaterThan: top = Assignment.op_lessThan; break;
-					case Assignment.op_greaterEqual: top = Assignment.op_lessEqual; break;
-					}
+					tb = oprd2; 
+					if (op == InfixExpression.Operator.LESS) top = InfixExpression.Operator.GREATER;
+					else if (op == InfixExpression.Operator.LESS_EQUALS) top = InfixExpression.Operator.GREATER_EQUALS;
+					else if (op == InfixExpression.Operator.GREATER) top = InfixExpression.Operator.LESS;
+					else if (op == InfixExpression.Operator.GREATER_EQUALS) top = InfixExpression.Operator.LESS_EQUALS;
 				}
 				else if (ASTAssignableComputer.getDependentOnBy(oprd2, it) != null) {	// b relational-op var
 					tb = oprd1; top = op;
@@ -562,7 +563,7 @@ public final class ASTLoopUtil {
 	
 	public static boolean isConditionedConstantly(ForStatement loop) {
 		//	for (init-expr; test-expr; incr-expr) structured-block
-		final org.eclipse.jdt.core.dom.Expression testExp = loop.getConditionExpression();	// TODO: getCanonicalConditionOf(loop)
+		final org.eclipse.jdt.core.dom.Expression testExp = loop.getExpression();	// TODO: getCanonicalConditionOf(loop)
 		if (ASTUtil.isBinaryRelation(testExp)) 
 			return isRelatedConstantly((Assignment) testExp);
 		
@@ -605,7 +606,7 @@ public final class ASTLoopUtil {
 		else if (ASTAssignableComputer.isPlainBinaryAssignment(exp) && incrExp instanceof Assignment) {
 			Assignment incrAdd = (Assignment) incrExp;
 			// a constant (IASTLiteralExpression) has no name (Name)
-			return ASTUtil.isConstant(incrAdd.getOperand1()) || 
+			return ASTUtil.isConstant(incrAdd.getOperator()) || 
 					ASTUtil.isConstant(incrAdd.getOperand2());
 		}
 		

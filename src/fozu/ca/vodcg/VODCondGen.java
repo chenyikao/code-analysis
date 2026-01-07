@@ -878,14 +878,14 @@ implements Comparator<ForStatement> {
 	}
 
 //	public boolean isMainFunction(IIndexName f) {
-//		return f.isDefinition() && f.getSimpleID().equals(ASTUtil.MAIN_FUNCTION_NAME) 
+//		return f.isDefinition() && f.getSimpleID().equals(ASTUtil.MAIN_METHOD_NAME) 
 //				&& ASTUtil.getAST(mainPath, true);
 //	}
 
 	public boolean isMainFunction(IMethodBinding f) {
 		Name[] mainDefs = ASTUtil.getAST(mainPath, true).getDefinitionsInAST(f);
 		return mainDefs.length > 0 && 
-				new String(mainDefs[0].getSimpleID()).equals(ASTUtil.MAIN_FUNCTION_NAME);
+				new String(mainDefs[0].getSimpleID()).equals(ASTUtil.MAIN_METHOD_NAME);
 	}
 	
 	

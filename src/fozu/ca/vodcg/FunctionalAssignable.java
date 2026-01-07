@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import fozu.ca.Elemental;
 import fozu.ca.vodcg.condition.FunctionCall;
 import fozu.ca.vodcg.condition.version.FunctionalVersion;
+import fozu.ca.vodcg.condition.version.NoSuchVersionException;
 import fozu.ca.vodcg.condition.FunctionalPathVariable;
 import fozu.ca.vodcg.parallel.OmpDirective;
 import fozu.ca.vodcg.util.ASTLoopUtil;
