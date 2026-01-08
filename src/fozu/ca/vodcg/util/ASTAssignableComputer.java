@@ -303,11 +303,11 @@ public final class ASTAssignableComputer {
 		
 		switch (exp.getNodeType()) {
 		case ASTNode.PREFIX_EXPRESSION:
-			return ((PrefixExpression) exp).getOperand().contains(assignedExp);
+			return ASTUtil.contains(((PrefixExpression) exp).getOperand(), assignedExp);
 		case ASTNode.POSTFIX_EXPRESSION:
-			return ((PostfixExpression) exp).getOperand().contains(assignedExp);
+			return ASTUtil.contains(((PostfixExpression) exp).getOperand(), assignedExp);
 		case ASTNode.INFIX_EXPRESSION: 
-			return ((InfixExpression) exp).getOperand1().contains(assignedExp);
+			return ASTUtil.contains(((InfixExpression) exp).getLeftOperand(), assignedExp);
 		default:
 			return DebugElement.throwTodoException("Unsupported expression?");
 		}

@@ -423,8 +423,8 @@ public class Assignment extends SystemElement {
 
 	
 	public boolean contains(ASTNode node) {
-		return (asmAsm != null && asmAsm.contains(node))
-				|| (asmDcl != null && asmDcl.contains(node));
+		return (asmAsm != null && ASTUtil.contains(asmAsm, node))
+				|| (asmDcl != null && ASTUtil.contains(asmDcl, node));
 	}
 	
 	@Override

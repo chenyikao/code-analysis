@@ -431,13 +431,16 @@ public final class ASTUtil extends DebugElement {
 			final ASTNode node1, final ASTNode node2, final ForStatement branch) {
 		assert node1 != null && node2 != null && branch != null;
 		final Statement init = branch.getInitializerStatement();
-		final boolean isInit1 = init.contains(node1), isInit2 = init.contains(node2);
+		final boolean isInit1 = ASTUtil.contains(init, node1), 
+				isInit2 = ASTUtil.contains(init, node2);
 		if (isInit1) return isInit2;
 		if (isInit2) return isInit1;
 		
 		final Expression cond = branch.getConditionExpression(), iter = branch.getIterationExpression();
-		final boolean isCond1 = cond.contains(node1), isCond2 = cond.contains(node2),
-				isIter1 = iter.contains(node1), isIter2 = iter.contains(node2);
+		final boolean isCond1 = ASTUtil.contains(cond, node1), 
+				isCond2 = ASTUtil.contains(cond, node2),
+				isIter1 = ASTUtil.contains(iter, node1), 
+				isIter2 = ASTUtil.contains(iter, node2);
 		if (isCond1 || isIter1) return isCond2 || isIter2;
 		if (isCond2 || isIter2) return isCond1 || isIter1;
 		// as usual body containment finally
@@ -447,7 +450,7 @@ public final class ASTUtil extends DebugElement {
 	private static boolean isSameStatementOf(
 			final ASTNode node1, final ASTNode node2, final Statement stat) {
 		assert stat != null;
-		return stat.contains(node1) && stat.contains(node2);
+		return ASTUtil.contains(stat, node1) && ASTUtil.contains(stat, node2);
 	}
 	
 	public static boolean isSameBranchOf(
@@ -463,15 +466,15 @@ public final class ASTUtil extends DebugElement {
 //		else if (branch instanceof WhileStatement) body = ((WhileStatement) branch).getBody();
 //		else throwTodoException("unsupported branch type");
 		
-		return branch.contains(node1) && branch.contains(node2);
+		return ASTUtil.contains(branch, node1) && ASTUtil.contains(branch, node2);
 	}
 	
 	private static boolean isSameBranchOf(
 			final ASTNode node1, final ASTNode node2, final IfStatement branch) {
 		assert node1 != null && node2 != null && branch != null;
 		final Statement then = branch.getThenClause(), els = branch.getElseClause();
-		return (then != null && then.contains(node1) && then.contains(node2)) 
-				|| (els != null && els.contains(node1) && els.contains(node2)); 
+		return (ASTUtil.contains(then, node1) && ASTUtil.contains(then, node2)) 
+				|| (ASTUtil.contains(els, node1) && ASTUtil.contains(els, node2)); 
 	}
 	
 	/**
@@ -489,11 +492,14 @@ public final class ASTUtil extends DebugElement {
 		final Statement then = branch.getThenClause();
 		if (then == null) return false;
 
-		final boolean thenc1 = then.contains(node1), thenc2 = then.contains(node2);
+		final boolean thenc1 = ASTUtil.contains(then, node1), 
+				thenc2 = ASTUtil.contains(then, node2);
 		if (thenc1 && thenc2) return false;
 		
 		final Statement els = branch.getElseClause();
-		final boolean ie = els != null, elsec1 = ie && els.contains(node1), elsec2 = ie && els.contains(node2);
+		final boolean ie = els != null, 
+				elsec1 = ie && ASTUtil.contains(els, node1), 
+				elsec2 = ie && ASTUtil.contains(els, node2);
 		if (elsec1 && elsec2) return false; 
 
 		// !thenc2 && (elsec2:intra-if || !elsec2:extra-if)
@@ -541,8 +547,8 @@ public final class ASTUtil extends DebugElement {
 		
 		Boolean isET = IS_ELSE_TO_CACHE.get(if1, if2);
 		if (isET == null) { 
-			if (if1.contains(if2)) isET = containsElseTo(if1, if2);
-			else if (if2.contains(if1)) isET = containsElseTo(if2, if1);
+			if (ASTUtil.contains(if1, if2)) isET = containsElseTo(if1, if2);
+			else if (ASTUtil.contains(if2, if1)) isET = containsElseTo(if2, if1);
 			else isET = false;
 
 //			// Ancestor {@code if2} traversal first, then descendant {@code if2} traversal.
@@ -557,8 +563,17 @@ public final class ASTUtil extends DebugElement {
 		return isET;
 	}
 	
+	public static boolean contains(ASTNode node1, ASTNode node2) {
+		if (node1 == null || node2 == null) return false;
+		if (node1 == node2) return true;
+		
+		final ASTNodeVisitor<ASTNode> node2Visitor = new ASTNodeVisitor<>(node2);
+		node1.accept(node2Visitor);
+		return node2Visitor.hasFoundNode();
+	}
+
 	private static boolean containsElseTo(IfStatement if1, IfStatement if2) {
-		assert if1 != null && if2 != null && if1.contains(if2);
+		assert if1 != null && if2 != null && ASTUtil.contains(if1, if2);
 		final Statement if1else = if1.getElseClause();
 		if (if1else == null) return false;
 		if (if1else == if2) return true;
@@ -1201,27 +1216,21 @@ public final class ASTUtil extends DebugElement {
 		return new ASTReturnVisitor().findNextTo(node);
 	}
 	
-	private static class ASTReturnVisitor extends ASTVisitor {
-		private boolean hasFoundNode = false;
-//		private boolean findsIn = false;
-		private boolean findsNextTo = false;
-		private ASTNode n = null;
-		final private List<ReturnStatement> rs = new ArrayList<>();
-		
+	
+	private static class ASTReturnVisitor extends ASTNodeVisitor<ReturnStatement> {
 		public ASTReturnVisitor() {
-			super(true);
-			shouldVisitStatements = true;
+			super(null);
 		}
-
+		
 		public List<ReturnStatement> findIn(ASTNode node) {
 			if (node == null) DebugElement.throwNullArgumentException("AST node");
 			
 			final MethodDeclaration f = getWritingFunctionDefinitionOf(node);
 			if (f == null) DebugElement.throwNullArgumentException("function child");
 //			findsIn = true; 
-			n = node;
+			setVisitTarget(node);
 			f.accept(this);
-			return rs;
+			return result;
 		}
 		
 		public ReturnStatement findNextTo(ASTNode node) {
@@ -1230,11 +1239,37 @@ public final class ASTUtil extends DebugElement {
 			final MethodDeclaration f = getWritingFunctionDefinitionOf(node);
 			if (f == null) return null;		// node is global
 			
-			findsNextTo = true; n = node;
+			setFindsNextTo(true);
+			setVisitTarget(node);
 			f.accept(this);
-			return rs.isEmpty() ? null : rs.get(0);
+			return result.isEmpty() ? null : result.get(0);
 		}
 		
+		@Override
+		public boolean visit(ReturnStatement statement) {
+			if (hasFoundNode()) {
+				result.add(statement);
+				if (findsNextTo()) return false;	// stop visiting further
+			} 
+			return true;	// continue-ing to find n
+		}
+		
+	}
+	
+	private static class ASTNodeVisitor<T> extends ASTVisitor {
+		final protected List<T> result = new ArrayList<>();
+
+		private boolean hasFoundNode = false;
+		private boolean findsIn = false;
+		private boolean findsNextTo = false;
+		private ASTNode n = null;
+		
+		public ASTNodeVisitor(ASTNode visitTarget) {
+			super();
+			setVisitTarget(visitTarget);
+//			shouldVisitStatements = true;
+		}
+
 		@Override
 		public boolean preVisit2(ASTNode node) {
 			if (node == n) {
@@ -1249,15 +1284,31 @@ public final class ASTUtil extends DebugElement {
 //			if (findsIn && node == n) return PROCESS_ABORT;
 //			return PROCESS_CONTINUE;	// continue-ing to find r if findsNextTo
 //		}
-
-		@Override
-		public boolean visit(ReturnStatement statement) {
-			if (hasFoundNode) {
-				rs.add(statement);
-				if (findsNextTo) return false;	// stop visiting further
-			} 
-			return true;	// continue-ing to find n
+		
+		public boolean hasFoundNode() {
+			return hasFoundNode;
 		}
+		
+		public boolean findsIn() {
+			return findsIn;
+		}
+		
+		public boolean findsNextTo() {
+			return findsNextTo;
+		}
+
+		public void setVisitTarget(ASTNode visitTarget) {
+			this.n = visitTarget;
+		}
+		
+		public void setFindsIn(boolean findsIn) {
+			this.findsIn = findsIn;
+		}
+		
+		public void setFindsNextTo(boolean findsNextTo) {
+			this.findsNextTo = findsNextTo;
+		}
+		
 	}
 	
 	

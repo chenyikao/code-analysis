@@ -2169,8 +2169,9 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	
 	@SuppressWarnings("unchecked")
 	public Expression getEnclosingCallArgument() {
-		for (Expression arg : (List<Expression>) getEnclosingCallExpression().arguments())	// never null
-			if (arg.contains(nameView)) 
+		for (org.eclipse.jdt.core.dom.Expression arg 
+				: (List<org.eclipse.jdt.core.dom.Expression>) getEnclosingCallExpression().arguments())	// never null
+			if (ASTUtil.contains(arg, nameView)) 
 				return Expression.fromRecursively(arg, getRuntimeAddress(), getCondGen());
 		return null;
 	}
@@ -2178,8 +2179,9 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	@SuppressWarnings("unchecked")
 	public int getEnclosingCallArgumentIndex() {
 		int i = 0;
-		for (Expression arg : (List<Expression>) getEnclosingCallExpression().arguments()) {	// never null
-			if (arg.contains(nameView)) return i;
+		for (org.eclipse.jdt.core.dom.Expression arg 
+				: (List<org.eclipse.jdt.core.dom.Expression>) getEnclosingCallExpression().arguments()) {	// never null
+			if (ASTUtil.contains(arg, nameView)) return i;
 			else i++;
 		}
 		return -1;
@@ -2314,7 +2316,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		
 		final NavigableSet<Assignable<PV>> wh = new TreeSet<>(this);
 		for (Assignable<?> asn : getCondGen().getWritingHistoryOfBeforeTP(this))
-			if (ifStat.contains(asn.getTopNode())) wh.add((Assignable<PV>) asn);
+			if (ASTUtil.contains(ifStat, asn.getTopNode())) wh.add((Assignable<PV>) asn);
 		return wh;
 	}
 	
@@ -2512,10 +2514,10 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		
 		for (ASTNode anc : ancs) 
 			if (anc instanceof MethodInvocation) {
-				final List<Expression> args = ((MethodInvocation) anc).arguments();
+				final List<org.eclipse.jdt.core.dom.Expression> args = ((MethodInvocation) anc).arguments();
 				if (args == null) return false;
-				for (Expression arg : args)
-					if (arg.contains(node)) return true;
+				for (org.eclipse.jdt.core.dom.Expression arg : args)
+					if (ASTUtil.contains(arg, node)) return true;
 			}
 		return false;
 	}
@@ -2829,7 +2831,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 //	}
 	
 	public boolean isContainedBy(ASTNode node) {
-		return node != null && node.contains(getTopNode());
+		return node != null && ASTUtil.contains(node, getTopNode());
 	}
 	
 	
@@ -2862,7 +2864,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	public boolean isConditionalTo(IfStatement branch) {
 		if (branch == null) throwNullArgumentException("AST branch node");
 		return !branch.getConditionExpression().contains(nameView) && 
-				branch.contains(nameView);
+				ASTUtil.contains(branch, nameView);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -2925,7 +2927,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		if (selfAssigns()) return true;
 		
 		return !branch.getCondition().contains(nameView) &&
-				branch.contains(nameView);
+				ASTUtil.contains(branch, nameView);
 	}
 	
 	public boolean isConditionalTo(DoStatement branch) {
@@ -2935,7 +2937,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		if (selfAssigns()) return nextLocallyAssigned().isConditionalTo(branch);
 		
 		return !branch.getCondition().contains(nameView) &&
-				branch.contains(nameView);
+				ASTUtil.contains(branch, nameView);
 	}
 	
 	public boolean isConditionalTo(Statement branch) {
