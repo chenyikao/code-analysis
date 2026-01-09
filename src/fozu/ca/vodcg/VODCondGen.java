@@ -728,7 +728,7 @@ implements Comparator<ForStatement> {
 		
 		NavigableSet<Assignable<?>> tvWrs = null;
 		final NavigableSet<Assignable<?>> tvRefs = Assignable.fromOf(ASTUtil.getAST(	// Loading C-Index AST
-				tvPath.getFilePath(), true), tvPath.getName(), null, this);
+				tvPath.getFilePath()), tvPath.getName(), null, this);
 		
 //		Name[] tvRefs = tvAST.getReferences(tvPath.getName().resolveBinding());
 //		if (tvRefs != null) for (Name tvRef : tvRefs) {
@@ -888,7 +888,7 @@ implements Comparator<ForStatement> {
 //	}
 
 	public boolean isMainFunction(IMethodBinding f) {
-		Name[] mainDefs = ASTUtil.getAST(mainPath, true).getDefinitionsInAST(f);
+		Name[] mainDefs = ASTUtil.getAST(mainPath).getDefinitionsInAST(f);
 		return mainDefs.length > 0 && 
 				new String(mainDefs[0].getSimpleID()).equals(ASTUtil.MAIN_METHOD_NAME);
 	}

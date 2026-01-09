@@ -535,7 +535,7 @@ public final class ASTUtil extends DebugElement {
 		if (node1 == null || node2 == null) return false;
 		if (node1 == node2) return true;
 		
-		final ASTNodeVisitor<ASTNode> node2Visitor = new ASTNodeVisitor<>(node2);
+		final ASTNodeFinder<ASTNode> node2Visitor = new ASTNodeFinder<>(node2);
 		node1.accept(node2Visitor);
 		return node2Visitor.hasFoundNode();
 	}
@@ -712,7 +712,8 @@ public final class ASTUtil extends DebugElement {
 		if (descendants != null) return descendants;
 		
 		descendants = new ArrayList<Descendant>();
-		for (ASTNode child : ancestor.getChildren()) if (child != null) {
+		for (ASTNode child : ancestor.getChildren()) {
+			assert child != null;
 			if (descendType.isInstance(child)) descendants.add((Descendant) child);
 			descendants.addAll(
 					(Collection<? extends Descendant>) getDescendantsOfAs(child, descendType));
@@ -1177,106 +1178,11 @@ public final class ASTUtil extends DebugElement {
 	}
 	
 	public static List<ReturnStatement> getReturnStatementsOf(ASTNode node) {
-		return new ASTReturnVisitor().findIn(node);
+		return new ASTReturnCollector().findIn(node);
 	}
 	
 	public static ReturnStatement nextReturnStatementTo(ASTNode node) {
-		return new ASTReturnVisitor().findNextTo(node);
-	}
-	
-	
-	private static class ASTReturnVisitor extends ASTNodeVisitor<ReturnStatement> {
-		public ASTReturnVisitor() {
-			super(null);
-		}
-		
-		public List<ReturnStatement> findIn(ASTNode node) {
-			if (node == null) DebugElement.throwNullArgumentException("AST node");
-			
-			final MethodDeclaration f = getWritingFunctionDefinitionOf(node);
-			if (f == null) DebugElement.throwNullArgumentException("function child");
-//			findsIn = true; 
-			setVisitTarget(node);
-			f.accept(this);
-			return result;
-		}
-		
-		public ReturnStatement findNextTo(ASTNode node) {
-			if (node == null) DebugElement.throwNullArgumentException("AST node");
-			
-			final MethodDeclaration f = getWritingFunctionDefinitionOf(node);
-			if (f == null) return null;		// node is global
-			
-			setFindsNextTo(true);
-			setVisitTarget(node);
-			f.accept(this);
-			return result.isEmpty() ? null : result.get(0);
-		}
-		
-		@Override
-		public boolean visit(ReturnStatement statement) {
-			if (hasFoundNode()) {
-				result.add(statement);
-				if (findsNextTo()) return false;	// stop visiting further
-			} 
-			return true;	// continue-ing to find n
-		}
-		
-	}
-	
-	private static class ASTNodeVisitor<T> extends ASTVisitor {
-		final protected List<T> result = new ArrayList<>();
-
-		private boolean hasFoundNode = false;
-		private boolean findsIn = false;
-		private boolean findsNextTo = false;
-		private ASTNode n = null;
-		
-		public ASTNodeVisitor(ASTNode visitTarget) {
-			super();
-			setVisitTarget(visitTarget);
-//			shouldVisitStatements = true;
-		}
-
-		@Override
-		public boolean preVisit2(ASTNode node) {
-			if (node == n) {
-				hasFoundNode = true;
-				return false;	// stop visiting children of n
-			}
-			return true;	// continue-ing to find n
-		}
-		
-//		@Override
-//		protected int genericLeave(ASTNode node) {
-//			if (findsIn && node == n) return PROCESS_ABORT;
-//			return PROCESS_CONTINUE;	// continue-ing to find r if findsNextTo
-//		}
-		
-		public boolean hasFoundNode() {
-			return hasFoundNode;
-		}
-		
-		public boolean findsIn() {
-			return findsIn;
-		}
-		
-		public boolean findsNextTo() {
-			return findsNextTo;
-		}
-
-		public void setVisitTarget(ASTNode visitTarget) {
-			this.n = visitTarget;
-		}
-		
-		public void setFindsIn(boolean findsIn) {
-			this.findsIn = findsIn;
-		}
-		
-		public void setFindsNextTo(boolean findsNextTo) {
-			this.findsNextTo = findsNextTo;
-		}
-		
+		return new ASTReturnCollector().findNextTo(node);
 	}
 	
 	
@@ -1296,7 +1202,7 @@ public final class ASTUtil extends DebugElement {
 	
 	
 	public static Name getNameFrom(IPath tuPath, int offset, int length, boolean refreshesIndex) {
-		CompilationUnit ast = getAST(tuPath, refreshesIndex);
+		CompilationUnit ast = getAST(tuPath);
 		if (ast == null) return null;
 		else return ast.getNodeSelector(null).findFirstContainedName(offset, length);
 //		else return ast.getNodeSelector(tuPath.toString()).findFirstContainedName(offset, length);
