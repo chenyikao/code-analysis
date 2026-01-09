@@ -262,7 +262,7 @@ public class PathVariable extends Variable {
 	
 	
 	
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "removal", "deprecation" })
 	protected boolean addAssignable(Assignable<? extends PathVariable> asn) {
 		assert asn != null;
 		PV_REGISTRY.put(asn, this);
@@ -311,12 +311,12 @@ public class PathVariable extends Variable {
 		return aName;
 	}
 
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "removal", "deprecation" })
 	@Override
 	public PlatformType getType() {
 		PlatformType type = super.getType();
 		if (type == null) {
-			IBinding bind = getASTName().getBinding();
+			IBinding bind = getASTName().resolveBinding();
 			if (bind instanceof IVariableBinding) 
 				type = DataType.from(((IVariableBinding) bind).getType());
 			else throwTodoException("unsupported variable");
@@ -515,7 +515,7 @@ public class PathVariable extends Variable {
 	/**
 	 * 
 	 */
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "removal", "deprecation" })
 	public void reversionLoopIterator() {
 		throwTodoException(getName() + "_?loop");
 		setName(getName() + "_?loop");

@@ -412,17 +412,22 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 	 * @return the last descendant (direct biggest small sibling) node of {@code me} in AST.
 	 * 	Or the parent node of {@code me} if {@code me} is already the smallest sibling.
 	 */
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "removal", "unchecked" })
 	public ASTNode previousOf(final ASTNode me, final boolean includesPragma) {
 		if (me == null) DebugElement.throwInvalidityException("me");
 
-		ASTNode parent = ASTUtil.getParentOf(me);
-		if (parent == null) return null;
+		final ASTNode parent = ASTUtil.getParentOf(me);
+		final StructuralPropertyDescriptor parentLoc = me.getLocationInParent();
+		assert parent != null && parentLoc != null;
+		
+		if (parentLoc.isSimpleProperty() || parentLoc.isChildProperty()) 
+			return previousOf(parent, includesPragma);
 		
 		// regular child node s should be in AST order
 		ASTNode pre = null;
 //		final boolean isPragma = me instanceof IASTPreprocessorPragmaStatement;
-		for (ASTNode sbl : parent.getChildren()) {
+		for (ASTNode sbl : ((List<ASTNode>) parent.getStructuralProperty(parentLoc))) {
+			if (sbl == null) continue;
 //			if (isPragma) {
 //				final Boolean isSblPre = isBeforeLocally(sbl, me);
 //				if (isSblPre == null) DebugElement.throwTodoException("unsupported pragma");

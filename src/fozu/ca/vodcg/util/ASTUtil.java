@@ -25,6 +25,16 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.ArrayAccess;
+import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.ChildListPropertyDescriptor;
+import org.eclipse.jdt.core.dom.ChildPropertyDescriptor;
+import org.eclipse.jdt.core.dom.Comment;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.ParenthesizedExpression;
@@ -162,7 +172,7 @@ public final class ASTUtil extends DebugElement {
 
 	
 	
-	private static ChildListPropertyDescriptor CHILD_LIST_PROPERTY_DESCRIPTOR_CACHE = null;
+	private static final Map<ASTNode, Object> AST_NODE_CHILDREN_CACHE = new HashMap<>();
 
 	private static final Map<IPath, CompilationUnit> 		CU_CACHE = new HashMap<>();
 	private static final Map<CompilationUnit, List<Annotation>>	
@@ -567,7 +577,7 @@ public final class ASTUtil extends DebugElement {
 		if (node1 == null || node2 == null) return false;
 		if (node1 == node2) return true;
 		
-		final ASTNodeVisitor<ASTNode> node2Visitor = new ASTNodeVisitor<>(node2);
+		final ASTNodeFinder<ASTNode> node2Visitor = new ASTNodeFinder<>(node2);
 		node1.accept(node2Visitor);
 		return node2Visitor.hasFoundNode();
 	}
@@ -721,15 +731,24 @@ public final class ASTUtil extends DebugElement {
 		return count;
 	}
 
+	@SuppressWarnings("unchecked")
 	public static List<ASTNode> getChildrenOf(ASTNode parent) {
 		if (parent != null) {
-			if (CHILD_LIST_PROPERTY_DESCRIPTOR_CACHE == null) 
-				for (StructuralPropertyDescriptor spd : parent.structuralPropertiesForType())
-					if (spd.isChildListProperty()) {
-						CHILD_LIST_PROPERTY_DESCRIPTOR_CACHE = (ChildListPropertyDescriptor) spd;
-						break;
+			List<ASTNode> children = 
+					(List<ASTNode>) AST_NODE_CHILDREN_CACHE.get(parent);
+			if (children == null) {
+				children = new ArrayList<>();
+				for (StructuralPropertyDescriptor spd : 
+					(List<StructuralPropertyDescriptor>) parent.structuralPropertiesForType()) {
+					if (spd.isChildProperty()) {
+						children.add((ASTNode) parent.getStructuralProperty((ChildPropertyDescriptor) spd));
+					} else if (spd.isChildListProperty()) {
+						children.addAll((List<ASTNode>) parent.getStructuralProperty((ChildListPropertyDescriptor) spd));
 					}
-			return parent.getStructuralProperty(CHILD_LIST_PROPERTY_DESCRIPTOR_CACHE);
+				}
+				AST_NODE_CHILDREN_CACHE.put(parent, children);
+			}
+			return children;
 		}
 		return Collections.emptyList();
 	}
@@ -744,7 +763,8 @@ public final class ASTUtil extends DebugElement {
 		if (descendants != null) return descendants;
 		
 		descendants = new ArrayList<Descendant>();
-		for (ASTNode child : ancestor.getChildren()) if (child != null) {
+		for (ASTNode child : ASTUtil.getChildrenOf(ancestor)) {
+			assert child != null;
 			if (descendType.isInstance(child)) descendants.add((Descendant) child);
 			descendants.addAll(
 					(Collection<? extends Descendant>) getDescendantsOfAs(child, descendType));
@@ -759,7 +779,7 @@ public final class ASTUtil extends DebugElement {
 		// TODO: caching the first descendant
 		if (ancestor == null) return null;
 		
-		for (ASTNode child : ancestor.getChildren())
+		for (ASTNode child : ASTUtil.getChildrenOf(ancestor))
 			if (child != null)
 				if (descendType.isInstance(child)) return (Descendant) child;
 				else {
@@ -774,7 +794,7 @@ public final class ASTUtil extends DebugElement {
 		// TODO: caching the last descendant
 		if (ancestor == null) return null;
 		
-		final ASTNode[] children = ancestor.getChildren();
+		final ASTNode[] children = ASTUtil.getChildrenOf(ancestor);
 		if (children == null) return ancestor;
 		final int childSize = children.length;
 		if (childSize <= 0) return ancestor;
@@ -854,7 +874,7 @@ public final class ASTUtil extends DebugElement {
 		if (ancestor == null) return 0;
 		
 		int count = 0;	// TODO: caching count
-		for (ASTNode child : ancestor.getChildren())
+		for (ASTNode child : ASTUtil.getChildrenOf(ancestor))
 			if (child != null && descendType.isInstance(child))
 				count += (1 + countDirectContinuousDescendantsOf(child, descendType));
 		
@@ -1209,106 +1229,11 @@ public final class ASTUtil extends DebugElement {
 	}
 	
 	public static List<ReturnStatement> getReturnStatementsOf(ASTNode node) {
-		return new ASTReturnVisitor().findIn(node);
+		return new ASTReturnCollector().findIn(node);
 	}
 	
 	public static ReturnStatement nextReturnStatementTo(ASTNode node) {
-		return new ASTReturnVisitor().findNextTo(node);
-	}
-	
-	
-	private static class ASTReturnVisitor extends ASTNodeVisitor<ReturnStatement> {
-		public ASTReturnVisitor() {
-			super(null);
-		}
-		
-		public List<ReturnStatement> findIn(ASTNode node) {
-			if (node == null) DebugElement.throwNullArgumentException("AST node");
-			
-			final MethodDeclaration f = getWritingFunctionDefinitionOf(node);
-			if (f == null) DebugElement.throwNullArgumentException("function child");
-//			findsIn = true; 
-			setVisitTarget(node);
-			f.accept(this);
-			return result;
-		}
-		
-		public ReturnStatement findNextTo(ASTNode node) {
-			if (node == null) DebugElement.throwNullArgumentException("AST node");
-			
-			final MethodDeclaration f = getWritingFunctionDefinitionOf(node);
-			if (f == null) return null;		// node is global
-			
-			setFindsNextTo(true);
-			setVisitTarget(node);
-			f.accept(this);
-			return result.isEmpty() ? null : result.get(0);
-		}
-		
-		@Override
-		public boolean visit(ReturnStatement statement) {
-			if (hasFoundNode()) {
-				result.add(statement);
-				if (findsNextTo()) return false;	// stop visiting further
-			} 
-			return true;	// continue-ing to find n
-		}
-		
-	}
-	
-	private static class ASTNodeVisitor<T> extends ASTVisitor {
-		final protected List<T> result = new ArrayList<>();
-
-		private boolean hasFoundNode = false;
-		private boolean findsIn = false;
-		private boolean findsNextTo = false;
-		private ASTNode n = null;
-		
-		public ASTNodeVisitor(ASTNode visitTarget) {
-			super();
-			setVisitTarget(visitTarget);
-//			shouldVisitStatements = true;
-		}
-
-		@Override
-		public boolean preVisit2(ASTNode node) {
-			if (node == n) {
-				hasFoundNode = true;
-				return false;	// stop visiting children of n
-			}
-			return true;	// continue-ing to find n
-		}
-		
-//		@Override
-//		protected int genericLeave(ASTNode node) {
-//			if (findsIn && node == n) return PROCESS_ABORT;
-//			return PROCESS_CONTINUE;	// continue-ing to find r if findsNextTo
-//		}
-		
-		public boolean hasFoundNode() {
-			return hasFoundNode;
-		}
-		
-		public boolean findsIn() {
-			return findsIn;
-		}
-		
-		public boolean findsNextTo() {
-			return findsNextTo;
-		}
-
-		public void setVisitTarget(ASTNode visitTarget) {
-			this.n = visitTarget;
-		}
-		
-		public void setFindsIn(boolean findsIn) {
-			this.findsIn = findsIn;
-		}
-		
-		public void setFindsNextTo(boolean findsNextTo) {
-			this.findsNextTo = findsNextTo;
-		}
-		
+		return new ASTReturnCollector().findNextTo(node);
 	}
 	
 	
@@ -1328,7 +1253,7 @@ public final class ASTUtil extends DebugElement {
 	
 	
 	public static Name getNameFrom(IPath tuPath, int offset, int length, boolean refreshesIndex) {
-		CompilationUnit ast = getAST(tuPath, refreshesIndex);
+		CompilationUnit ast = getAST(tuPath);
 		if (ast == null) return null;
 		else return ast.getNodeSelector(null).findFirstContainedName(offset, length);
 //		else return ast.getNodeSelector(tuPath.toString()).findFirstContainedName(offset, length);
@@ -1343,7 +1268,7 @@ public final class ASTUtil extends DebugElement {
 	public static Name getNameOf(final VariableDeclaration vd) {
 		if (vd == null) return null;
 		
-		for (ASTNode child : ((ASTNode)vd).getChildren()) 
+		for (ASTNode child : ASTUtil.getChildrenOf(vd)) 
 			if (child instanceof Name) return (Name) child;
 		return null;
 	}
@@ -1563,7 +1488,7 @@ public final class ASTUtil extends DebugElement {
 		
 		if (node instanceof Expression) return ((Expression)node).toString();
 				
-		for (ASTNode child : node.getChildren()) {
+		for (ASTNode child : ASTUtil.getChildrenOf(node)) {
 			if (child instanceof Name) return toStringOf((Name) child);
 			else return toStringOf(child.getFileLocation());
 		}
