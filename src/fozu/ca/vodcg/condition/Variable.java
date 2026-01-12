@@ -213,7 +213,7 @@ public class Variable extends Referenceable {
 		final Name cName = getASTName();
 		if (cName != null) {
 			final Assignable<?> def = Assignable.from(
-					ASTUtil.getDefinitionOf(cName), true, getCondGen());
+					ASTUtil.getDefinitionOf(cName), getCondGen());
 			if (def != null) return isParam = def.isParameter();
 		}
 		

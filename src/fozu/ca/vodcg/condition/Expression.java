@@ -14,15 +14,13 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.BooleanLiteral;
 import org.eclipse.jdt.core.dom.CastExpression;
 import org.eclipse.jdt.core.dom.CharacterLiteral;
-import org.eclipse.jdt.core.dom.IASTArraySubscriptExpression;
-import org.eclipse.jdt.core.dom.IASTBinaryExpression;
-import org.eclipse.jdt.core.dom.IASTCastExpression;
-import org.eclipse.jdt.core.dom.ConditionalExpression;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.IASTFieldReference;
 import org.eclipse.jdt.core.dom.IASTFileLocation;
@@ -335,7 +333,7 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 		
 		// Non-boolean (non-binary) enum
 		if (nameBind instanceof ITypeBinding) 
-			return from((ITypeBinding) nameBind, name.getFileLocation());
+			return from((ITypeBinding) nameBind, name);
 	
 		// ID TODO: or other side-effect suitable's
 		final Expression e = PathVariablePlaceholder.from(nameBind, name, name, rtAddr, condGen);
@@ -384,7 +382,7 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 		
 		// Non-boolean (non-binary) enum
 		if (refBind instanceof ITypeBinding) 
-			return from((ITypeBinding) refBind, refExp.getFileLocation());
+			return from((ITypeBinding) refBind, refExp);
 		
 		// ID TODO: or other side-effect suitable's
 		final Expression e = PathVariablePlaceholder.from(
@@ -413,7 +411,7 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 			final NumberLiteral lit, final VODCondGen condGen) {
 		assert lit != null;
 		final String value = lit.getToken();
-		final String addr = ASTUtil.toLineLocationOf(lit.getFileLocation());
+		final String addr = ASTUtil.toLineLocationOf(lit);
 
 		// integer
 		Expression exp = Int.from(value, addr);
@@ -628,12 +626,12 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 	
 	
 	private static Expression from(
-			ITypeBinding typeBinding, StructuralPropertyDescriptor addr) {
+			ITypeBinding typeBinding, ASTNode addrNode) {
 		assert typeBinding != null;
 		return ASTUtil.isBinary(typeBinding)
 				? Proposition.from(typeBinding)
 				: Int.from(typeBinding.getValue().numericalValue(), 
-						ASTUtil.toLineLocationOf(addr));
+						ASTUtil.toLineOffsetLocationOf(addrNode));
 	}
 
 	

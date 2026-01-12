@@ -857,9 +857,9 @@ implements Comparator<ForStatement> {
 
 
 
-	public boolean isInMainTranslationUnit(MethodDeclaration f) {
-		return f.getFileLocation().getFileName().equals(mainPath.toOSString());
-	}
+//	public boolean isInMainTranslationUnit(MethodDeclaration f) {
+//		return f.getFileLocation().getFileName().equals(mainPath.toOSString());
+//	}
 
 	public boolean isInMainFunction(ASTNode node) {
 		return isMainFunction(ASTUtil.getWritingFunctionDefinitionOf(node));

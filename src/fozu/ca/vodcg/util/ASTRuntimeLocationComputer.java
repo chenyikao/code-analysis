@@ -223,18 +223,16 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 		final Integer cag = compareAsGlobal(rootFunc1, rootFunc2);
 		if (cag != null) return cag;
 		
-		// TODO: handling multiple references in a macro-expansion
 		if (rootFunc1 == rootFunc2) {	// means they are in the same translation unit (global declaration)
 			ASTNode leaf1 = ancestors1.get(0), leaf2 = ancestors2.get(0);
 			if (leaf1 == null || leaf2 == null) throwIncomparableException();
-			return leaf1.getFileLocation().getNodeOffset() - 
-					leaf2.getFileLocation().getNodeOffset(); 
+			return leaf1.getStartPosition() - leaf2.getStartPosition(); 
 			
 		} else {
 			return VariableOrientedDag.from(((MethodDeclaration)rootFunc1).getName(), null, condGen)
-					.getCalleeCompletedLocation() - 
+					.getCalleeRangeLocation() - 
 					VariableOrientedDag.from(((MethodDeclaration)rootFunc2).getName(), null, condGen)
-					.getCalleeCompletedLocation();
+					.getCalleeRangeLocation();
 		}
 	}
 

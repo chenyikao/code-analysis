@@ -9,17 +9,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.cdt.core.dom.IName;
-import org.eclipse.cdt.core.dom.ast.IASTFileLocation;
-import org.eclipse.cdt.core.dom.ast.IASTFunctionDefinition;
-import org.eclipse.cdt.core.dom.ast.IASTName;
-import org.eclipse.cdt.core.dom.ast.IBinding;
-import org.eclipse.cdt.core.dom.ast.IFunction;
-import org.eclipse.cdt.core.dom.ast.IVariable;
-import org.eclipse.cdt.core.index.IIndex;
-import org.eclipse.cdt.core.index.IndexFilter;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -325,14 +315,14 @@ implements Comparable<VariableOrientedDag> {
 	 * @return Semantic location in execution (calling) completion order, 
 	 * 	where arguments go prior to their function call.
 	 */
-	public int getCalleeCompletedLocation() {
-		final StructuralPropertyDescriptor loc = callee.getBinding() instanceof IMethodBinding 
+	public int getCalleeRangeLocation() {
+		final ASTNode loc = callee.getBinding() instanceof IMethodBinding 
 				? ASTUtil.getAncestorOfAsUnless(callee.getTopNode(), 
 						ASTUtil.AST_FUNCTION_CALL_EXPRESSION,
 						ASTUtil.AST_STATEMENT_TYPE,
-						false).getFileLocation()
+						false)
 				: callee.getFileLocation();
-		return loc.getNodeOffset() + loc.getNodeLength();
+		return loc.getStartPosition() + loc.getLength();
 	}
 	
 	/**
@@ -432,7 +422,7 @@ implements Comparable<VariableOrientedDag> {
 				if (isR1ur) return 1;				// ref1 unreachable
 				if (isR2ur) return -1;				// ref2 unreachable
 				// unconditional or possibly conditionally reachable
-				return getCalleeCompletedLocation() - vod2.getCalleeCompletedLocation();
+				return getCalleeRangeLocation() - vod2.getCalleeRangeLocation();
 			}
 		}
 

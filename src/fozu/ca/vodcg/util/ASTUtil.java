@@ -1476,7 +1476,7 @@ public final class ASTUtil extends DebugElement {
 	 */
 	public static String toStringOf(Name name) {
 		if (name == null) return null;
-		return name.toString() + " " + toStringOf(name.getNodeLocations());
+		return name.toString() + " " + toLineOffsetLocationOf(name);
 //		return name.toString() + "\n" + toStringOf(name.getFileLocation()) + "\n";
 	}
 
@@ -1514,9 +1514,9 @@ public final class ASTUtil extends DebugElement {
 				
 		for (ASTNode child : ASTUtil.getChildrenOf(node)) {
 			if (child instanceof Name) return toStringOf((Name) child);
-			else return toStringOf(child.getFileLocation());
+			else return toLocationOf(child);
 		}
-		return toStringOf(node.getFileLocation());
+		return toLocationOf(node);
 	}
 	
 	public static String toLocationOf(ASTNode node) {
@@ -1537,9 +1537,9 @@ public final class ASTUtil extends DebugElement {
 	
 	private static String toLineOffsetLocationOf(ASTNode node, boolean printsOffset) {
 	    if (node == null) return SystemElement.throwNullArgumentException("node");
-		String locPath = node.getFileName();
+		String locPath = ((CompilationUnit) node.getRoot()).getTypeRoot().getPath().toOSString();
 		return getStartingLineNumberOf(node)  
-				+ (printsOffset ? "+" + node.getNodeOffset() : "") + "@"
+				+ (printsOffset ? "+" + node.getStartPosition() : "") + "@"
 				+ locPath.substring(locPath.lastIndexOf(File.separator) + 1).replace('.', '_');
 	}
 	
