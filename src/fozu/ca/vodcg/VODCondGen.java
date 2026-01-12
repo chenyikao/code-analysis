@@ -16,29 +16,35 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.eclipse.jdt.core.dom.IASTDeclaration;
-import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.index.IIndex;
-import org.eclipse.jdt.core.index.IIndexBinding;
-import org.eclipse.jdt.core.index.IIndexName;
-import org.eclipse.jdt.core.index.IndexFilter;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.swt.widgets.Display;
 
 import fozu.ca.DuoKeyMap;
 import fozu.ca.Elemental;
 import fozu.ca.TrioKeyMap;
-import fozu.ca.condition.SerialFormat;import fozu.ca.vodcg.condition.ConditionElement;import fozu.ca.vodcg.condition.Function;import fozu.ca.vodcg.condition.Function.Parameter;import fozu.ca.vodcg.condition.PathVariable;import fozu.ca.vodcg.condition.VODConditions;import fozu.ca.vodcg.condition.data.ArrayType;import fozu.ca.vodcg.condition.data.Char;import fozu.ca.vodcg.condition.data.DataType;import fozu.ca.vodcg.condition.data.FiniteNumberGuard;import fozu.ca.vodcg.condition.data.PlatformType;import fozu.ca.vodcg.condition.data.PointerType;
+import fozu.ca.condition.SerialFormat;
+import fozu.ca.vodcg.condition.ConditionElement;
+import fozu.ca.vodcg.condition.Function;
+import fozu.ca.vodcg.condition.Function.Parameter;
+import fozu.ca.vodcg.condition.PathVariable;
+import fozu.ca.vodcg.condition.VODConditions;
+import fozu.ca.vodcg.condition.data.ArrayType;
+import fozu.ca.vodcg.condition.data.Char;
+import fozu.ca.vodcg.condition.data.DataType;
+import fozu.ca.vodcg.condition.data.FiniteNumberGuard;
+import fozu.ca.vodcg.condition.data.PlatformType;
+import fozu.ca.vodcg.condition.data.PointerType;
 import fozu.ca.vodcg.util.ASTRuntimeLocationComputer;
 import fozu.ca.vodcg.util.ASTUtil;
 
@@ -455,7 +461,7 @@ implements Comparator<ForStatement> {
 	public static String getPlatformConditions(SerialFormat format) {
 		switch (format) {
 		case Z3_SMT:
-			return Char.toDefinitionString(SerialFormat.Z3_SMT) + "fozu.ca
+			return Char.toDefinitionString(SerialFormat.Z3_SMT) + 
 					fozu.ca.vodcg.condition.data.String.toDeclarationString(SerialFormat.Z3_SMT) + "\n" +
 					FiniteNumberGuard.toZ3SmtDeclaration();
 			
@@ -723,7 +729,7 @@ implements Comparator<ForStatement> {
 		
 		NavigableSet<Assignable<?>> tvWrs = null;
 		final NavigableSet<Assignable<?>> tvRefs = Assignable.fromOf(ASTUtil.getAST(	// Loading C-Index AST
-				tvPath.getFilePath(), true), tvPath.getName(), null, this);
+				tvPath.getFilePath()), tvPath.getName(), null, this);
 		
 //		Name[] tvRefs = tvAST.getReferences(tvPath.getName().resolveBinding());
 //		if (tvRefs != null) for (Name tvRef : tvRefs) {
@@ -883,9 +889,11 @@ implements Comparator<ForStatement> {
 //	}
 
 	public boolean isMainFunction(IMethodBinding f) {
-		Name[] mainDefs = ASTUtil.getAST(mainPath, true).getDefinitionsInAST(f);
-		return mainDefs.length > 0 && 
-				new String(mainDefs[0].getSimpleID()).equals(ASTUtil.MAIN_METHOD_NAME);
+		try {
+			return f != null && ((IMethod) f.getJavaElement()).isMainMethod();
+		} catch (Exception e) {
+			return false;
+		}
 	}
 	
 	
