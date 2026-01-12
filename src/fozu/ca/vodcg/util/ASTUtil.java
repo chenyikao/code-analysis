@@ -484,7 +484,7 @@ public final class ASTUtil extends DebugElement {
 	private static boolean isSameBranchOf(
 			final ASTNode node1, final ASTNode node2, final IfStatement branch) {
 		assert node1 != null && node2 != null && branch != null;
-		final Statement then = branch.getThenClause(), els = branch.getElseClause();
+		final Statement then = branch.getThenStatement(), els = branch.getElseStatement();
 		return (ASTUtil.contains(then, node1) && ASTUtil.contains(then, node2)) 
 				|| (ASTUtil.contains(els, node1) && ASTUtil.contains(els, node2)); 
 	}
@@ -501,14 +501,14 @@ public final class ASTUtil extends DebugElement {
 		if (node2 == null) throwNullArgumentException("AST node 2");
 		if (branch == null) throwNullArgumentException("AST branch node");
 
-		final Statement then = branch.getThenClause();
+		final Statement then = branch.getThenStatement();
 		if (then == null) return false;
 
 		final boolean thenc1 = ASTUtil.contains(then, node1), 
 				thenc2 = ASTUtil.contains(then, node2);
 		if (thenc1 && thenc2) return false;
 		
-		final Statement els = branch.getElseClause();
+		final Statement els = branch.getElseStatement();
 		final boolean ie = els != null, 
 				elsec1 = ie && ASTUtil.contains(els, node1), 
 				elsec2 = ie && ASTUtil.contains(els, node2);
@@ -528,7 +528,7 @@ public final class ASTUtil extends DebugElement {
 		IfStatement parIf = getAncestorOfAs(stat, AST_IF_TYPE, true);
 		if (parIf == null) return false;
 		
-		return parIf.getElseClause() == stat;
+		return parIf.getElseStatement() == stat;
 	}
 	
 	public static boolean isElseOf(final ASTNode node, final IfStatement ifStat) {
@@ -536,7 +536,7 @@ public final class ASTUtil extends DebugElement {
 		
 		final Statement parent = getAncestorOfAs(node, AST_STATEMENT_TYPE, true);
 		if (parent == null) return false;
-		if (parent == ifStat.getElseClause()) return true;
+		if (parent == ifStat.getElseStatement()) return true;
 		return isElseOf(parent.getParent(), ifStat);
 	}
 	
@@ -608,7 +608,7 @@ public final class ASTUtil extends DebugElement {
 	
 	private static boolean containsElseTo(IfStatement if1, IfStatement if2) {
 		assert if1 != null && if2 != null && ASTUtil.contains(if1, if2);
-		final Statement if1else = if1.getElseClause();
+		final Statement if1else = if1.getElseStatement();
 		if (if1else == null) return false;
 		if (if1else == if2) return true;
 		

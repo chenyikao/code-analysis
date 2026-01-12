@@ -1247,7 +1247,7 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 		// picPrefix is bound to IfStatement, but not then-/else-statement
 //		PC_PREFIX_CACHE.clear();
 		final boolean isElse = ASTUtil.isElseTo(descendant, parentIf);
-		final Statement parent = isElse ? parentIf.getElseClause() : parentIf;
+		final Statement parent = isElse ? parentIf.getElseStatement() : parentIf;
 		Proposition picPrefix = PC_PREFIX_CACHE.get(parent);
 		
 		if (picPrefix == null && !PC_PREFIX_CACHE.containsKey(parent)) {
@@ -1269,17 +1269,17 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 
 			if (picPrefix.isTrue()) IfElseRule: {
 				// propParentIf = T is in then
-				Statement elseStat = parentIf.getElseClause();
+				Statement elseStat = parentIf.getElseStatement();
 				// propParentIf = T is in the current else
 				if (isElse) {
 					if (elseStat instanceof IfStatement) 
-						elseStat = ((IfStatement) elseStat).getElseClause();
+						elseStat = ((IfStatement) elseStat).getElseStatement();
 					else break IfElseRule;
 				}
 				while (elseStat != null) {
 					PC_PREFIX_CACHE.put(elseStat, False.from("If-else rule", Operator.Not, picPrefix));
 					if (elseStat instanceof IfStatement) 
-						elseStat = ((IfStatement) elseStat).getElseClause();
+						elseStat = ((IfStatement) elseStat).getElseStatement();
 					else break;
 				}
 			} 
