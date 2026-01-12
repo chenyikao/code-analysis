@@ -468,10 +468,10 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	}
 
 	public static Assignable<?> from(
-			Name varName, boolean refreshesIndex, VODCondGen condGen) {
+			Name varName, /*boolean refreshesIndex,*/ VODCondGen condGen) {
 		if (varName == null) throwNullArgumentException("variable name");
 		return from(
-				ASTUtil.getNameFrom(varName.getFileLocation(), refreshesIndex), 
+				varName,//ASTUtil.getNameFrom(varName.getFileLocation(), refreshesIndex), 
 				null,
 				condGen);
 	}
@@ -646,7 +646,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	
 	private static void throwIllegalNameException(Name name) {
 		throw new IllegalArgumentException("No assignable found for the name '" 
-				+ ((name == null)?"null'":(name + "' " + ASTUtil.toStringOf(name.getFileLocation()))));
+				+ ((name == null)?"null'":(name + "' " + ASTUtil.toStringOf(name))));
 	}
 
 	<T> T throwIncomparableException(Assignable<?> asn2) {
@@ -1355,8 +1355,8 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 //				()-> getPathVariableDelegate().getSideEffect().toString().length(), 0);
 //	}
 
-	public StructuralPropertyDescriptor getFileLocation() {
-		return nameView != null ? nameView.getLocationInParent() : null;
+	public ASTNode getFileLocation() {
+		return nameView != null ? nameView : null;
 	}
 
 	@Override

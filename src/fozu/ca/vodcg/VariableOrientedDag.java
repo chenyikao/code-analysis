@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -314,14 +315,14 @@ implements Comparable<VariableOrientedDag> {
 	 * @return Semantic location in execution (calling) completion order, 
 	 * 	where arguments go prior to their function call.
 	 */
-	public int getCalleeCompletedLocation() {
-		final StructuralPropertyDescriptor loc = callee.getBinding() instanceof IMethodBinding 
+	public int getCalleeRangeLocation() {
+		final ASTNode loc = callee.getBinding() instanceof IMethodBinding 
 				? ASTUtil.getAncestorOfAsUnless(callee.getTopNode(), 
 						ASTUtil.AST_METHOD_INVOCATION_EXPRESSION,
 						ASTUtil.AST_STATEMENT_TYPE,
-						false).getFileLocation()
+						false)
 				: callee.getFileLocation();
-		return loc.getNodeOffset() + loc.getNodeLength();
+		return loc.getStartPosition() + loc.getLength();
 	}
 	
 	/**
@@ -421,7 +422,7 @@ implements Comparable<VariableOrientedDag> {
 				if (isR1ur) return 1;				// ref1 unreachable
 				if (isR2ur) return -1;				// ref2 unreachable
 				// unconditional or possibly conditionally reachable
-				return getCalleeCompletedLocation() - vod2.getCalleeCompletedLocation();
+				return getCalleeRangeLocation() - vod2.getCalleeRangeLocation();
 			}
 		}
 

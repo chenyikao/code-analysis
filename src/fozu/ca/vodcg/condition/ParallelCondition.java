@@ -147,7 +147,7 @@ public class ParallelCondition extends Condition implements Addressable {
 	 */
 	@Override
 	public String getShortAddress() {
-		return ASTUtil.toLineLocationOf(stat.getFileLocation());
+		return ASTUtil.toLineLocationOf(stat);
 	}
 
 
