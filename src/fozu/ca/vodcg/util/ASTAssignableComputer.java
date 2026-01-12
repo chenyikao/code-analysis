@@ -572,7 +572,7 @@ public final class ASTAssignableComputer {
 //		TODO: if (clause instanceof ICPPASTInitializerClause)...
 
 		// the reference has fewer levels of subscripts than the array's declared dimension.
-		if (exp.getExpressionType() instanceof ArrayType) {
+		if (exp.resolveTypeBinding().isArray()) {
 			
 			// the reference expression (var ID) must start from the left-most IASTArraySubscriptExpression 
 			// or pointer expression and never be in the subscript arguments.
