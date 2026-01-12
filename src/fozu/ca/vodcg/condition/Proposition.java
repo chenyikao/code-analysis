@@ -1093,7 +1093,7 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 		
 	private static Proposition fromParentDoCondition(DoStatement stat, 
 			Proposition statProp, VODCondGen condGen) {
-		org.eclipse.jdt.core.dom.Expression cond = stat.getCondition();
+		org.eclipse.jdt.core.dom.Expression cond = stat.getExpression();
 //		if (ASTUtil.hasAncestorAs(node, cond, parBranches))	// bypassing condition's children 
 //			return fromParentBranchCondition(statDo, branchProp, condGen);
 //		else 
@@ -1200,7 +1200,7 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 			Proposition statProp, VODCondGen condGen) {
 		assert stat != null;
 		
-		final Proposition condProp = fromRecursivelyWithoutBranching(stat.getCondition(), null, condGen);
+		final Proposition condProp = fromRecursivelyWithoutBranching(stat.getExpression(), null, condGen);
 //		if (ASTUtil.hasAncestorAs(node, cond, parBranches))	// bypassing condition's children 
 //			return fromParentBranchCondition(statWhile, branchProp, condGen);
 //		else 

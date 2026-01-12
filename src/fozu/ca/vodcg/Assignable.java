@@ -2926,7 +2926,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		// a self-assigner is assigned in the second iteration
 		if (selfAssigns()) return true;
 		
-		return !branch.getCondition().contains(nameView) &&
+		return !ASTUtil.contains(branch.getExpression(), nameView) &&
 				ASTUtil.contains(branch, nameView);
 	}
 	
@@ -2936,7 +2936,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 		// a self-assigner is assigned in the second iteration
 		if (selfAssigns()) return nextLocallyAssigned().isConditionalTo(branch);
 		
-		return !branch.getCondition().contains(nameView) &&
+		return !ASTUtil.contains(branch.getExpression(), nameView) &&
 				ASTUtil.contains(branch, nameView);
 	}
 	
