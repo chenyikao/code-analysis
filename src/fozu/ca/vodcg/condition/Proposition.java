@@ -1084,7 +1084,7 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 //			return fromParentBranchCondition(statCase, branchProp, condGen);
 //		else 
 			return Equality.from(
-					ASTUtil.getEnclosingSwitchStatementOf(stat).getControllerExpression(),
+					ASTUtil.getEnclosingSwitchStatementOf(stat).getExpression(),
 					condCase,
 					statProp.cacheRuntimeAddress(), 
 					condGen);
