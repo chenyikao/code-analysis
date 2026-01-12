@@ -231,9 +231,9 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 					leaf2.getFileLocation().getNodeOffset(); 
 			
 		} else {
-			return VariableOrientedDag.from(((MethodDeclaration)rootFunc1).getDeclarator().getName(), null, condGen)
+			return VariableOrientedDag.from(((MethodDeclaration)rootFunc1).getName(), null, condGen)
 					.getCalleeCompletedLocation() - 
-					VariableOrientedDag.from(((MethodDeclaration)rootFunc2).getDeclarator().getName(), null, condGen)
+					VariableOrientedDag.from(((MethodDeclaration)rootFunc2).getName(), null, condGen)
 					.getCalleeCompletedLocation();
 		}
 	}

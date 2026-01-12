@@ -273,7 +273,7 @@ public final class ASTUtil extends DebugElement {
 	 * @return
 	 */
 	public static boolean isMainFunction(MethodDeclaration func) {
-		return func.getDeclarator().getName().toString().equals(MAIN_METHOD_NAME);
+		return func.getName().toString().equals(MAIN_METHOD_NAME);
 	}
 	
 	public static boolean isMainMethod(IMethod method) throws JavaModelException {
@@ -1350,7 +1350,7 @@ public final class ASTUtil extends DebugElement {
 
 	public static Name getNameOf(MethodDeclaration f) {
 		if (f == null) return null;
-		else return f.getDeclarator().getName();
+		else return f.getName();
 	}
 	
 	/**

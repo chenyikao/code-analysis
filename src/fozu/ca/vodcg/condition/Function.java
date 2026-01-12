@@ -593,7 +593,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 		final List<SingleVariableDeclaration> fParams = (List<SingleVariableDeclaration>) f.parameters();
 		if (fParams != null) for (SingleVariableDeclaration fp : fParams) try {
 			final VariablePlaceholder<?> p = PathVariablePlaceholder.from(
-					fp.getDeclarator(), getRuntimeAddress(), getCondGen());
+					fp, getRuntimeAddress(), getCondGen());
 			if (p == null) throwTodoException("Null parameter!");
 			addParameter(p);
 			
