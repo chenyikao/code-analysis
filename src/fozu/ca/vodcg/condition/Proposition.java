@@ -1354,7 +1354,7 @@ abstract public class Proposition extends Relation implements SideEffectElement 
 					throws ASTException {
 		assert parentIf != null;
 		return fromRecursivelyWithoutBranching(
-				parentIf.getConditionExpression(), null, condGen);
+				parentIf.getExpression(), null, condGen);
 	}
 
 		

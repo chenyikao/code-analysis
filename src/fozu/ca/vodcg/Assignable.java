@@ -2863,7 +2863,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	
 	public boolean isConditionalTo(IfStatement branch) {
 		if (branch == null) throwNullArgumentException("AST branch node");
-		return !branch.getConditionExpression().contains(nameView) && 
+		return !ASTUtil.contains(branch.getExpression(), nameView) && 
 				ASTUtil.contains(branch, nameView);
 	}
 	

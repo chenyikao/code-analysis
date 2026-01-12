@@ -437,6 +437,7 @@ public final class ASTUtil extends DebugElement {
 		return false;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private static boolean isSameIterationOf(
 			final ASTNode node1, final ASTNode node2, final ForStatement branch) {
 		assert node1 != null && node2 != null && branch != null;
@@ -446,11 +447,12 @@ public final class ASTUtil extends DebugElement {
 		if (isInit1) return isInit2;
 		if (isInit2) return isInit1;
 		
-		final Expression cond = branch.getConditionExpression(), iter = branch.getIterationExpression();
+		final Expression cond = branch.getExpression();
+		final List<Expression> updaters = (List<Expression>) branch.updaters();
 		final boolean isCond1 = ASTUtil.contains(cond, node1), 
 				isCond2 = ASTUtil.contains(cond, node2),
-				isIter1 = ASTUtil.contains(iter, node1), 
-				isIter2 = ASTUtil.contains(iter, node2);
+				isIter1 = ASTUtil.contains(updaters, node1), 
+				isIter2 = ASTUtil.contains(updaters, node2);
 		if (isCond1 || isIter1) return isCond2 || isIter2;
 		if (isCond2 || isIter2) return isCond1 || isIter1;
 		// as usual body containment finally
@@ -573,6 +575,13 @@ public final class ASTUtil extends DebugElement {
 		return isET;
 	}
 	
+	/**
+	 * To avoid un-nessesary memory usage, caching is left for callers.
+	 *
+	 * @param node1
+	 * @param node2
+	 * @return
+	 */
 	public static boolean contains(ASTNode node1, ASTNode node2) {
 		if (node1 == null || node2 == null) return false;
 		if (node1 == node2) return true;
@@ -582,6 +591,21 @@ public final class ASTUtil extends DebugElement {
 		return node2Visitor.hasFoundNode();
 	}
 
+	/**
+	 * To avoid un-nessesary memory usage, caching is left for callers.
+	 * 
+	 * @param nodes1
+	 * @param node2
+	 * @return
+	 */
+	public static boolean contains(List<? extends ASTNode> nodes1, ASTNode node2) {
+		if (nodes1 == null || node2 == null) return false;
+		
+		for (ASTNode node1 : nodes1) 
+			if (contains(node1, node2)) return true;
+		return false;
+	}
+	
 	private static boolean containsElseTo(IfStatement if1, IfStatement if2) {
 		assert if1 != null && if2 != null && ASTUtil.contains(if1, if2);
 		final Statement if1else = if1.getElseClause();
