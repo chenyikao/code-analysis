@@ -23,10 +23,12 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ArrayAccess;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.DoStatement;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IBinding;
@@ -1355,8 +1357,8 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 //				()-> getPathVariableDelegate().getSideEffect().toString().length(), 0);
 //	}
 
-	public ASTNode getFileLocation() {
-		return nameView != null ? nameView : null;
+	public IPath getFileLocation() {
+		return nameView != null ? ASTUtil.getPathOf(nameView) : null;
 	}
 
 	@Override
@@ -3178,7 +3180,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 
 	public boolean equalsFile(Assignable<?> asn2) {
 		if (asn2 == null) throwNullArgumentException("assignable");
-		return getFileLocation().getFileName().equals(asn2.getFileLocation().getFileName());
+		return getFileLocation().equals(asn2.getFileLocation());
 	}
 	
 	public boolean equalsVariable(Assignable<?> lv2) {

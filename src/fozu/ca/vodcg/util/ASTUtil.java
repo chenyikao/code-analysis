@@ -1416,6 +1416,11 @@ public final class ASTUtil extends DebugElement {
 	    return ((CompilationUnit) node.getRoot()).getLineNumber(node.getStartPosition());
 	}
 	
+	public static IPath getPathOf(ASTNode node) {
+		if (node == null) return SystemElement.throwNullArgumentException("node");
+		return ((CompilationUnit) node.getRoot()).getTypeRoot().getPath();
+	}
+	
 //	public static Name toASTName(Name Name) {
 //		if (Name == null) return null;
 //		
@@ -1496,7 +1501,7 @@ public final class ASTUtil extends DebugElement {
 	
 	private static String toLineOffsetLocationOf(ASTNode node, boolean printsOffset) {
 	    if (node == null) return SystemElement.throwNullArgumentException("node");
-		String locPath = ((CompilationUnit) node.getRoot()).getTypeRoot().getPath().toOSString();
+		String locPath = getPathOf(node).toOSString();
 		return getStartingLineNumberOf(node)  
 				+ (printsOffset ? "+" + node.getStartPosition() : "") + "@"
 				+ locPath.substring(locPath.lastIndexOf(File.separator) + 1).replace('.', '_');

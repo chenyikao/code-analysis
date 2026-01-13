@@ -179,14 +179,14 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 		}
 	}
 
-	public int compare(StructuralPropertyDescriptor loc1, StructuralPropertyDescriptor loc2) {
-		if (loc1 == null || loc2 == null) throwIncomparableException("null file location");
-		
-		final String name1 = loc1.getFileName(), name2 = loc2.getFileName();
-		return name1.equals(name2)
-				? loc1.getNodeOffset() - loc2.getNodeOffset() 
-				: name1.hashCode() - name2.hashCode();
-	}
+//	public int compare(StructuralPropertyDescriptor loc1, StructuralPropertyDescriptor loc2) {
+//		if (loc1 == null || loc2 == null) throwIncomparableException("null file location");
+//		
+//		final String name1 = loc1.getFileName(), name2 = loc2.getFileName();
+//		return name1.equals(name2)
+//				? loc1.getNodeOffset() - loc2.getNodeOffset() 
+//				: name1.hashCode() - name2.hashCode();
+//	}
 	
 
 
