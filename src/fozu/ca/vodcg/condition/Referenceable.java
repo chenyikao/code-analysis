@@ -339,11 +339,7 @@ implements ASTAddressable {
 	}
 
 	public String toFullString() {
-		if (cName == null) return name;
-		else {
-			StructuralPropertyDescriptor cLoc = cName.getLocationInParent();
-			return name + ":" + cLoc.getStartingLineNumber() + "@" + cLoc.getFileName();
-		}
+	    return cName == null ? name : ASTUtil.toLocationOf(cName);
 	}
 	
 	protected String toNonEmptyString(boolean usesParenAlready) {

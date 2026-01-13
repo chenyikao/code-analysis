@@ -1283,11 +1283,11 @@ public final class ASTUtil extends DebugElement {
 //		else return ast.getNodeSelector(tuPath.toString()).findFirstContainedName(offset, length);
 	}
 
-	public static Name getNameFrom(StructuralPropertyDescriptor loc, boolean refreshesIndex) {
-		return getNameFrom(
-				new Path(loc.getFileName()), 
-				loc.getNodeOffset(), loc.getNodeLength(), refreshesIndex);
-	}
+//	public static Name getNameFrom(StructuralPropertyDescriptor loc, boolean refreshesIndex) {
+//		return getNameFrom(
+//				new Path(loc.getFileName()), 
+//				loc.getNodeOffset(), loc.getNodeLength(), refreshesIndex);
+//	}
 	
 	public static Name getNameOf(final VariableDeclaration vd) {
 		if (vd == null) return null;
@@ -1457,6 +1457,11 @@ public final class ASTUtil extends DebugElement {
 	    return ((CompilationUnit) node.getRoot()).getLineNumber(node.getStartPosition());
 	}
 	
+	public static IPath getPathOf(ASTNode node) {
+		if (node == null) return SystemElement.throwNullArgumentException("node");
+		return ((CompilationUnit) node.getRoot()).getTypeRoot().getPath();
+	}
+	
 //	public static Name toASTName(Name Name) {
 //		if (Name == null) return null;
 //		
@@ -1485,7 +1490,7 @@ public final class ASTUtil extends DebugElement {
 		
 		String str = "";
 		for (ASTNode node : nodes) 
-			str += (toStringOf(node.getLocationInParent()) + node.toString() + "\n");
+			str += (toLocationOf(node) + node.toString() + "\n");
 		return str;
 	}
 	
@@ -1493,19 +1498,6 @@ public final class ASTUtil extends DebugElement {
 //		if (location == null) DebugElement.throwNullArgumentException("location");
 //		return location.toString();
 //	}
-	
-	public static String toStringOf(StructuralPropertyDescriptor location) {
-		if (location == null) return "(null)";
-		
-		String fName = location.getFileName(), 
-				fnFolders[] = fName.split("/");
-		fName = "";
-		for (String fd : fnFolders) 
-			fName = fd + (fName.isEmpty() ? "" : (" @ " + fName));
-		return "at line " + location.getStartingLineNumber() + 
-				" (~" + location.getNodeOffset() + 
-				")\nof file " + fName;
-	}
 	
 	public static String toStringOf(ASTNode node) {
 	    if (node == null) return SystemElement.throwNullArgumentException("node");
@@ -1521,10 +1513,16 @@ public final class ASTUtil extends DebugElement {
 	
 	public static String toLocationOf(ASTNode node) {
 		if (node == null) return SystemElement.throwNullArgumentException("node");
-		
-		StructuralPropertyDescriptor loc = node.getLocationInParent();
-		if (loc == null) return SystemElement.throwNullArgumentException("location");
-		return loc.getStartingLineNumber() + "@" + loc;
+	    
+		final CompilationUnit cu = (CompilationUnit) node.getRoot();
+	    String fName = cu.getJavaElement().getPath().toString(), 
+	            fnFolders[] = fName.split("/");
+	    fName = "";
+	    for (String fd : fnFolders) 
+	        fName = fd + (fName.isEmpty() ? "" : (" @ " + fName));
+	    return "at line " + cu.getLineNumber(node.getStartPosition()) + 
+	            " (~" + node.getLength() + 
+	            ")\nof resource " + fName;
 	}
 	
 	public static String toLineLocationOf(ASTNode node) {
@@ -1537,7 +1535,7 @@ public final class ASTUtil extends DebugElement {
 	
 	private static String toLineOffsetLocationOf(ASTNode node, boolean printsOffset) {
 	    if (node == null) return SystemElement.throwNullArgumentException("node");
-		String locPath = ((CompilationUnit) node.getRoot()).getTypeRoot().getPath().toOSString();
+		String locPath = getPathOf(node).toOSString();
 		return getStartingLineNumberOf(node)  
 				+ (printsOffset ? "+" + node.getStartPosition() : "") + "@"
 				+ locPath.substring(locPath.lastIndexOf(File.separator) + 1).replace('.', '_');
@@ -1562,17 +1560,17 @@ public final class ASTUtil extends DebugElement {
 		return node1.getContainingFilename().equals(node2.getContainingFilename());
 	}
 	
-	/**
-	 * @param l1
-	 * @param l2
-	 * @return
-	 */
-	public static boolean equals(StructuralPropertyDescriptor l1, StructuralPropertyDescriptor l2) {
-		if (l1 == l2) return true;
-		if (l1 == null || l2 == null) return false;
-		
-		return l1.getFileName().equals(l2.getFileName()) && l1.getNodeOffset() == l2.getNodeOffset();
-	}
+//	/**
+//	 * @param l1
+//	 * @param l2
+//	 * @return
+//	 */
+//	public static boolean equals(StructuralPropertyDescriptor l1, StructuralPropertyDescriptor l2) {
+//		if (l1 == l2) return true;
+//		if (l1 == null || l2 == null) return false;
+//		
+//		return l1.getFileName().equals(l2.getFileName()) && l1.getNodeOffset() == l2.getNodeOffset();
+//	}
 	
 	/**
 	 * TODO? Name.equals(...) doesn't work as expected?

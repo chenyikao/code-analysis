@@ -8,15 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.jdt.core.dom.IASTFileLocation;
-import org.eclipse.jdt.core.dom.IASTFunctionDefinition;
-import org.eclipse.jdt.core.dom.IASTMacroExpansionLocation;
-import org.eclipse.jdt.core.dom.IASTName;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.IASTNodeLocation;
-import org.eclipse.jdt.core.dom.IASTNodeSelector;
-import org.eclipse.jdt.core.dom.IASTPreprocessorPragmaStatement;
-import org.eclipse.jdt.core.dom.IASTTranslationUnit;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
@@ -192,14 +187,14 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 		}
 	}
 
-	public int compare(StructuralPropertyDescriptor loc1, StructuralPropertyDescriptor loc2) {
-		if (loc1 == null || loc2 == null) throwIncomparableException("null file location");
-		
-		final String name1 = loc1.getFileName(), name2 = loc2.getFileName();
-		return name1.equals(name2)
-				? loc1.getNodeOffset() - loc2.getNodeOffset() 
-				: name1.hashCode() - name2.hashCode();
-	}
+//	public int compare(StructuralPropertyDescriptor loc1, StructuralPropertyDescriptor loc2) {
+//		if (loc1 == null || loc2 == null) throwIncomparableException("null file location");
+//		
+//		final String name1 = loc1.getFileName(), name2 = loc2.getFileName();
+//		return name1.equals(name2)
+//				? loc1.getNodeOffset() - loc2.getNodeOffset() 
+//				: name1.hashCode() - name2.hashCode();
+//	}
 	
 
 
@@ -266,10 +261,10 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 		if (node1 == null || node2 == null) 
 			throwIncomparableException("Incomparable null node(s)!");
 		
-		final StructuralPropertyDescriptor fl1 = node1.getLocationInParent(), fl2 = node2.getLocationInParent();
-		if (fl1 == null || fl2 == null) 
+		final CompilationUnit cu1 = (CompilationUnit) node1.getRoot(), cu2 = (CompilationUnit) node2.getRoot();
+		if (cu1 == null || cu2 == null) 
 			throwIncomparableException("Incomparable null file location(s)!");
-		else if (!fl1.getFileName().equals(fl2.getFileName())) 
+		else if (cu1 != cu2) 
 			throwIncomparableException("Incomparable different files!");
 		else {	// file1 == file2
 			final MethodDeclaration func1 = ASTUtil.getWritingFunctionDefinitionOf(node1),
@@ -282,8 +277,8 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 		}
 		
 		assert node1 != node2;
-		int no1 = fl1.getNodeOffset(), no2 = fl2.getNodeOffset();
-		if (no1 == no2) {
+		int start1 = node1.getStartPosition(), start2 = node2.getStartPosition();
+		if (start1 == start2) {
 //			final IASTNodeLocation[] ls1 = node1.getNodeLocations(), ls2 = node2.getNodeLocations();
 //			assert ls1 != null && ls2 != null;
 //			for (IASTNodeLocation l1 : ls1)
@@ -292,7 +287,7 @@ public class ASTRuntimeLocationComputer implements Comparator<ASTNode> {
 //						return compareLocally((IASTMacroExpansionLocation) l1, (IASTMacroExpansionLocation) l2);
 			DebugElement.throwTodoException("unsupported ambiguous nodes");
 		}
-		return no1 - no2;
+		return start1 - start2;
 	}
 
 //	public static int compareLocally(final IASTMacroExpansionLocation location1, final IASTMacroExpansionLocation location2) {
