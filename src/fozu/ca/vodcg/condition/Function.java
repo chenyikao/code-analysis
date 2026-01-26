@@ -279,8 +279,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 			MethodInvocation call, final ASTAddressable rtAddr, VODCondGen condGen) 
 					throws ASTException {
 		if (call == null || condGen == null) return null;
-		final IBinding bind = ASTUtil.getNameOf(
-				call.getFunctionNameExpression()).resolveBinding();
+		final IBinding bind = ASTUtil.getNameOf(call).resolveBinding();
 		return bind instanceof IMethodBinding
 				? from((IMethodBinding) bind, rtAddr, condGen)
 				: throwTodoException("unsupported call");

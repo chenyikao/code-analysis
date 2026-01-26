@@ -1134,11 +1134,7 @@ public final class ASTUtil extends DebugElement {
 	public static Name getEnclosingFunctionCallNameOf(MethodInvocation call) {
 		if (call == null) throwNullArgumentException("call");
 		
-		Expression callNameExp = call.getFunctionNameExpression();
-		if (callNameExp instanceof Name) 
-			return ((Name) callNameExp).getName();
-		// TODO: else if ...
-		return null;
+		return call.getName();
 	}
 	
 	public static Name getEnclosingFunctionCallNameOf(ASTNode node) {
@@ -1306,8 +1302,7 @@ public final class ASTUtil extends DebugElement {
 	}
 	
 	public static Name getNameOf(MethodInvocation exp) {
-		return exp != null 
-				? getNameOf(exp.getFunctionNameExpression()) : null;
+		return getEnclosingFunctionCallNameOf(exp);
 	}
 
 	/**
