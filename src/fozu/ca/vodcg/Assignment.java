@@ -225,7 +225,7 @@ public class Assignment extends SystemElement {
     public org.eclipse.jdt.core.dom.Expression getAssignerClause() {
 		assert !(asmAsm != null && asmDcl != null);
 		
-		if (asmDcl != null) return asmDcl.getInitializerClause();
+		if (asmDcl != null) return asmDcl.getInitializer();
 		
 		if (asmAsm instanceof PrefixExpression) 
 			return ((PrefixExpression) asmAsm).getOperand();     // TODO: +-*/ 1?
@@ -372,7 +372,7 @@ public class Assignment extends SystemElement {
 		
 		if (asmDcl != null) {
 			asds.add(Assignable.from(asmDcl.getName(), null, cg));
-			asns.addAll(Assignable.fromOf(asmDcl.getInitializerClause(), null, cg));
+			asns.addAll(Assignable.fromOf(asmDcl.getInitializer(), null, cg));
 		}
 		
 		else if (asmAsm instanceof PrefixExpression) {
