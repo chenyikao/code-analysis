@@ -106,7 +106,7 @@ public class Variable extends Referenceable {
 			Supplier<ConditionElement> scope, Statement astScope, VODCondGen condGen) {
 		if (var == null) throwNullArgumentException("AST variable");
 
-		return fromNonAST(var.getName(),
+		return fromNonAST(var.getElementName(),
 				DataType.from(var.getType()), 
 				isParameter, scope, astScope, condGen);
 	}
