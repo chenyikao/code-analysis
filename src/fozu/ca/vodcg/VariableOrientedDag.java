@@ -329,7 +329,7 @@ implements Comparable<VariableOrientedDag> {
 	 * @return callee's code offset in the source file.
 	 */
 	public int getCalleeOffset() {
-		return getCalleeFileLocation().getNodeOffset();
+		return callee.getASTAddress().getStartPosition();
 	}
 	
 
