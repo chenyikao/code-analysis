@@ -441,11 +441,9 @@ public final class ASTUtil extends DebugElement {
 	private static boolean isSameIterationOf(
 			final ASTNode node1, final ASTNode node2, final ForStatement branch) {
 		assert node1 != null && node2 != null && branch != null;
-		final Statement init = branch.getInitializerStatement();
-		final boolean isInit1 = ASTUtil.contains(init, node1), 
-				isInit2 = ASTUtil.contains(init, node2);
-		if (isInit1) return isInit2;
-		if (isInit2) return isInit1;
+		for (Expression init : (List<Expression>) branch.initializers()) {
+		    if (ASTUtil.contains(init, node1)) return ASTUtil.contains(init, node2);
+		}
 		
 		final Expression cond = branch.getExpression();
 		final List<Expression> updaters = (List<Expression>) branch.updaters();

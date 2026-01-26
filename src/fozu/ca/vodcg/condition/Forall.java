@@ -37,11 +37,15 @@ public class Forall extends Predicate {
 	 * @param stat
 	 * @return
 	 */
-	public static Proposition from(ForStatement stat, final ASTAddressable rtAddr, VODCondGen condGen) {
+	@SuppressWarnings("unchecked")
+    public static Proposition from(ForStatement stat, final ASTAddressable rtAddr, VODCondGen condGen) {
 		if (stat == null) throwNullArgumentException("for-loop");
 		
-		final Proposition pre = Proposition.fromRecursively(stat.getInitializerStatement(), rtAddr, condGen),
-				itRange = ExpressionRange.fromIteratorOf(stat, rtAddr, condGen),
+		Proposition pre = Proposition.PureTrue;
+		for (org.eclipse.jdt.core.dom.Expression init : (List<org.eclipse.jdt.core.dom.Expression>) stat.initializers()) {
+            pre = pre.and(Proposition.fromRecursively(init, rtAddr, condGen));
+        }
+		final Proposition itRange = ExpressionRange.fromIteratorOf(stat, rtAddr, condGen),
 				body = Proposition.fromRecursively(stat.getBody(), rtAddr, condGen);
 		return itRange instanceof ExpressionRange
 				? pre.and(()-> from(Arrays.asList((ExpressionRange<?>) itRange), body))
