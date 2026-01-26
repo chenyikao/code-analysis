@@ -4,6 +4,7 @@
 package fozu.ca.vodcg.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -222,7 +223,7 @@ public final class ASTUtil extends DebugElement {
 //		CU_CACHE.clear();
 		CompilationUnit astCu = CU_CACHE.get(cuPath);
 		if (astCu == null) {
-		    ASTParser parser = ASTParser.newParser(ASTParser.K_COMPILATION_UNIT);
+		    ASTParser parser = ASTParser.newParser(AST.getJLSLatest());
 		    parser.setSource(new String(Files.readAllBytes(cuPath.toPath())).toCharArray());
 		    astCu = (CompilationUnit) parser.createAST(null);
 		    if (astCu != null) CU_CACHE.put(cuPath, astCu);
@@ -235,6 +236,16 @@ public final class ASTUtil extends DebugElement {
 		return astCu;
 	}
 
+	public static CompilationUnit getAST(IPath cuPath, int offset, int length) throws IOException {
+	    if (cuPath == null) return null;
+	    
+	    ASTParser parser = ASTParser.newParser(AST.getJLSLatest());
+	    parser.setKind(ASTParser.K_EXPRESSION);
+	    parser.setSourceRange(offset, length);
+	    parser.setSource(new String(Files.readAllBytes(cuPath.toPath())).toCharArray());
+	    return (CompilationUnit) parser.createAST(null);
+	}
+	
 	public static Collection<CompilationUnit> getRegisteredAST() {
 		return CU_CACHE.values();
 	}
@@ -1270,11 +1281,8 @@ public final class ASTUtil extends DebugElement {
 	
 	
 	
-	public static Name getNameFrom(IPath tuPath, int offset, int length, boolean refreshesIndex) {
-		CompilationUnit ast = getAST(tuPath);
-		if (ast == null) return null;
-		else return ast.getNodeSelector(null).findFirstContainedName(offset, length);
-//		else return ast.getNodeSelector(tuPath.toString()).findFirstContainedName(offset, length);
+	public static Name getNameFrom(IPath cuPath, int offset, int length, boolean refreshesIndex) throws IOException {
+		return new ASTNameFinder(cuPath, offset, length).find();
 	}
 
 //	public static Name getNameFrom(StructuralPropertyDescriptor loc, boolean refreshesIndex) {

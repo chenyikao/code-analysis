@@ -26,6 +26,15 @@ public class ASTNameFinder extends ASTVisitor {
         compilationUnit = ASTUtil.getAST(filePath);
     }
 
+    public ASTNameFinder(final IPath filePath, int offset, int length) throws IOException {
+        compilationUnit = ASTUtil.getAST(filePath, offset, length);
+    }
+    
+    public Name find() {
+        compilationUnit.accept(this);
+        return nameNode;
+    }
+    
     public Name find(final String fullyQualifiedName, final int lineNumber) {
         this.name = fullyQualifiedName;
         this.lineNumber = lineNumber;
@@ -37,7 +46,9 @@ public class ASTNameFinder extends ASTVisitor {
     public boolean preVisit2(ASTNode node) {
         if (node instanceof Name) {
             final Name nameNode = (Name) node;
-            if (nameNode.getFullyQualifiedName().equals(name)
+            if (name == null) {
+                this.nameNode = nameNode;
+            } else if (nameNode.getFullyQualifiedName().equals(name)
                     && lineNumber == compilationUnit.getLineNumber(node.getStartPosition())) {
                 this.nameNode = nameNode;
             }
