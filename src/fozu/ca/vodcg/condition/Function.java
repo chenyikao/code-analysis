@@ -683,7 +683,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 		
 		initiateTraversalOf();
 		final Proposition rcond = Proposition.fromParentBranchCondition(r, null, cg);
-		final Expression ra = Expression.fromRecursively(r.getReturnArgument(), getRuntimeAddress(), cg),
+		final Expression ra = Expression.fromRecursively(r.getExpression(), getRuntimeAddress(), cg),
 				re = rcond == null ? ra : ConditionalExpression.from(rcond, ra, getBody(rit));
 		resetTraversalOf();
 		return re;
