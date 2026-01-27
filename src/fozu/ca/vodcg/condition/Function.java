@@ -840,7 +840,7 @@ implements SideEffectElement, Comparator<Function>, Comparable<Function> {
 		ITypeBinding[] fParams = f.getParameterTypes();	// Varargs is ignored
 		if (fParams != null) 
 			for (ITypeBinding fp : fParams) 
-				id += ("_" + DataType.from(fp.getType()).getID(null));
+				id += ("_" + DataType.from(fp).getID(null));
 				// AST language-based ID
 //				id += ("_" + ASTUtil.toID(fp.getType()));
 		return id;

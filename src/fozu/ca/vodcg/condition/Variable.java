@@ -16,6 +16,7 @@ import org.eclipse.cdt.core.dom.IName;
 import org.eclipse.cdt.core.dom.ast.IASTName;
 import org.eclipse.cdt.core.dom.ast.IVariable;
 import org.eclipse.jdt.core.ILocalVariable;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.Statement;
@@ -107,7 +108,7 @@ public class Variable extends Referenceable {
 		if (var == null) throwNullArgumentException("AST variable");
 
 		return fromNonAST(var.getElementName(),
-				DataType.from(var.getType()), 
+				DataType.from(Signature.toString(var.getTypeSignature())), 
 				isParameter, scope, astScope, condGen);
 	}
 
