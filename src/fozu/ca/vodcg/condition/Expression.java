@@ -362,11 +362,11 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 			final TypeLiteral idExp, final VODCondGen condGen) 
 					throws ASTException {
 		assert idExp != null;
-		switch (idExp.getOperator()) {
-//		case IASTTypeIdExpression.op_sizeof:
-//			return VODCondGen.getCLibraryFunction("sizeof_Void");
-		default:
-		}
+//		switch (idExp.getOperator()) {
+////		case IASTTypeIdExpression.op_sizeof:
+////			return VODCondGen.getCLibraryFunction("sizeof_Void");
+//		default:
+//		}
 		return throwTodoException("unsupported Type ID expression: " 
 				+ ASTUtil.toStringOf(idExp));
 	}
