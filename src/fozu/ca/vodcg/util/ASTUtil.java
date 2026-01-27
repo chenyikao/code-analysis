@@ -357,7 +357,7 @@ public final class ASTUtil extends DebugElement {
 	
 	public static boolean isConstant(Assignment exp) {
 		if (exp == null) return true;
-		return isConstant(exp.getOperand1()) && isConstant(exp.getOperand2());
+		return isConstant(exp.getLeftHandSide()) && isConstant(exp.getRightHandSide());
 	}
 
 

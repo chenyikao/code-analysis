@@ -591,7 +591,7 @@ public final class ASTLoopUtil {
 	}
 	
 	public static boolean increasesConstantly(Assignment exp) {
-		final org.eclipse.jdt.core.dom.Expression incrExp = exp.getOperand2();
+		final org.eclipse.jdt.core.dom.Expression incrExp = exp.getRightHandSide();
 		
 		/* 					var += incr
 		 * 					var -= incr
@@ -607,7 +607,7 @@ public final class ASTLoopUtil {
 			Assignment incrAdd = (Assignment) incrExp;
 			// a constant (IASTLiteralExpression) has no name (Name)
 			return ASTUtil.isConstant(incrAdd.getOperator()) || 
-					ASTUtil.isConstant(incrAdd.getOperand2());
+					ASTUtil.isConstant(incrAdd.getRightHandSide());
 		}
 		
 		return false;

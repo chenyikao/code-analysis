@@ -470,13 +470,13 @@ public final class ASTAssignableComputer {
 	}
 	
 	public static boolean isConstantAssignment(InfixExpression exp) {
-		return isPlainBinaryAssignment(exp) && ASTUtil.isConstant(exp.getOperand2());
+		return isPlainBinaryAssignment(exp) && ASTUtil.isConstant(exp.getRightOperand());
 	}
 
 	@SuppressWarnings("removal")
 	public static boolean isLValueOf(Expression exp, InfixExpression binary) {
 		if (binary == null) DebugElement.throwNullArgumentException("binary");
-		return binary.getOperand1().contains(exp);
+		return ASTUtil.contains(binary.getLeftOperand(), exp);
 	}
 	
 	public static boolean isRewritingAssignment(Expression exp) {
@@ -486,7 +486,7 @@ public final class ASTAssignableComputer {
 		// lhs of a binary assignment not appearing in rhs is not rewriting to lhs
 		if (isPlainBinaryAssignment(exp)) {
 			InfixExpression asg = (InfixExpression) exp;
-			return isRewritingAssignmentTo(asg, getVariableNameOf(asg.getOperand1()));
+			return isRewritingAssignmentTo(asg, getVariableNameOf(asg.getLeftOperand()));
 		}
 		
 		return false;	// neither unary nor binary assignments
@@ -519,8 +519,8 @@ public final class ASTAssignableComputer {
 			ASTNameCollector varCol = new ASTNameCollector(var.toCharArray());
 			Name[] lhsVars, rhsVars;
 			
-			exp.getOperand1().accept(varCol); lhsVars = varCol.getNames();
-			exp.getOperand2().accept(varCol); rhsVars = varCol.getNames();
+			exp.getLeftOperand().accept(varCol); lhsVars = varCol.getNames();
+			exp.getRightOperand().accept(varCol); rhsVars = varCol.getNames();
 			if (lhsVars != null && rhsVars != null) 	// var in both lhs and rhs
 				for (Name v : lhsVars) if (((Expression) v.getParent()).isLValue()) return true;
 		}
