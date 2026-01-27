@@ -382,7 +382,8 @@ implements Comparator<ForStatement> {
 		return display;		
 	}
 
-	public static String getID(Function f) {
+	@SuppressWarnings("deprecation")
+    public static String getID(Function f) {
 		if (f == null) throwNullArgumentException("function");
 		if (Z3_SMT_LIBRARY_FUNCTIONS.isEmpty()) throwTodoException("not-yet initialized");
 		return getNonNull(()-> Z3_SMT_LIBRARY_FUNCTIONS.key2For(f));
@@ -403,7 +404,8 @@ implements Comparator<ForStatement> {
 		return C_LIBRARIES;
 	}
 	
-	public static Function getCLibraryFunction(String nameParams) {
+	@SuppressWarnings("deprecation")
+    public static Function getCLibraryFunction(String nameParams) {
 		if (nameParams == null) return null;
 		
 		for (String lib : getCLibraries()) {
@@ -724,7 +726,8 @@ implements Comparator<ForStatement> {
 	 * 
 	 * @param tvPath - the path to target variable
 	 */
-	public void setTargetVariable(VariablePath tvPath) {
+	@SuppressWarnings("deprecation")
+    public void setTargetVariable(VariablePath tvPath) {
 		if (tvPath == null) throwNullArgumentException("TV path");
 		
 		NavigableSet<Assignable<?>> tvWrs = null;
@@ -742,7 +745,7 @@ implements Comparator<ForStatement> {
 //		}
 		final int tpLine = tvPath.getLine();	// target position, TP
 		for (Assignable<?> tvRef : tvRefs) {
-			if (tvRef.getFileLocation().getStartingLineNumber() == tpLine) tv = tvRef;
+			if (tvRef.getStartingLineNumber() == tpLine) tv = tvRef;
 
 			final Boolean tia = tvRef.isAssigned();
 			if (tia == null) throwTodoException(tvRef.toString());
@@ -982,7 +985,8 @@ implements Comparator<ForStatement> {
 		return log(progress, action, (SubMonitor) null);
 	}
 	
-	public <T> T log(String progress, String action, SubMonitor monitor) {
+	@SuppressWarnings("deprecation")
+    public <T> T log(String progress, String action, SubMonitor monitor) {
 		if (action == null) throwNullArgumentException("action");
 //		if (actions.contains(action)) throwTodoException("redundant action");
 //		actions.add(action);

@@ -69,7 +69,8 @@ implements Comparable<VariableOrientedDag> {
 	 * @param callee - head accessing reference, can refer to either a variable or a function
 	 * @param tail - provided if {@link wRef} is a function call, or null
 	 */
-	private VariableOrientedDag(Assignable<?> callee, VODCondGen condGen) 
+	@SuppressWarnings("deprecation")
+    private VariableOrientedDag(Assignable<?> callee, VODCondGen condGen) 
 			throws ASTException {
 		super(condGen);
 		
@@ -329,7 +330,7 @@ implements Comparable<VariableOrientedDag> {
 	 * @return callee's code offset in the source file.
 	 */
 	public int getCalleeOffset() {
-		return callee.getASTAddress().getStartPosition();
+		return getCallee().getASTAddress().getStartPosition();
 	}
 	
 
@@ -338,7 +339,7 @@ implements Comparable<VariableOrientedDag> {
 	 * @return callee's starting line number in the source file.
 	 */
 	public int getCalleeStartingLineNumber() {
-		return getCalleeFileLocation().getStartingLineNumber();
+		return getCallee().getStartingLineNumber();
 	}
 	
 
@@ -478,7 +479,8 @@ implements Comparable<VariableOrientedDag> {
 	
 	
 	
-	@Override
+	@SuppressWarnings("deprecation")
+    @Override
 	protected Boolean cacheConstant() {
 		throwTodoException("constant vop");
 		return null;

@@ -1382,24 +1382,29 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 	 */
 	@Override
 	public String getShortAddress() {
-		final StructuralPropertyDescriptor loc = getFileLocation();
-		if (loc == null) return get(()-> cacheRuntimeAddress().getShortAddress(),
-				()-> throwNullArgumentException("dynamic address"));
+		String addr = get(()-> cacheRuntimeAddress().getShortAddress(),
+                ()-> throwNullArgumentException("dynamic address"));
+		if (addr != null) return addr;
+		
 		try {
-			final int sl = Elemental.getNonNull(()-> loc.getStartingLineNumber());
+			final int sl = Elemental.getNonNull(()-> getStartingLineNumber());
 			final Assignable<PV> p = previous(true), n = next(true);
-			if ((p != null && p.getFileLocation().getStartingLineNumber() == sl) ||
-					(n != null && n.getFileLocation().getStartingLineNumber() == sl))
-				return ASTUtil.toLineOffsetLocationOf(loc);
+			if ((p != null && p.getStartingLineNumber() == sl) ||
+					(n != null && n.getStartingLineNumber() == sl))
+				return ASTUtil.toLineOffsetLocationOf(nameView);
 		} catch (IncomparableException e) {
 		} catch (Exception e) {
 			return throwUnhandledException(e);
 		}
-		return ASTUtil.toLineLocationOf(loc);
+		return ASTUtil.toLineLocationOf(nameView);
 	}
 	
 	public String getShortNameAddress() {
 		return getName() + "_" + getShortAddress();
+	}
+	
+	public int getStartingLineNumber() {
+	    return ((CompilationUnit) nameView.getRoot()).getLineNumber(nameView.getStartPosition());
 	}
 	
 	public ASTNode getTopNode() {
