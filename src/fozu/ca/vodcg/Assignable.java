@@ -1499,7 +1499,7 @@ implements VersionEnumerable<PV>, ThreadPrivatizable, Comparable<Assignable<?>>,
 			final VODCondGen cg = getCondGen();
 			if (isDeclarator()) args.addAll(fromOf(getVariableDeclaration(), rt, cg));
 			else for (ArrayAccess asub : getEnclosingArraySubscriptExpressions())
-				args.addAll(fromOf(asub.getSubscriptExpression(), rt, cg));
+				args.addAll(fromOf(asub.getIndex(), rt, cg));
 //			for (ArithmeticExpression arg : getNonNull(()-> 
 //			getEnclosingArray().getArguments()))
 //				for (PathVariablePlaceholder pvp : 
