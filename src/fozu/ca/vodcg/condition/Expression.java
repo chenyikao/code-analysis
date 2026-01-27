@@ -14,13 +14,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.BooleanLiteral;
 import org.eclipse.jdt.core.dom.CastExpression;
 import org.eclipse.jdt.core.dom.CharacterLiteral;
-import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.IASTFieldReference;
 import org.eclipse.jdt.core.dom.IASTFileLocation;
@@ -50,6 +48,7 @@ import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 import org.eclipse.jdt.core.dom.TypeLiteral;
 
 import fozu.ca.Elemental;
+import fozu.ca.DebugElement;
 import fozu.ca.MultiPartitionable;
 import fozu.ca.Pair;
 import fozu.ca.SupplierCluster;
@@ -243,18 +242,35 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 			case ASTNode.BOOLEAN_LITERAL: 
 				e = Proposition.fromRecursively((BooleanLiteral) exp, rtAddr, condGen);
 				break;
-			case ASTNode.CHARACTER_LITERAL: 
-			case ASTNode.NULL_LITERAL: 
 			case ASTNode.NUMBER_LITERAL: 
+			    e = fromRecursively((NumberLiteral) exp, condGen);
+			    break;
+			case ASTNode.CHARACTER_LITERAL: 
+			    e = fromRecursively((CharacterLiteral) exp, condGen);
+			    break;
 			case ASTNode.STRING_LITERAL: 
+			    e = fromRecursively((StringLiteral) exp, condGen);
+			    break;
 			case ASTNode.TYPE_LITERAL: 
 				e = fromRecursively((TypeLiteral) exp, condGen);
 				break;
+			case ASTNode.NULL_LITERAL: 
+			    e = fromRecursively((NullLiteral) exp, condGen);
+			    break;
 				
+			case ASTNode.PARENTHESIZED_EXPRESSION :
+			    e = fromRecursively((ParenthesizedExpression) exp, rtAddr, condGen);
+			    break;
+			    
 			case ASTNode.PREFIX_EXPRESSION: 
 				e = fromRecursively((PrefixExpression) exp, rtAddr, condGen);
 				break;
-				
+			case ASTNode.POSTFIX_EXPRESSION: 
+			    e = fromRecursively((PostfixExpression) exp, rtAddr, condGen);
+			    break;
+			case ASTNode.INFIX_EXPRESSION: 
+			    e = fromRecursively((InfixExpression) exp, rtAddr, condGen);
+			    break;
 			case ASTNode.ASSIGNMENT: 
 				e = fromRecursively((org.eclipse.jdt.core.dom.Assignment) exp, rtAddr, condGen);
 				break;
@@ -329,16 +345,11 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 	private static Expression fromRecursively(
 			final Name name, final ASTAddressable rtAddr, final VODCondGen condGen) 
 					throws ASTException {
-		final IBinding nameBind = ASTUtil.getBindingOf(name);
-		
-		// Non-boolean (non-binary) enum
-		if (nameBind instanceof ITypeBinding) 
-			return from((ITypeBinding) nameBind, name);
-	
 		// ID TODO: or other side-effect suitable's
 		final Expression e = PathVariablePlaceholder.from(nameBind, name, name, rtAddr, condGen);
-		if (e == null) throwTodoException("unsupported ID: " 
-		+ ASTUtil.toStringOf(name) + " bound to " + nameBind);
+		if (e == null) 
+			return throwTodoException("unsupported ID: " 
+					+ ASTUtil.toStringOf(name) + " bound to type " + name.resolveTypeBinding());
 //		else if (!e.enters(METHOD_FROM_RECURSIVELY)) {	// letting the entering one complete the side-effect
 //			e.enter(METHOD_FROM_RECURSIVELY);
 //			e.andSideEffect();
@@ -377,18 +388,18 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 			final FieldAccess refExp, final ASTAddressable rtAddr, final VODCondGen condGen) 
 					throws ASTException {
 		assert refExp != null;
-		final Name refName = refExp.getName();
-		final IBinding refBind = ASTUtil.getBindingOf(refName);
+		final ITypeBinding refTypeBind = refExp.resolveTypeBinding();
 		
 		// Non-boolean (non-binary) enum
-		if (refBind instanceof ITypeBinding) 
-			return from((ITypeBinding) refBind, refExp);
+		final Expression exp = from(refTypeBind, refExp);
+		if (exp != null) return exp;
 		
 		// ID TODO: or other side-effect suitable's
 		final Expression e = PathVariablePlaceholder.from(
 				refBind, refName, refExp, rtAddr, condGen);
-		if (e == null) throwTodoException("unsupported reference: " 
-		+ ASTUtil.toStringOf(refExp) + " bound to " + refBind);
+		if (e == null) 
+		return throwTodoException("unsupported reference: " 
+					+ ASTUtil.toStringOf(refExp) + " bound to " + refTypeBind);
 //		else if (!e.enters(METHOD_FROM_RECURSIVELY)) {	// letting the entering one complete the side-effect
 //			e.enter(METHOD_FROM_RECURSIVELY);
 //			e.andSideEffect();
@@ -580,8 +591,7 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
         return throwTodoException("unsupported binary expression");
 	}
 
-	@SuppressWarnings("removal")
-    private static Expression fromRecursively(
+	private static Expression fromRecursively(
 	        InfixExpression binary, final ASTAddressable rtAddr, VODCondGen condGen) 
                     throws ASTException {
         final Expression lhs = fromRecursively(binary.getLeftOperand(), rtAddr, condGen), 
@@ -626,12 +636,13 @@ implements SideEffectElement, ThreadRoleMatchable, MultiPartitionable {
 	
 	
 	private static Expression from(
-			ITypeBinding typeBinding, ASTNode addrNode) {
+			ITypeBinding typeBinding, FieldAccess addrNode) {
 		assert typeBinding != null;
-		return ASTUtil.isBinary(typeBinding)
-				? Proposition.from(typeBinding)
-				: Int.from(typeBinding.getValue().numericalValue(), 
-						ASTUtil.toLineOffsetLocationOf(addrNode));
+		if (ASTUtil.isBinary(typeBinding)) return Proposition.from(typeBinding);
+		if (typeBinding.isEnum()) return Int.from(
+		        (Integer) addrNode.resolveFieldBinding().getConstantValue(), 
+		        ASTUtil.toLineOffsetLocationOf(addrNode));
+		return null;
 	}
 
 	
