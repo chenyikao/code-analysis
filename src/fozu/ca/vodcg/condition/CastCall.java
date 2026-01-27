@@ -39,12 +39,13 @@ extends Relation implements ArithmeticExpression	// TODO:, FunctionalRelation
 		
 		
 		
-		static private Operator from(
+		@SuppressWarnings("deprecation")
+        static private Operator from(
 				final CastExpression cast, final ASTAddressable dynaAddr, final VODCondGen condGen) {
 			if (cast == null) throwNullArgumentException("cast expression");
 			
 			Expression operand = null;
-			final org.eclipse.jdt.core.dom.Expression oprd = cast.getOperand();
+			final org.eclipse.jdt.core.dom.Expression oprd = cast.getExpression();
 			
 			operand = Expression.fromRecursively(oprd, dynaAddr, condGen);
 			if (operand == null) 
@@ -99,7 +100,8 @@ extends Relation implements ArithmeticExpression	// TODO:, FunctionalRelation
 		/* (non-Javadoc)
 		 * @see fozu.ca.conditionion.Operator#negate()
 		 */
-		@Override
+		@SuppressWarnings("deprecation")
+        @Override
 		public Operator negate() {
 			throwTodoException("storing casting history for inversion");
 			return null;
@@ -122,7 +124,8 @@ extends Relation implements ArithmeticExpression	// TODO:, FunctionalRelation
 		
 		
 		
-		public <H extends Relation> java.lang.String toZ3SmtString(
+		@SuppressWarnings("deprecation")
+        public <H extends Relation> java.lang.String toZ3SmtString(
 				H host, boolean printsVariableDeclaration, boolean printsFunctionDefinition) {
 			if (castType instanceof DataType) switch ((DataType) castType) {
 			case Int: 	return "to_int";	
@@ -211,7 +214,8 @@ extends Relation implements ArithmeticExpression	// TODO:, FunctionalRelation
 	
 
 	
-	public Expression inverse() {
+	@SuppressWarnings("deprecation")
+    public Expression inverse() {
 		throwTodoException("storing casting history for inversion");
 		return null;
 	}
