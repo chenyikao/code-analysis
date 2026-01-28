@@ -70,7 +70,8 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.207.300",
  org.eclipse.jdt.core;bundle-version="3.44.0",
  org.eclipse.jface.text;bundle-version="3.28.100",
  org.eclipse.ui.ide;bundle-version="3.22.700",
- javax.inject;bundle-version="1.0.0"
+ javax.inject;bundle-version="1.0.0",
+ org.eclipse.egit.core;bundle-version="7.5.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-14
 Automatic-Module-Name: fozu.ca.singleton.true
 Bundle-ActivationPolicy: lazy

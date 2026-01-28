@@ -1,5 +1,6 @@
 package fozu.ca.vodcg;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
@@ -27,6 +29,22 @@ import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.diff.Edit;
+import org.eclipse.jgit.diff.EditList;
+import org.eclipse.jgit.diff.RawText;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectLoader;
+import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.patch.FileHeader;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.treewalk.AbstractTreeIterator;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.treewalk.EmptyTreeIterator;
+import org.eclipse.jgit.util.io.DisabledOutputStream;
 import org.eclipse.swt.widgets.Display;
 
 import fozu.ca.DuoKeyMap;
@@ -534,8 +552,78 @@ implements Comparator<ForStatement> {
 		return null;
 	}
 
-	
-	
+    public String generateDiffConditionString(RevCommit commit, Repository repo) {
+        AbstractTreeIterator oldTreeIterator;
+        if (commit.getParentCount() == 0) {
+            // initial commit -> compare against an empty tree
+            oldTreeIterator = new EmptyTreeIterator();
+        } else {
+            ObjectId parentId = commit.getParent(0).getId();
+            oldTreeIterator = prepareTreeParser(repo, parentId);
+        }
+
+        final StringBuilder cond = new StringBuilder();
+        // reuse a DiffFormatter (no output stream required for scan/toFileHeader)
+        try (DiffFormatter df = new DiffFormatter(DisabledOutputStream.INSTANCE)) {
+            df.setRepository(repo);
+
+            // scan returns DiffEntry objects
+            for (DiffEntry diff : df.scan(oldTreeIterator, prepareTreeParser(repo, commit.getId()))) {
+                // FileHeader -> hunk list (EditList)
+                FileHeader fh = df.toFileHeader(diff);
+                
+                // actual old/new file contents to parse AST:
+                final RawText oldText = getRawTextForBlob(repo, fh.getOldId().toObjectId());
+                final RawText newText = getRawTextForBlob(repo, fh.getNewId().toObjectId());
+                final String oldSource = new String(oldText.getRawContent());
+                for (Edit edit : fh.toEditList()) {
+                    // parse old lines (if any)
+                    if (edit.getBeginA() < edit.getEndA()) {
+                        for (int i = edit.getBeginA(); i < edit.getEndA(); i++) {
+                            // RawText.getString returns the line content as String
+                            System.out.println("        " + oldText.getString(i));
+                            setTargetVariable(VariablePath.from(ts, oldSource, this));
+                            cond.append(generateConditionString());
+                        }
+                    }
+                    
+                    // parse new lines (if any)
+                    if (edit.getBeginB() < edit.getEndB()) {
+                        for (int i = edit.getBeginB(); i < edit.getEndB(); i++) {
+                            System.out.println("        " + newText.getString(i));
+                            setTargetVariable(VariablePath.from(ts, diff.getNewPath(), this));
+                            cond.append(generateConditionString());
+                        }
+                    }
+                }
+            }
+        }
+
+        return cond.toString();
+    }
+
+    private static CanonicalTreeParser prepareTreeParser(Repository repository, ObjectId commitId) throws Exception {
+        try (RevWalk walk = new RevWalk(repository)) {
+            RevCommit commit = walk.parseCommit(commitId);
+            ObjectId treeId = commit.getTree().getId();
+            try (ObjectReader reader = repository.newObjectReader()) {
+                CanonicalTreeParser parser = new CanonicalTreeParser();
+                parser.reset(reader, treeId);
+                return parser;
+            }
+        }
+    }
+
+    private static RawText getRawTextForBlob(Repository repo, ObjectId blobId) throws Exception {
+        if (blobId == null || ObjectId.zeroId().equals(blobId)) {
+            return new RawText(new byte[0]); // empty
+        }
+        ObjectLoader loader = repo.open(blobId);
+        return new RawText(loader.getBytes());
+    }
+
+    
+    
 //	private int computeWorkOf(final Assignable ov) {
 //		assert ov != null;
 //		if (ov.enters(METHOD_COMPUTE_WORK_OF)) return 0;
@@ -1025,22 +1113,31 @@ implements Comparator<ForStatement> {
 	}
 	
 	public void setStart(IProgressMonitor monitor, String task, VariablePath tvPath) throws IOException {
-		reset();
-		setStart();
+//		reset();
+//		setStart();
+	    setStart(monitor, task);
 		setTargetVariable(tvPath);
 		
-		this.rootMonitor = SubMonitor.convert(monitor);
-		monitor.beginTask(task, IProgressMonitor.UNKNOWN);
-//		monitor.beginTask(task, computeWorkOf(tv));
+//		this.rootMonitor = SubMonitor.convert(monitor);
+//		monitor.beginTask(task, IProgressMonitor.UNKNOWN);
 	}
 	
+    public void setStart(IProgressMonitor monitor, String task) {
+        reset();
+        setStart();
+        
+        this.rootMonitor = SubMonitor.convert(monitor);
+        monitor.beginTask(task, IProgressMonitor.UNKNOWN);
+//		monitor.beginTask(task, computeWorkOf(tv));
+    }
+
 	public void reset() {
 		start = null;
 		rootMonitor = null;
 		resetPlatformDeclaration();
 	}
 	
-	public void done(String progress, String action) {
+    public void done(String progress, String action) {
 		log(progress, action, rootMonitor);
 		if (rootMonitor != null) rootMonitor.done();
 	}
